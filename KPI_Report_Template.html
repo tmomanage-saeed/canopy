@@ -1022,10 +1022,37 @@ async function generatePDF() {
   var url = URL.createObjectURL(blob);
 
   if (pdfWindow && !pdfWindow.closed) {
-    // Opens the PDF in the new tab (browser's built-in PDF viewer), where the
-    // user can view/print/save it themselves — works even when this page is
-    // embedded in an iframe (e.g. Experience Builder) that blocks forced downloads.
-    pdfWindow.location.href = url;
+    // The new tab is a real top-level window (not inside the Experience Builder
+    // iframe's sandbox), so a download link clicked THERE triggers an actual
+    // save-to-disk instead of just opening the browser's PDF viewer.
+    pdfWindow.document.open();
+    pdfWindow.document.write(
+      '<html><head><style>' +
+      'body{font-family:"Segoe UI",Poppins,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#fff}' +
+      '.title{font-size:19px;color:#222;margin-bottom:26px}' +
+      '.bar-wrap{width:60%;max-width:460px;height:16px;background:#e6e6e6;border-radius:8px;overflow:hidden}' +
+      '.bar{height:100%;width:0%;background:linear-gradient(90deg,#38A800,#1D753B);border-radius:8px;transition:width .25s linear}' +
+      '.pct{margin-top:14px;font-size:16px;font-weight:700;color:#1D753B}' +
+      '.done{display:none;font-size:22px;color:#1D753B;font-weight:700;margin-top:22px}' +
+      '.fallback{margin-top:18px;font-size:12px;color:#888}' +
+      '</style></head><body>' +
+      '<div class="title">Downloading <b>' + fileName + '</b></div>' +
+      '<div class="bar-wrap"><div class="bar" id="bar"></div></div>' +
+      '<div class="pct" id="pct">0%</div>' +
+      '<div class="done" id="done">&#10003; Download Complete!</div>' +
+      '<div class="fallback">If the download did not start, <a id="manualDl" href="' + url + '" download="' + fileName + '">click here</a>.</div>' +
+      '<script>' +
+      'var bar=document.getElementById("bar"),pct=document.getElementById("pct"),done=document.getElementById("done");' +
+      'var p=0;var iv=setInterval(function(){' +
+      'p+=Math.random()*18;' +
+      'if(p>=100){p=100;clearInterval(iv);pct.style.display="none";done.style.display="block";}' +
+      'bar.style.width=p+"%";pct.textContent=Math.round(p)+"%";' +
+      '},150);' +
+      'document.getElementById("manualDl").click();' +
+      '<\/script>' +
+      '</body></html>'
+    );
+    pdfWindow.document.close();
   } else {
     // Popup was blocked — fall back to a forced download in the current tab.
     var a = document.createElement('a');
