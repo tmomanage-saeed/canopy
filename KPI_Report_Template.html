@@ -1045,8 +1045,11 @@ async function generatePDF() {
   var nm = document.getElementById('roadName').textContent || 'Report';
   var fileName = 'KPI_' + nm.replace(/\s+/g,'_') + '.pdf';
   ov.classList.remove('active');
-  var blob = pdf.output('blob');
-  var url = URL.createObjectURL(blob);
+  // data: URI instead of blob: — it carries the whole file inside the URL itself,
+  // so there is no per-window blob registry to fail across the iframe/popup boundary,
+  // and it never exposes any domain/origin at all if the browser ever falls back
+  // to navigating instead of downloading.
+  var dataUri = pdf.output('datauristring');
 
   if (pdfWindow && !pdfWindow.closed) {
     // The new tab is a real top-level window (not inside the Experience Builder
@@ -1064,21 +1067,20 @@ async function generatePDF() {
     if (pctEl) pctEl.style.display = 'none';
     if (doneEl) doneEl.style.display = 'block';
     if (dlEl) {
-      dlEl.href = url;
+      dlEl.href = dataUri;
       dlEl.download = fileName;
       dlEl.click();
     }
   } else {
     // Popup was blocked — fall back to a forced download in the current tab.
     var a = document.createElement('a');
-    a.href = url;
+    a.href = dataUri;
     a.download = fileName;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     setTimeout(function(){ document.body.removeChild(a); }, 1000);
   }
-  setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
 }
 // ═══════════════════════════════════════════════════
 // Slide 6: Current Canopy Maps
