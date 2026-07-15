@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Riyadh - KPI Canopy Cover Report</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@font-face{font-family:'Poppins';font-weight:300;src:url('Poppins_Fonts/Poppins-Light.ttf')}
+@font-face{font-family:'Poppins';font-weight:400;src:url('Poppins_Fonts/Poppins-Regular.ttf')}
+@font-face{font-family:'Poppins';font-weight:500;src:url('Poppins_Fonts/Poppins-Medium.ttf')}
+@font-face{font-family:'Poppins';font-weight:600;src:url('Poppins_Fonts/Poppins-SemiBold.ttf')}
+@font-face{font-family:'Poppins';font-weight:700;src:url('Poppins_Fonts/Poppins-Bold.ttf')}
+@font-face{font-family:'Poppins';font-weight:800;src:url('Poppins_Fonts/Poppins-ExtraBold.ttf')}
+@font-face{font-family:'NeoSansArabic';font-weight:300;src:url('GR fonts/NeoSansArabicLight.ttf')}
+@font-face{font-family:'NeoSansArabic';font-weight:400;src:url('GR fonts/NeoSansArabicRegular.ttf')}
+@font-face{font-family:'NeoSansArabic';font-weight:500;src:url('GR fonts/NeoSansArabicMedium.ttf')}
+@font-face{font-family:'NeoSansArabic';font-weight:700;src:url('GR fonts/NeoSansArabicBold.ttf')}
+@font-face{font-family:'NeoSansArabic';font-weight:800;src:url('GR fonts/NeoSansArabicBlack.ttf')}
+@font-face{font-family:'NeoSansArabic';font-weight:900;src:url('GR fonts/NeoSansArabicUltra.ttf')}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
+
+/* ─── Controls bar ─── */
+.controls{position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a1a1a;padding:10px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.controls .title-ctrl{color:#fff;font-size:15px;font-weight:600;margin-right:auto}
+.controls .title-ctrl span{color:#5cb85c}
+.controls select{padding:8px 14px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;border:2px solid #2d8c30;border-radius:6px;background:#fff;color:#222;min-width:280px;cursor:pointer;outline:none}
+.controls .btn{padding:8px 20px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;border:none;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+.btn-pdf{background:#2d8c30;color:#fff}
+.btn-pdf:hover{background:#246e27}
+
+/* ─── Slide container ─── */
+.pages{padding:64px 0 40px;display:flex;flex-direction:column;align-items:center;gap:24px}
+.slide{width:1280px;height:720px;background:#fff;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.15);border-radius:4px;flex-shrink:0}
+
+/* ═══ SLIDE 1: Title Page ═══ */
+#slide1{font-family:'NeoSansArabic',sans-serif}
+#slide1 .kpi,#slide1 .road-name,#slide1 .tmo,#slide1 .date{font-family:'NeoSansArabic',sans-serif}
+.s1-leaf{position:absolute;bottom:0;left:0;height:100%;width:auto;z-index:1}
+.s1-center{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:2}
+.s1-main{display:flex;align-items:center;gap:28px;margin-left:80px}
+.s1-text{text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.s1-text .kpi{font-size:32px;font-weight:800;color:#22763C;line-height:1.2;letter-spacing:-0.5px}
+.s1-text .road-name{font-size:32px;font-weight:800;color:#22763C;line-height:1.2;align-self:flex-end;text-align:right}
+.s1-text .tmo{font-size:16px;font-weight:600;color:#22763C;align-self:flex-end;text-align:right;text-transform:uppercase;letter-spacing:3px;margin-top:8px}
+.s1-text .date{font-size:12px;font-weight:500;color:#22763C;margin-top:2px;align-self:flex-end;text-align:right}
+.s1-sep{width:2px;height:140px;background:linear-gradient(to bottom,transparent,#bbb,transparent);flex-shrink:0}
+.s1-gr-logo{height:130px;width:auto;flex-shrink:0}
+.s1-bottom-logos{position:absolute;bottom:5px;right:60px;display:flex;align-items:center;gap:40px;z-index:2}
+.s1-bottom-logos img{height:44px;width:auto}
+.s1-bottom-logos img:nth-child(2){height:76px}
+.s1-bottom-logos img:nth-child(3){height:24px}
+
+/* ═══ SLIDE 2: Introduction Divider ═══ */
+.s2-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center}
+.s2-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35)}
+.s2-content{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+.s2-circle{width:100px;height:100px;background:rgba(255,255,255,.95);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.s2-circle img{width:65px;height:65px}
+.s2-label{font-family:'NeoSansArabic',sans-serif;font-size:26px;font-weight:700;color:#fff;margin-top:14px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+/* ═══ Common header/footer for content slides ═══ */
+.s-hdr{position:absolute;top:0;left:0;right:0;height:44px;z-index:10;overflow:hidden}
+.s-hdr img.bar{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.s-hdr img.logo{position:absolute;top:50%;transform:translateY(-50%);height:32px;z-index:1}
+.s-hdr .logo-l{left:16px}
+.s-hdr .logo-r{right:16px}
+.s-ftr{position:absolute;bottom:0;left:0;right:0;height:36px;z-index:10;overflow:hidden}
+.s-ftr img.bar{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.s-ftr span{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3);z-index:1}
+.s-ftr .ftr-l{left:16px}
+.s-ftr .ftr-r{right:16px}
+
+/* ═══ SLIDE 3: Introduction - Satellite Comparison ═══ */
+.s3-body{position:absolute;top:44px;left:0;right:0;bottom:36px;padding:14px 40px;display:flex;flex-direction:column;justify-content:flex-start}
+.s3-title{font-family:'NeoSansArabic',sans-serif;font-size:26px;font-weight:700;color:#22763C;margin-bottom:8px}
+.s3-desc{font-size:15px;color:#333;line-height:1.6;margin-bottom:8px}
+.s3-desc strong{color:#000;font-weight:700}
+.s3-maps{height:460px;display:flex;gap:14px;min-height:0;margin-top:auto}
+.s3-map-box{flex:1;display:flex;flex-direction:column;min-width:0}
+.s3-map-container{flex:1;border:2px solid #ccc;border-radius:14px;overflow:hidden;position:relative}
+.s3-map-container .leaflet-container{width:100%;height:100%}
+.s3-map-label{text-align:center;font-family:'NeoSansArabic',sans-serif;font-size:14px;font-weight:700;color:#333;padding:6px 0 0}
+.s3-north{position:absolute;bottom:8px;left:14px;font-size:16px;font-weight:700;color:#333;z-index:5}
+.s3-north img{height:30px}
+
+/* ─── Loading overlay ─── */
+.loading{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.9);z-index:99999;display:none;justify-content:center;align-items:center;flex-direction:column;gap:16px}
+.loading.active{display:flex}
+.spinner{width:50px;height:50px;border:5px solid #e0e0e0;border-top-color:#2d8c30;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:#555;font-weight:500}
+
+/* ─── Print ─── */
+@media print{
+  body{background:#fff}
+  .controls,.loading{display:none!important}
+  .pages{padding:0;gap:0}
+  .slide{box-shadow:none;border-radius:0;page-break-after:always}
+  @page{size:landscape;margin:0}
+}
+/* ═══ SLIDE 4: Species Table ═══ */
+.s4-body{position:absolute;top:44px;left:0;right:0;bottom:36px;display:flex;padding:14px 24px;gap:20px}
+.s4-left{width:45%;display:flex;flex-direction:column;justify-content:flex-start;padding-top:10px}
+.s4-title{font-family:'NeoSansArabic',sans-serif;font-size:26px;font-weight:700;color:#22763C;margin-bottom:12px}
+.s4-text{font-size:14px;color:#333;line-height:1.7;margin-bottom:8px}
+.s4-source{font-size:11px;color:#555;font-style:italic;margin-top:auto;padding-bottom:10px}
+.s4-right{width:55%;overflow:hidden;border:1px solid #ccc;border-radius:10px;display:inline-flex;flex-direction:column;align-self:flex-start}
+.s4-table{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}
+.s4-table th:nth-child(1),.s4-table td:nth-child(1){width:34%}
+.s4-table th:nth-child(2),.s4-table td:nth-child(2),.s4-table th:nth-child(3),.s4-table td:nth-child(3),.s4-table th:nth-child(4),.s4-table td:nth-child(4),.s4-table th:nth-child(5),.s4-table td:nth-child(5){width:16.5%}
+.s4-table thead th{background:#22763C;color:#fff;font-family:'NeoSansArabic',sans-serif;font-size:10.5px;font-weight:600;padding:5px 3px;text-align:left;position:sticky;top:0}
+.s4-table thead th:nth-child(2),.s4-table thead th:nth-child(3),.s4-table thead th:nth-child(4),.s4-table thead th:nth-child(5){text-align:center}
+.s4-table tbody td:nth-child(1){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s4-table tbody td{padding:1px 3px;border-bottom:1px solid #e0e0e0;color:#333}
+.s4-table tbody td:nth-child(2),.s4-table tbody td:nth-child(3),.s4-table tbody td:nth-child(4),.s4-table tbody td:nth-child(5){text-align:center;font-weight:500}
+.s4-table tbody tr:nth-child(even){background:#f5f5f5}
+.s4-table tfoot td{font-weight:700;padding:2px 3px;border-top:2px solid #22763C;color:#22763C}
+.s4-table tfoot td:nth-child(2),.s4-table tfoot td:nth-child(3),.s4-table tfoot td:nth-child(4){text-align:center}
+/* ═══ SLIDE 5: Current Canopy Divider ═══ */
+.s5-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center}
+.s5-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35)}
+.s5-content{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+.s5-circle{width:100px;height:100px;background:rgba(255,255,255,.95);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.s5-circle img{width:65px;height:65px}
+.s5-label{font-family:'NeoSansArabic',sans-serif;font-size:26px;font-weight:700;color:#fff;margin-top:14px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+/* ═══ SLIDE 6: Current Canopy Cover ═══ */
+.s6-body{position:absolute;top:44px;left:0;right:0;bottom:36px;display:flex;padding:10px 20px;gap:16px;font-family:'Poppins',sans-serif}
+.s6-left{width:45%;display:flex;flex-direction:column;padding-top:6px}
+.s6-title{font-family:'NeoSansArabic',sans-serif;font-size:24px;font-weight:700;color:#22763C;margin-bottom:12px}
+.s6-kpi-box{border:2px solid #22763C;border-radius:8px;padding:6px 14px;margin-bottom:10px}
+.s6-kpi-heading{font-size:13px;font-weight:700;color:#333;margin-bottom:4px}
+.s6-kpi-cat{font-size:13px;font-weight:600;color:#22763C;text-align:center;margin-bottom:6px}
+.s6-kpi-row{display:flex;align-items:center;border:1px solid #ccc;border-radius:4px;overflow:hidden}
+.s6-kpi-label{background:#fff;padding:6px 10px;font-size:11px;font-weight:700;color:#333;width:45%}
+.s6-kpi-label span{color:#22763C;display:block;font-weight:400}
+.s6-kpi-val{background:#f0f7f0;padding:6px 10px;font-size:14px;font-weight:700;color:#22763C;width:55%;text-align:center}
+.s6-proj-title{font-size:13px;font-weight:700;color:#333;margin-bottom:6px;margin-top:8px}
+.s6-proj-table{width:100%;border-collapse:collapse;margin-bottom:10px;border:1px solid #ccc;font-family:'Poppins',sans-serif}
+.s6-proj-table th{background:#F2F2F2;font-size:13px;font-weight:700;color:#22763C;padding:5px 8px;text-align:center;border:1px solid #999}
+.s6-proj-table th:first-child{text-align:center;background:transparent;border:none}
+.s6-proj-table td{padding:5px 8px;font-size:13px;font-weight:500;color:#333;border:1px solid #999;text-align:center;background:#fff}
+.s6-proj-table td:first-child{text-align:center;background:#fff}
+.s6-proj-table td:first-child span{color:#22763C;font-weight:700}
+.s6-source{font-size:10px;color:#555;font-style:italic;margin-top:auto;padding-bottom:10px}
+.s6-right{width:55%;display:flex;flex-direction:row;gap:8px}
+.s6-map-wrap{flex:1;border:2px solid #ccc;border-radius:10px;overflow:hidden;position:relative}
+.s6-map-wrap .leaflet-container{width:100%;height:100%}
+.s6-legend{display:flex;gap:14px;align-items:center;padding:4px 0;flex-wrap:wrap}
+.s6-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#333}
+.s6-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.s6-legend-rect{width:12px;height:8px;flex-shrink:0}
+.s6-bottom-row{display:flex;align-items:center;justify-content:space-between}
+.s6-scale{display:flex;align-items:center;gap:6px;font-size:8px;color:#333}
+
+.s10-body{position:absolute;top:44px;left:0;right:0;bottom:36px;display:flex;padding:14px 24px;gap:20px;font-family:'Poppins',sans-serif}
+.s10-left{width:45%;display:flex;flex-direction:column;padding-top:10px}
+.s10-title{font-family:'NeoSansArabic',sans-serif;font-size:26px;font-weight:700;color:#22763C;margin-bottom:12px}
+.s10-text{font-size:14px;color:#333;line-height:1.7}
+.s10-right{width:55%;display:flex;align-items:center;justify-content:center;padding:10px}
+.s10-photo{width:100%;height:100%;object-fit:cover;border-radius:18px}
+.hl{background:#FFEB3B;color:#000;font-weight:700;padding:1px 4px;border-radius:2px}
+#slide10 .hl{background:none;padding:0}
+.north-arrow-map{position:absolute;top:8px;left:8px;z-index:9999;pointer-events:none;font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;line-height:1}
+.ctx-view{width:10px;height:7px;border:1.5px dashed #e74c3c;background:none;display:inline-block;flex-shrink:0}
+.s11-img{width:100%;height:100%;object-fit:contain;background:#fff}
+</style>
+</head>
+<body>
+
+<!-- ─── Controls Bar ─── -->
+<div class="controls">
+  <div class="title-ctrl"><span>●</span> Green Riyadh KPI Report</div>
+  <select id="ddType" style="margin-right:6px">
+    <option value="road">Road</option>
+    <option value="wadi">Wadi</option>
+  </select>
+  <select id="dd"><option value="">— Select Road —</option></select>
+  <button class="btn btn-pdf" onclick="generatePDF()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+    Download PDF
+  </button>
+  <div style="display:flex;gap:4px;margin-left:8px">
+    <button class="s6-toggle" onclick="toggleS6Layer(0,this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plantable</button>
+    <button class="s6-toggle" onclick="toggleS6Layer(1,this)" style="border:2px solid #38A800;background:#fff;color:#38A800;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Current</button>
+    <button class="s6-toggle" onclick="toggleS6Layer(2,this)" style="border:2px solid #FFAA00;background:#fff;color:#FFAA00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Species</button>
+    <button class="s6-toggle" onclick="toggleS8Layer(0,this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plant-M</button>
+    <button class="s6-toggle" onclick="toggleS8Layer(1,this)" style="border:2px solid #1D753B;background:#fff;color:#1D753B;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Mature</button>
+    <button class="s6-toggle" onclick="toggleS8Layer(2,this)" style="border:2px solid #AAFF00;background:#fff;color:#AAFF00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Additional</button>
+  </div>
+</div>
+
+<!-- ─── Loading ─── -->
+<div class="loading" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Generating PDF...</div>
+</div>
+
+<!-- ─── Slides ─── -->
+<div class="pages" id="pages">
+
+  <!-- ═══════════ SLIDE 1: Title Page ═══════════ -->
+  <div class="slide" id="slide1">
+    <img class="s1-leaf" src="first_page/side_leaves.png" onerror="this.style.display='none'">
+    <div class="s1-center">
+      <div class="s1-main">
+        <div class="s1-text">
+          <div class="kpi">Canopy Cover Review</div>
+          <div class="road-name" id="roadName">King Khalid Rd</div>
+          <div class="tmo">Tree Management Office</div>
+          <div class="date" id="reportDate">June 2026</div>
+        </div>
+        <div class="s1-sep"></div>
+        <img class="s1-gr-logo" src="first_page/gr_logo.png" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div class="s1-bottom-logos">
+      <img src="first_page/greenlink_logo.svg" onerror="this.alt='GreenLink';this.style.opacity='.3'">
+      <img src="first_page/bodeker_logo.png" onerror="this.alt='Bodeker';this.style.opacity='.3'">
+      <img src="first_page/arh_logo.svg" onerror="this.alt='ARH';this.style.opacity='.3'">
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 2: Introduction Divider ═══════════ -->
+  <div class="slide" id="slide2">
+    <div class="s2-bg" id="s2Bg" style="background-image:url('second_page/king_khalid_road.jpg')">
+      <div class="s2-overlay"></div>
+      <div class="s2-content">
+        <div class="s2-circle">
+          <img src="second_page/gr_center_icon.png" onerror="this.style.display='none'">
+        </div>
+        <div class="s2-label">Introduction</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 3: Introduction - Satellite Comparison ═══════════ -->
+  <div class="slide" id="slide3">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s3-body">
+      <div class="s3-title">Introduction</div>
+      <div class="s3-desc">This assessment compares the current and projected mature tree canopy cover within the Road Projects against the Green Riyadh KPI targets.</div>
+      <div class="s3-desc">Chronological satellite imagery illustrating the progression of landscape development over time from pre-construction through implementation and current conditions.</div>
+      <div class="s3-maps">
+        <div class="s3-map-box">
+          <div class="s3-map-container"><div id="map2020"></div></div>
+          <div class="s3-map-label">May 2020</div>
+        </div>
+        <div class="s3-map-box">
+          <div class="s3-map-container"><div id="map2022"></div></div>
+          <div class="s3-map-label">June 2022</div>
+        </div>
+        <div class="s3-map-box">
+          <div class="s3-map-container"><div id="map2025"></div></div>
+          <div class="s3-map-label">August 2025</div>
+        </div>
+      </div>
+      <div class="s6-legend" id="s3Legend" style="margin-top:6px">
+        <span style="font-weight:700;font-size:9px">Legend:</span>
+        <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>Project Boundary</div>
+        <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
+      </div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+  <!-- ═══════════ SLIDE 4: Species Table ═══════════ -->
+  <div class="slide" id="slide4">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s4-body">
+      <div class="s4-left">
+        <div class="s4-title">Introduction</div>
+        <div class="s4-text">This assessment evaluates the existing canopy cover using June 2025 satellite imagery and estimates the project's future canopy cover at<br>tree maturity based on standardized mature canopy dimensions for each tree species.</div>
+        <div class="s4-text">The projected mature canopy cover is calculated using the planned tree quantities and species-specific mature canopy assumptions.</div><div class="s4-text" style="margin-top:8px">The accompanying table summarizes the tree species, quantities, and the mature canopy diameters applied in the assessment.<br></div>
+        <div class="s4-source">Data sources: &nbsp;&nbsp;&nbsp; Mature canopy sizes – Plant Manual 2<sup>nd</sup> Edition</div>
+        <div class="s4-source" style="margin-top:2px">Note: *Total mature canopy area without considering overlap.</div>
+        <div class="s4-source" style="margin-top:2px">**Total mature canopy area considering overlap.</div>
+      </div>
+      <div class="s4-right">
+        <table class="s4-table">
+          <thead><tr><th>Tree Species</th><th>Number of Trees<br>Planted</th><th>Mature Canopy<br>Diameter (m) Per Tree</th><th>Mature Canopy Area<br>Per Tree (m²)</th><th>Total Mature Canopy<br>Area (m²)</th></tr></thead>
+          <tbody>
+            <tr><td>Phoenix dactylifera</td><td>1,561</td><td></td></tr>
+            <tr><td>Ziziphus spina-christi</td><td>1,474</td><td></td></tr>
+            <tr><td>Ficus nitida</td><td>738</td><td></td></tr>
+            <tr><td>Olea europaea</td><td>516</td><td></td></tr>
+            <tr><td>Vachellia gerrardii</td><td>317</td><td></td></tr>
+            <tr><td>Pithecellobium dulce</td><td>298</td><td></td></tr>
+            <tr><td>Albizia lebbeck</td><td>219</td><td></td></tr>
+            <tr><td>Vachellia nilotica</td><td>209</td><td></td></tr>
+            <tr><td>Ziziphus jujuba</td><td>194</td><td></td></tr>
+            <tr><td>Parkinsonia aculeata</td><td>160</td><td></td></tr>
+            <tr><td>Moringa oleifera</td><td>141</td><td></td></tr>
+            <tr><td>Washingtonia robusta</td><td>130</td><td></td></tr>
+            <tr><td>Pongamia pinnata</td><td>95</td><td></td></tr>
+            <tr><td>Prosopis juliflora</td><td>77</td><td></td></tr>
+            <tr><td>No Name</td><td>77</td><td></td></tr>
+            <tr><td>Vachellia farnesiana</td><td>54</td><td></td></tr>
+            <tr><td>Conocarpus erectus</td><td>54</td><td></td></tr>
+            <tr><td>Conocarpus lancifolius</td><td>39</td><td></td></tr>
+            <tr><td>Ceratonia siliqua</td><td>39</td><td></td></tr>
+            <tr><td>N/A</td><td>18</td><td></td></tr>
+            <tr><td>Ficus religiosa</td><td>16</td><td></td></tr>
+            <tr><td>Vachellia tortilis</td><td>15</td><td></td></tr>
+            <tr><td>Vachellia seyal</td><td>13</td><td></td></tr>
+            <tr><td>Dafla tree</td><td>12</td><td></td></tr>
+            <tr><td>Vachellia xanthophloea</td><td>8</td><td></td></tr>
+            <tr><td>Acacia sp.</td><td>6</td><td></td></tr>
+            <tr><td>Aloe vera</td><td>3</td><td></td></tr>
+            <tr><td>Azadirachta indica</td><td>3</td><td></td></tr>
+            <tr><td>Acacia pruinocarpa</td><td>3</td><td></td></tr>
+            <tr><td>Vachellia gerrardii var. najdensis</td><td>2</td><td></td></tr>
+            <tr><td>Other</td><td>2</td><td></td></tr>
+            <tr><td>Prosopis alba</td><td>2</td><td></td></tr>
+            <tr><td>Vachellia gerrardii var. iraquensis</td><td>1</td><td></td></tr>
+            <tr><td>Vachellia nilotica var. nilotica</td><td>1</td><td></td></tr>
+            <tr><td>Maerua crassifolia</td><td>1</td><td></td></tr>
+            <tr><td>Parkinsonia florida</td><td>1</td><td></td></tr>
+            <tr><td>Acacia ampliceps</td><td>1</td><td></td></tr>
+            <tr><td>Tamarix aphylla</td><td>1</td><td></td></tr>
+          </tbody>
+          <tfoot><tr><td>Total Trees</td><td>6,501</td><td></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+  <!-- ═══════════ SLIDE 5: Current Canopy Divider ═══════════ -->
+  <div class="slide" id="slide5">
+    <div class="s5-bg" id="s5Bg" style="background-image:url('fifth_page/default.jpg')">
+      <div class="s5-overlay"></div>
+      <div class="s5-content">
+        <div class="s5-circle">
+          <img src="second_page/gr_center_icon.png" onerror="this.style.display='none'">
+        </div>
+        <div class="s5-label">Current Canopy</div>
+      </div>
+    </div>
+  </div>
+  <!-- ═══════════ SLIDE 6: Current Canopy Cover ═══════════ -->
+  <div class="slide" id="slide6">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s6-body">
+      <div class="s6-left">
+        <div class="s6-title">Current Canopy Cover | Existing Trees</div>
+        <div class="s6-kpi-box">
+          <div class="s6-kpi-heading">Green Riyadh KPI Project Category Requirements</div><table style="width:100%;border-collapse:collapse;margin-top:4px"><tr><td style="width:45%"></td><td style="text-align:center;font-size:12px;font-weight:600;color:#22763C;padding:2px" id="s6KpiCat2">Main Road</td></tr><tr><td style="font-size:11px;font-weight:700;padding:6px 8px;border:1px solid #ccc"><span style="color:#22763C;font-weight:400">Required</span><br>Canopy Cover</td><td style="text-align:center;font-size:14px;font-weight:700;color:#22763C;padding:6px 8px;border:1px solid #ccc;background:#f0f7f0" id="s6KpiVal2">12 %</td></tr></table>
+          <div class="s6-kpi-cat" id="s6KpiCat" style="display:none">Main Road</div>
+          <div class="s6-kpi-row" style="display:none">
+            <div class="s6-kpi-label"><span>Required</span>Canopy Cover</div>
+            <div class="s6-kpi-val" id="s6KpiVal">12 %</div>
+          </div>
+        </div>
+        <div class="s6-proj-title">Project Information Current</div>
+        <table class="s6-proj-table" style="table-layout:fixed">
+          <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Total Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+          <tbody>
+            <tr><td id="s6CanopyProj">–m²</td><td id="s6PctProj">– %</td><td id="s6AreaProj">–m²</td><td id="s6AreaPlant">–m²</td></tr>
+          </tbody>
+        </table>
+        <div class="s6-source"style="margin-top:auto;padding-bottom:0;margin-bottom:-4px">Data sources: Current Canopy – Tree Survey data, Machine learning &amp; Satellite image</div>
+        <div style="display:flex;align-items:center;gap:8px;display:none;margin-top:6px;margin-left:350px"><img src="north_Arrow.png" style="height:30px"><div style="width:50px;height:6px;background:#000;display:inline-block"></div><div style="width:50px;height:6px;background:#fff;border:1px solid #000;display:inline-block"></div><span style="font-size:7px;color:#333;margin-left:3px">50m</span></div>
+        <div class="s6-legend" id="s6Legend" style="margin-top:8px">
+          <span style="font-weight:700;font-size:9px">Legend:</span>
+          <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
+          <div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>
+          <div class="s6-legend-item"><div class="s6-legend-dot" style="background:#FFAA00"></div>Tree Species</div>
+        </div>
+      </div>
+      <div class="s6-right">
+        <div class="s6-map-wrap"><div id="map6Zoom"></div></div>
+        <div class="s6-map-wrap"><div id="map6Overview"></div></div>
+      </div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 7: Mature Canopy Divider ═══════════ -->
+  <div class="slide" id="slide7">
+    <div class="s5-bg" id="s7Bg" style="background-image:url('fifth_page/default.jpg')">
+      <div class="s5-overlay"></div>
+      <div class="s5-content">
+        <div class="s5-circle">
+          <img src="second_page/gr_center_icon.png" onerror="this.style.display='none'">
+        </div>
+        <div class="s5-label">Mature Canopy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 8: Mature Canopy Cover ═══════════ -->
+  <div class="slide" id="slide8">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s6-body">
+      <div class="s6-left">
+        <div class="s6-title">Mature Canopy Cover | Additional Trees</div>
+        <div class="s6-kpi-box">
+          <div class="s6-kpi-heading">Green Riyadh KPI Project Category Requirements</div><table style="width:100%;border-collapse:collapse;margin-top:4px"><tr><td style="width:45%"></td><td style="text-align:center;font-size:12px;font-weight:600;color:#22763C;padding:2px" id="s8KpiCat">Main Road</td></tr><tr><td style="font-size:11px;font-weight:700;padding:6px 8px;border:1px solid #ccc"><span style="color:#22763C;font-weight:400">Required</span><br>Canopy Cover</td><td style="text-align:center;font-size:14px;font-weight:700;color:#22763C;padding:6px 8px;border:1px solid #ccc;background:#f0f7f0" id="s8KpiVal">12 %</td></tr></table>
+        </div>
+        <div class="s6-proj-title">Project Information Mature</div>
+        <table class="s6-proj-table" style="table-layout:fixed">
+          <tbody>
+            <tr><td style="font-weight:700;color:#22763C;background:#F2F2F2">Total Project Area</td><td id="s8AreaProj">–m²</td></tr>
+          </tbody>
+        </table>
+        <table class="s6-proj-table" style="table-layout:fixed">
+          <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Mature Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Remaining<br>Plantable Area</th></tr></thead>
+          <tbody>
+            <tr><td id="s8AreaPlant">–m²</td><td id="s8CanopyProj">–m²</td><td id="s8AreaAvail"></td></tr>
+          </tbody>
+        </table>
+        <table class="s6-proj-table" style="table-layout:fixed;margin-top:8px">
+          <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Mature Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Trees To Be<br>Transplanted</th></tr></thead>
+          <tbody>
+            <tr><td id="s8PctProj">– %</td><td id="s8TransTrees">–</td></tr>
+          </tbody>
+        </table>
+        <table class="s6-proj-table" style="table-layout:fixed;margin-top:8px">
+          <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Potential Additional<br>Trees</th><th style="background:#F2F2F2;border:1px solid #999">Potential Additional<br>Canopy Cover (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Potential Total<br>Canopy Cover (%)</th></tr></thead>
+          <tbody>
+            <tr><td id="s8PotTrees">–</td><td id="s8PotCanopy">–</td><td id="s8PotKpi">–</td></tr>
+          </tbody>
+        </table>
+        <div class="s6-source"style="padding-bottom:0;margin-bottom:-4px">Data sources: Mature canopy sizes – Plant Manual 2<sup>nd</sup> Edition</div>
+        <div style="display:flex;align-items:center;gap:8px;display:none;margin-top:6px;margin-left:350px"><img src="north_Arrow.png" style="height:30px"><div style="width:50px;height:6px;background:#000;display:inline-block"></div><div style="width:50px;height:6px;background:#fff;border:1px solid #000;display:inline-block"></div><span style="font-size:7px;color:#333;margin-left:3px">50m</span></div>
+        <div class="s6-legend" id="s8Legend" style="margin-top:8px">
+          <span style="font-weight:700;font-size:9px">Legend:</span>
+          <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div><span id="s8BoundaryName">Road Boundary</span></div>
+          <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
+          <div class="s6-legend-item"><div class="s6-legend-rect" style="background:#1D753B"></div>Canopy Mature</div>
+          <div class="s6-legend-item"><div class="s6-legend-dot" style="background:#AAFF00"></div>Additional Potential Trees</div><div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>
+        </div>
+      </div>
+      <div class="s6-right">
+        <div class="s6-map-wrap"><div id="map8Zoom"></div></div>
+        <div class="s6-map-wrap"><div id="map8Overview"></div></div>
+      </div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 9: Conclusion Divider ═══════════ -->
+  <div class="slide" id="slide9">
+    <div class="s5-bg" id="s9Bg" style="background-image:url('fifth_page/default.jpg')">
+      <div class="s5-overlay"></div>
+      <div class="s5-content">
+        <div class="s5-circle">
+          <img src="second_page/gr_center_icon.png" onerror="this.style.display='none'">
+        </div>
+        <div class="s5-label">Conclusion</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 10: Road Photo ═══════════ -->
+  <div class="slide" id="slide10">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s10-body">
+      <div class="s10-left">
+        <div class="s10-title" id="s10Title">Conclusion</div>
+        <div class="s10-text" id="s10Text">
+          
+            <div id="s10Para" style="font-size:13px;line-height:2;color:#333;padding:10px 5px"></div>
+            
+            
+          
+        </div>
+      </div>
+      <div class="s10-right">
+        <img class="s10-photo" id="s10Photo" src="slide_10/input_images/King Khalid Rd.jpg" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+  <!-- ═══════════ SLIDE 11: Thank You ═══════════ -->
+  <div class="slide" id="slide11">
+    <img class="s11-img" src="slide_last/thank_you.jpg">
+    <div style="position:absolute;bottom:24px;left:80px;font-size:50px;font-weight:700;color:#1F753B;font-family:'Poppins',sans-serif">THANK YOU</div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// GLOBAL DATA
+// ═══════════════════════════════════════════════════
+var PROJECTS = [];
+var WADI_PROJECTS = [];
+var CURRENT_TYPE = 'road';
+var MAP_2020, MAP_2022, MAP_2025;
+var SYNCING = false;
+
+var EXCEL_DATA = {};
+var WADI_EXCEL_DATA = {};
+
+function round2(n) {
+  if (typeof n !== 'number') return n;
+  return Math.round(n * 100) / 100;
+}
+
+// Reads roads_data.xlsx live so editing the Excel + refreshing the page updates the dashboard.
+// The sheet has two sections stacked in one table, each starting with a label row
+// ("Roads" / "Wadi") followed by data rows in the same 15 columns (A..O):
+// Project, Project area, Plantable area, Current trees, Current canopy cover,
+// Mature canopy cover, Remaining plantable area, Potential additional trees, Total trees,
+// Potential additional canopy cover, Planned KPI, Current KPI, Current KPI mature canopy,
+// Potential future KPI, Trees to be planted.
+function loadExcelData() {
+  return fetch('roads_data.xlsx?v=' + Date.now())
+    .then(function(r) { return r.arrayBuffer(); })
+    .then(function(buf) {
+      var wb = XLSX.read(buf, {type: 'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true});
+      var roadData = {};
+      var wadiData = {};
+      var section = 'road';
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row || !row[0]) continue;
+        if (typeof row[1] !== 'number') {
+          // Section label row (e.g. "Roads" / "Wadi")
+          section = String(row[0]).toLowerCase().indexOf('wadi') !== -1 ? 'wadi' : 'road';
+          continue;
+        }
+        var entry = {
+          project: row[1], plantable: row[2], curTrees: row[3], curCanopy: row[4],
+          matCanopy: row[5], available: row[6], additional: row[7], totalTrees: row[8],
+          addCanopy: row[9], plannedKpi: round2(row[10]), currentPct: round2(row[11]), maturePct: round2(row[12]),
+          futureKpi: round2(row[13]), treesToPlant: row[14]
+        };
+        var name = String(row[0]).trim();
+        if (section === 'wadi') wadiData[name] = entry; else roadData[name] = entry;
+      }
+      EXCEL_DATA = roadData;
+      WADI_EXCEL_DATA = wadiData;
+    })
+    .catch(function(err) { console.error('Error loading roads_data.xlsx:', err); });
+}
+
+function normalizeName(s) {
+  return s.toLowerCase().replace(/[\s_()]/g, '');
+}
+
+function getExcelData(roadName) {
+  var norm = normalizeName(roadName).replace(/road/g,'').replace(/rd/g,'');
+  for (var k in EXCEL_DATA) { var kn = normalizeName(k).replace(/road/g,'').replace(/rd/g,''); if (kn === norm) return EXCEL_DATA[k]; }
+  return null;
+}
+
+function getWadiExcelData(wadiName) {
+  var norm = normalizeName(wadiName);
+  for (var k in WADI_EXCEL_DATA) { if (normalizeName(k) === norm) return WADI_EXCEL_DATA[k]; }
+  return null;
+}
+
+var CANOPY_DIAMETER = {'Acacia ampliceps':8,'Acacia aneura':9,'Acacia asak':10,'Acacia auriculiformis':4,'Acacia coriacea':5,'Acacia ehrenbergiana':11.5,'Acacia etbaica':10,'Acacia farnesiana':8,'Acacia gerrardii var. iraquensis':10,'Acacia gerrardii var. najdensis':10,'Acacia inaequilatera':3.5,'Acacia karroo':15,'Acacia ligulata':4.5,'Acacia nilotica var. nilotica':9,'Acacia nilotica var. tomentosa':9,'Acacia pruinocarpa':8,'Acacia pycnantha':8,'Acacia salicina':6,'Acacia saligna':6,'Acacia seyal':14,'Acacia tortilis subsp. raddiana':14,'Acacia tortilis subsp. spirocarpa':16,'Acacia victoriae':6,'Acacia xanthophloea':10,'Acoelorrhaphe wrightii':6,'Acokanthera schimperi':5.5,'Adansonia digitata':15,'Albizia lebbeck':18,'Albizia odoratissima':20,'Azadirachta indica':20,'Balanites aegyptiaca':5,'Barringtonia asiatica':10,'Bauhinia blakeana':20.5,'Bauhinia purpurea':10,'Bauhinia variegata':4,'Bismarckia nobilis':5,'Bombax ceiba':40,'Boswellia sacra':6,'Brachychiton acerifolius':8,'Brachychiton populneus':15,'Brachychiton Rupestris':15,'Breonadia salicina':8,'Bucida buceras':8,'Bulnesia arborea':9,'Bursera simaruba':10,'Callistemon citrinus':3.5,'Callistemon viminalis':4,'Carica papaya':3,'Cassia fistula':12,'Cassia glauca':7,'Cassia javanica':15,'Casuarina equisetifolia':8,'Celtis reticulata':8,'Ceratonia siliqua':10,'Cerbera odollam':8,'Cercidium floridum':4,'Chamaerops humilis':3,'Chilopsis linearis':9,'Chitalpa tashkentensis':5,'Chorisia speciosa':11.5,'Cinnamomum camphora':15,'Citharexylum quadrangulare':12,'Citrus paradisi':8,'Citrus aurantiifolia':3,'Citrus aurantium':5,'Citrus limon':5,'Citrus reticulata':5,'Citrus sinensis':8,'Coccoloba uvifera':5,'Cochlospermum religiosum':6,'Combretum aculeatum':2.5,'Commiphora myrrha':4,'Conocarpus erectus':12,'Conocarpus lancifolius':12,'Cordia myxa':10,'Cordia sebestena':10,'Cordia sinensis Lam':6,'Crescentia cujete':9,'Cupressus arizonica':4,'Cupressus sempervirens':5,'Cycas revoluta':2.5,'Dalbergia sissoo':9,'Delonix elata':10,'Delonix regia':15,'Derris indica':10,'Dobera glabra':10,'Dolichandrone serrulata':15,'Dracaena draco':8,'Dracaena ombet':4,'Eriobotrya japonica':10,'Erythrina indica':12,'Eucalyptus camaldulensis':10,'Eucalyptus globulus':10,'Eucalyptus gomphocephala':12,'Faidherbia albida':14,'Ficus altissima':16,'Ficus benghalensis':18,'Ficus benjamina':15,'Ficus carica':12,'Ficus ingens':12,'Ficus microcarpa var. nitida':20,'Ficus nitida':20,'Ficus pseudosycomorus':9,'Ficus religiosa':18,'Ficus rubiginosa':15,'Ficus salicifolia':10,'Ficus sycomorus':15,'Ficus vasta':20,'Ficus virens':15,'Grevillea robusta':20,'Hibiscus tiliaceus':10,'Hyphaene thebaica':10,'Jacaranda mimosifolia':10,'Jatropha multifida':3,'Kigelia africana':15,'Lagerstroemia floribunda':10,'Lagerstroemia indica':6,'Lagerstroemia loudonii':10,'Lagerstromia speciosa':20,'Lagunaria patersonii':9,'Latania loddigesii':4.5,'Leucaena leucocephala':10,'Leucaena retusa':5,'Limonia acidissima':8,'Maerua crassifolia':6,'Mangifera indica':30,'Melia azedarach':12,'Milletia brandisiana':16.5,'Millettia pinnata':18,'Millingtonia hortensis':15,'Mimusops laurifolia':18,'Moringa oleifera':8,'Moringa peregrina':8,'Morus alba':15,'Morus nigra':15,'Nuxia congesta':8,'Olea europaea':8,'Olneya tesota':9,'Pandanus utilis':6,'Parkinsonia aculeata':10,'Parkinsonia florida':6,'Peltophorum inerme':8,'Peltophorum pterocarpum':10,'Phoenix caespitosa':4,'Phoenix canariensis':7,'Phoenix dactylifera':10,'Phoenix roebelenii':3,'Phyllanthus embelica':18,'Phytolacca dioica':15,'Pinus halepensis':12,'Pistacia lentiscus':6.5,'Pistacia terebinthus':8,'Pithecellobium dulce':12,'Pithecellobium flexicaule':4.5,'Platycladus orientalis':9,'Plumeria obtusa':6,'Plumeria rubra f. acutifolia':6,'Podocarpus macrophyllus':4,'Polyalthia longifolia':4.5,'Pongamia pinnata':28,'Populus euphratica':10,'Prosopis alba':10.5,'Prosopis chilensis':10.5,'Prosopis cineraria':12,'Prosopis juliflora':9,'Prosopis koelziana':12,'Psidium guajava':6,'Pterocarpus indicus':30,'Punica granatum':8,'Rhus lancea':5,'Roystonea regia':9,'Sabal palmetto':6,'Salix acmophylla':12,'Salix mucronata':10,'Schinus molle':15,'Schinus terebinthifolius':10,'Schizolobium parahyba':20,'Searsia natalensis':9,'Searsia pendulina':9,'Searsia tripartita':6,'Senegalia laeta':10,'Senna alata':2,'Sideroxylon mascatense':8.5,'Sophora secundiflora':6.5,'Spathodea campanulata':15,'Sterculia foetida':25,'Streblus asper':10,'Strelitzia nicolai':4,'Swietenia macrophylla':25,'Syzygium cumini':8,'Tabebuia argentea':13.5,'Tabebuia chrysantha':11.5,'Tabebuia rosea':15,'Tamarindus indica':15,'Tamarix aphylla':12,'Tamarix arabica':5,'Tamarix gallica':7,'Tamarix nilotica':7,'Tarchonanthus camphoratus':6,'Tecomella undulata':10,'Terminalia arjuna':20,'Terminalia bentzoe':9,'Terminalia catappa':15,'Terminalia ivorensis':8,'Terminalia mantaly':8,'Thespesia populnea':10,'Thuja orientalis':18,'Tipuana tipu':14,'Vachellia farnesiana':8,'Vachellia gerrardii':10,'Vachellia gerrardii var. iraquensis':10,'Vachellia gerrardii var. najdensis':10,'Vachellia nilotica':9,'Vachellia nilotica var. nilotica':9,'Vachellia seyal':14,'Vachellia tortilis':14,'Vachellia xanthophloea':10,'Washingtonia filifera':5,'Washingtonia robusta':5,'Yucca elephantipes':6,'Ziziphus jujuba':8,'Ziziphus spina-christi':10,'Polyalthia longifolium':4,'Vachellia etbaica':10,'Senna surattensis':7};
+
+function getDiameter(species) {
+  if (species === 'Unknown' || species === 'No Name' || species === 'N/A') return 11.284;
+  if (CANOPY_DIAMETER[species] !== undefined) return CANOPY_DIAMETER[species];
+  var sl = species.toLowerCase();
+  for (var k in CANOPY_DIAMETER) { if (k.toLowerCase() === sl) return CANOPY_DIAMETER[k]; }
+  for (var k in CANOPY_DIAMETER) { if (sl.indexOf(k.toLowerCase()) === 0 || k.toLowerCase().indexOf(sl) === 0) return CANOPY_DIAMETER[k]; }
+  return '';
+}
+
+function getAttr(feature, key) {
+  var a = feature.attributes || {};
+  if (a[key] !== undefined) return a[key];
+  var keys = Object.keys(a);
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i].toLowerCase().replace(/[\s_]/g, '') === key.toLowerCase().replace(/[\s_]/g, '')) return a[keys[i]];
+  }
+  return null;
+}
+
+function fmt(n, decimals) {
+  if (n == null || isNaN(n)) return '—';
+  decimals = decimals || 0;
+  return Number(n).toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+}
+
+// ═══════════════════════════════════════════════════
+// Web Mercator → LatLng conversion (for Esri JSON geometry)
+// ═══════════════════════════════════════════════════
+function webMercToLatLng(x, y) {
+  var lng = (x / 20037508.34) * 180;
+  var lat = (y / 20037508.34) * 180;
+  lat = (180 / Math.PI) * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+  return [lat, lng];
+}
+
+var BOUNDARY_LAYERS = [];
+function getRings(geom) {
+  if (!geom) return [];
+  if (geom.rings) return geom.rings;
+  if (geom.coordinates) return geom.coordinates;
+  return [];
+}
+function ringsToLatLngs(geom) {
+  var rings = getRings(geom);
+  var allPoints = [];
+  rings.forEach(function(ring) {
+    var pts = ring.map(function(p) {
+      if (Math.abs(p[0]) > 180) return webMercToLatLng(p[0], p[1]);
+      return [p[1], p[0]];
+    });
+    allPoints.push(pts);
+  });
+  return allPoints;
+}
+function getGeometryCenter(geom) {
+  if (!geom || !geom.rings) return [24.7136, 46.6753]; // fallback Riyadh center
+  var ring = geom.rings[0];
+  var sumX = 0, sumY = 0;
+  for (var i = 0; i < ring.length; i++) {
+    sumX += ring[i][0];
+    sumY += ring[i][1];
+  }
+  var avgX = sumX / ring.length;
+  var avgY = sumY / ring.length;
+  // Check if Web Mercator (large numbers) or WGS84
+  if (Math.abs(avgX) > 180) {
+    return webMercToLatLng(avgX, avgY);
+  }
+  return [avgY, avgX]; // GeoJSON: [lng, lat] → [lat, lng]
+}
+
+// ═══════════════════════════════════════════════════
+// Initialize Slide 3 Maps
+// ═══════════════════════════════════════════════════
+function initMaps() {
+  var defaultCenter = [24.7136, 46.6753];
+  var defaultZoom = 15;
+
+  // Tile URLs
+  var tiles2020 = 'https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/32645/{z}/{y}/{x}';
+  var tiles2022 = 'https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/44710/{z}/{y}/{x}';
+  var tilesCurrent = 'https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/49999/{z}/{y}/{x}';
+
+  // Fallback: if Wayback fails, use current imagery
+  var fallback = tilesCurrent;
+
+  MAP_2020 = L.map('map2020', {center: defaultCenter, zoom: defaultZoom, zoomControl: false, attributionControl: false, preferCanvas: true});
+  L.tileLayer(tiles2020, {maxZoom: 19, errorTileUrl: ''}).addTo(MAP_2020);
+  L.tileLayer(fallback, {maxZoom: 19, opacity: 0}).addTo(MAP_2020); // hidden fallback
+
+  MAP_2022 = L.map('map2022', {center: defaultCenter, zoom: defaultZoom, zoomControl: false, attributionControl: false, preferCanvas: true});
+  L.tileLayer(tiles2022, {maxZoom: 19, errorTileUrl: ''}).addTo(MAP_2022);
+  L.tileLayer(fallback, {maxZoom: 19, opacity: 0}).addTo(MAP_2022);
+
+  MAP_2025 = L.map('map2025', {center: defaultCenter, zoom: defaultZoom, zoomControl: false, attributionControl: false, preferCanvas: true});
+  L.tileLayer(tilesCurrent, {maxZoom: 19}).addTo(MAP_2025);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP_2020);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP_2022);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP_2025);
+  var n2020=L.control({position:'topleft'});n2020.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};n2020.addTo(MAP_2020);
+  var n2022=L.control({position:'topleft'});n2022.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};n2022.addTo(MAP_2022);
+  var n2025=L.control({position:'topleft'});n2025.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};n2025.addTo(MAP_2025);
+
+  // Sync all 3 maps
+  syncMaps(MAP_2020, [MAP_2022, MAP_2025]);
+  syncMaps(MAP_2022, [MAP_2020, MAP_2025]);
+  syncMaps(MAP_2025, [MAP_2020, MAP_2022]);
+}
+
+function syncMaps(source, targets) {
+  source.on('move', function() {
+    if (SYNCING) return;
+    SYNCING = true;
+    var center = source.getCenter();
+    var zoom = source.getZoom();
+    targets.forEach(function(t) {
+      t.setView(center, zoom, {animate: false});
+    });
+    // Also sync slide 6 and 8 zoom maps if they exist
+    if (MAP6_ZOOM && MAP6_ZOOM !== source) MAP6_ZOOM.setView(center, zoom, {animate: false});
+    if (MAP8_ZOOM && MAP8_ZOOM !== source) MAP8_ZOOM.setView(center, zoom, {animate: false});
+    SYNCING = false;
+  });
+}
+
+function centerMapsOnRoad(proj) {
+  if (!MAP_2020) return;
+  BOUNDARY_LAYERS.forEach(function(l){l.remove()});
+  BOUNDARY_LAYERS = [];
+  var latLngs3=ringsToLatLngs(proj.geometry);var safeName3=getAttr(proj,'NAME_ENGLI').replace(/\s+/g,'_');latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillOpacity:0}).addTo(m);BOUNDARY_LAYERS.push(l)})});fetch('plantable_data/'+safeName3+'.geojson?v=3').then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}}).addTo(m);BOUNDARY_LAYERS.push(l)})}).catch(function(e){});
+  var clat = getAttr(proj, 'CENTER_LAT');
+  var clng = getAttr(proj, 'CENTER_LNG');
+  if (!clat || !clng) { var ll=ringsToLatLngs(proj.geometry); var lg=ll[0]; for(var i=1;i<ll.length;i++) if(ll[i].length>lg.length) lg=ll[i]; var b=L.latLngBounds(lg); clat=b.getCenter().lat; clng=b.getCenter().lng; }
+  var center = [clat, clng];
+  SYNCING = true;
+  MAP_2020.setView(center, 17);
+  MAP_2022.setView(center, 17);
+  MAP_2025.setView(center, 17);
+  setTimeout(function() { SYNCING = false; }, 100);
+}
+
+// ═══════════════════════════════════════════════════
+// Select Road → Update ALL slides
+// ═══════════════════════════════════════════════════
+function selectRoad(index) {
+  var proj = PROJECTS[index];
+  if (!proj) return;
+  var name = getAttr(proj, 'NAME_ENGLI') || '—';
+
+  // SLIDE 1
+  document.getElementById('roadName').textContent = name.replace(/_/g, ' ').replace(/\bRd\b/g, 'Road');
+
+  // SLIDE 3: footer + center maps
+  // footer name removed
+  if (proj.geometry) centerMapsOnRoad(proj);
+
+  var safeName = name.replace(/\s+/g, '_');
+  
+  // SLIDE 2, 5, 7 & 9: background image with fallback
+  var testImg = new Image();
+  testImg.onload = function() {
+    document.getElementById('s2Bg').style.backgroundImage = "url('fifth_page/" + safeName + ".jpg')";
+    document.getElementById('s5Bg').style.backgroundImage = "url('fifth_page/" + safeName + ".jpg')";
+    document.getElementById('s7Bg').style.backgroundImage = "url('fifth_page/" + safeName + ".jpg')";
+    document.getElementById('s9Bg').style.backgroundImage = "url('fifth_page/" + safeName + ".jpg')";
+  };
+  testImg.onerror = function() {
+    document.getElementById('s2Bg').style.backgroundImage = "url('second_page/king_khalid_road.jpg')";
+    document.getElementById('s5Bg').style.backgroundImage = "url('second_page/king_khalid_road.jpg')";
+    document.getElementById('s7Bg').style.backgroundImage = "url('second_page/king_khalid_road.jpg')";
+    document.getElementById('s9Bg').style.backgroundImage = "url('second_page/king_khalid_road.jpg')";
+  };
+  testImg.src = 'fifth_page/' + safeName + '.jpg';
+
+  // SLIDE 6: maps + boundary
+  if (proj.geometry) initSlide6Maps(proj);
+
+  // SLIDE 8: mature canopy maps
+  if (proj.geometry) initSlide8Maps(proj);
+
+  var exData = getExcelData(name);
+  populateKpiTables(exData);
+
+  loadSlide4Species(safeName, exData);
+  var bName = document.getElementById('s8BoundaryName'); if(bName) bName.textContent = 'Project Boundary';
+
+  // SLIDE 10: road photo + text (ALL from Excel)
+  var dName = name.replace(/_/g, ' ').replace(/\bRd\b/g, 'Road');
+  document.getElementById('s10Para').innerHTML = buildKpiParagraph(exData, dName);
+  var s10img = document.getElementById('s10Photo');
+  var testImg10 = new Image();
+  testImg10.onload = function() { s10img.src = 'slide_10/input_images/' + name + '.jpg'; s10img.style.display=''; };
+  testImg10.onerror = function() { s10img.src = 'slide_10/input_images/King Khalid Rd.jpg'; s10img.style.display=''; };
+  testImg10.src = 'slide_10/input_images/' + name + '.jpg';
+
+  window.SELECTED = proj;
+  window.SELECTED_INDEX = index;
+  console.log('Selected:', name);
+}
+
+// ── SLIDE 10: KPI summary paragraph (shared by roads and wadis) ──
+function buildKpiParagraph(exData, dName) {
+  if (!exData) return '';
+  var status = exData.maturePct < exData.plannedKpi ? 'slightly below' : 'exceeds';
+  var para = '<ul style="list-style:disc;padding-left:20px;margin:0;line-height:2.2">';
+  para += '<li><b>' + dName + '</b> currently achieves a estimated KPI of <b>' + exData.maturePct + '%</b> with <b>' + fmt(exData.curTrees) + '</b> existing trees mature, which is ' + status + ' the Green Riyadh target KPI of <b>' + exData.plannedKpi + '%</b>.</li>';
+  para += '<li style="margin-top:6px">An estimated <b>' + fmt(exData.treesToPlant) + '</b> additional trees are required to achieve the <b>' + exData.plannedKpi + '%</b> canopy cover KPI.</li>';
+  para += '<li style="margin-top:6px">The assessment identified <b>' + fmt(exData.additional) + '</b> feasible planting opportunities. Full implementation would increase the tree population to approximately <b>' + fmt(exData.totalTrees) + '</b> trees and raise canopy cover to an estimated <b>' + exData.futureKpi + '%</b>, exceeding the Green Riyadh target by a substantial margin.</li>';
+  para += '</ul>';
+  return para;
+}
+
+// ── SLIDE 6 & 8: Populate KPI tables (from Excel, or placeholders if none) ──
+function populateKpiTables(exData) {
+  var s6kv = document.getElementById('s6KpiVal2'); if(s6kv) s6kv.textContent = exData ? exData.plannedKpi + ' %' : '12 %';
+  var s8kv = document.getElementById('s8KpiVal'); if(s8kv) s8kv.textContent = exData ? exData.plannedKpi + ' %' : '12 %';
+  document.getElementById('s6CanopyProj').textContent = exData ? fmt(exData.curCanopy) + ' m²' : '–';
+  document.getElementById('s6PctProj').textContent = exData ? exData.currentPct + ' %' : '–';
+  document.getElementById('s6AreaProj').textContent = exData ? fmt(exData.project) + ' m²' : '–';
+  document.getElementById('s6AreaPlant').textContent = exData ? fmt(exData.plantable) + ' m²' : '–';
+
+  document.getElementById('s8AreaProj').textContent = exData ? fmt(exData.project) + ' m²' : '–';
+  document.getElementById('s8AreaPlant').textContent = exData ? fmt(exData.plantable) + ' m²' : '–';
+  document.getElementById('s8AreaAvail').textContent = exData ? fmt(exData.available) + ' m²' : '–';
+  document.getElementById('s8CanopyProj').textContent = exData ? fmt(exData.matCanopy) + ' m²' : '–';
+  document.getElementById('s8PotTrees').textContent = exData ? fmt(exData.additional) : '–';
+  document.getElementById('s8PotCanopy').textContent = exData ? fmt(exData.addCanopy) + ' m²' : '–';
+  document.getElementById('s8PotKpi').textContent = exData ? exData.futureKpi + ' %' : '–';
+  document.getElementById('s8PctProj').textContent = exData ? exData.maturePct + ' %' : '–';
+}
+
+// ═══════════════════════════════════════════════════
+// Select Wadi → boundary only (no plantable/canopy/species/KPI data yet)
+// ═══════════════════════════════════════════════════
+function selectWadi(index) {
+  var proj = WADI_PROJECTS[index];
+  if (!proj) return;
+  var name = getAttr(proj, 'NAME_ENGLI') || '—';
+  var safeName = name.replace(/\s+/g, '_');
+
+  // SLIDE 1
+  document.getElementById('roadName').textContent = name;
+
+  // SLIDE 3: center maps on wadi boundary (plantable/canopy overlays simply won't exist yet)
+  if (proj.geometry) centerMapsOnRoad(proj);
+
+  // SLIDE 2, 5, 7 & 9: fixed wadi divider images
+  document.getElementById('s2Bg').style.backgroundImage = "url('wadies_work/introduction_wadi.jpg')";
+  document.getElementById('s5Bg').style.backgroundImage = "url('wadies_work/current_canopy_wadis.jpg')";
+  document.getElementById('s7Bg').style.backgroundImage = "url('wadies_work/mature_canopy_wadi.jpg')";
+  document.getElementById('s9Bg').style.backgroundImage = "url('wadies_work/consulion_wadi.jpg')";
+
+  // SLIDE 6: maps + boundary (data layers 404 silently until wadi GeoJSON data exists)
+  if (proj.geometry) initSlide6Maps(proj);
+
+  // SLIDE 8: mature canopy maps (boundary only, same reason)
+  if (proj.geometry) initSlide8Maps(proj);
+
+  var exData = getWadiExcelData(name);
+  populateKpiTables(exData);
+
+  loadSlide4Species(safeName, exData);
+  var bName = document.getElementById('s8BoundaryName'); if(bName) bName.textContent = 'Project Boundary';
+
+  // SLIDE 10: fixed wadi photo + KPI paragraph (from Excel)
+  document.getElementById('s10Para').innerHTML = buildKpiParagraph(exData, name);
+  var s10img = document.getElementById('s10Photo');
+  s10img.src = 'wadies_work/Introduction_2_wadi.jpg';
+  s10img.style.display = '';
+
+  window.SELECTED = proj;
+  window.SELECTED_INDEX = index;
+  console.log('Selected wadi:', name);
+}
+
+// ═══════════════════════════════════════════════════
+// Load JSON + Populate Dropdown
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize maps
+  initMaps();
+
+  var excelReady = loadExcelData();
+
+  fetch('Projects_boundry.json?v=2')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var features = data.features || [];
+      PROJECTS = features.map(function(f) {
+        return { attributes: f.attributes || f.properties, geometry: f.geometry };
+      });
+      PROJECTS.sort(function(a, b) {
+        return (getAttr(a, 'NAME_ENGLI') || '').localeCompare(getAttr(b, 'NAME_ENGLI') || '');
+      });
+
+      var dd = document.getElementById('dd');
+      dd.innerHTML = '<option value="">— Select Road —</option>';
+      PROJECTS.forEach(function(p, i) {
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = (getAttr(p, 'NAME_ENGLI') || 'Unknown').replace(/_/g, ' ').replace(/\bRd\b/g, 'Road');
+        dd.appendChild(opt);
+      });
+
+      // Wait for Excel data before first render, so tables aren't blank on load
+      return excelReady.then(function() {
+        for (var i = 0; i < PROJECTS.length; i++) {
+          if ((getAttr(PROJECTS[i], 'NAME_ENGLI') || '').indexOf('King Khalid') !== -1) {
+            dd.value = i;
+            selectRoad(i);
+            break;
+          }
+        }
+      });
+    })
+    .then(function() {
+      // Refresh map sizes after DOM is ready
+      setTimeout(function() {
+        if (MAP_2020) MAP_2020.invalidateSize();
+        if (MAP_2022) MAP_2022.invalidateSize();
+        if (MAP_2025) MAP_2025.invalidateSize();
+      }, 500);
+    })
+    .catch(function(err) {
+      console.error('Error loading Projects_boundry.json?v=2:', err);
+      document.getElementById('dd').innerHTML = '<option value="">Error loading data</option>';
+    });
+
+  fetch('Wadis_boundary.json?v=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var features = data.features || [];
+      WADI_PROJECTS = features.map(function(f) {
+        return { attributes: f.attributes || f.properties, geometry: f.geometry };
+      });
+      WADI_PROJECTS.sort(function(a, b) {
+        return (getAttr(a, 'NAME_ENGLI') || '').localeCompare(getAttr(b, 'NAME_ENGLI') || '');
+      });
+    })
+    .catch(function(err) { console.error('Error loading Wadis_boundary.json:', err); });
+
+  function populateDropdown() {
+    var dd = document.getElementById('dd');
+    var list = CURRENT_TYPE === 'wadi' ? WADI_PROJECTS : PROJECTS;
+    dd.innerHTML = '<option value="">— Select ' + (CURRENT_TYPE === 'wadi' ? 'Wadi' : 'Road') + ' —</option>';
+    list.forEach(function(p, i) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      var label = getAttr(p, 'NAME_ENGLI') || 'Unknown';
+      if (CURRENT_TYPE !== 'wadi') label = label.replace(/_/g, ' ').replace(/\bRd\b/g, 'Road');
+      opt.textContent = label;
+      dd.appendChild(opt);
+    });
+    if (list.length > 0) {
+      dd.value = 0;
+      if (CURRENT_TYPE === 'wadi') selectWadi(0); else selectRoad(0);
+    }
+  }
+
+  document.getElementById('ddType').addEventListener('change', function(e) {
+    CURRENT_TYPE = e.target.value;
+    populateDropdown();
+  });
+
+  document.getElementById('dd').addEventListener('change', function(e) {
+    if (e.target.value === '') return;
+    var idx = parseInt(e.target.value);
+    if (CURRENT_TYPE === 'wadi') selectWadi(idx); else selectRoad(idx);
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// PDF Generation
+// ═══════════════════════════════════════════════════
+async function generatePDF() {
+  var ov = document.getElementById('loadingOverlay');
+  var lt = document.getElementById('loadingText');
+  ov.classList.add('active');
+
+  // Reset all maps to correct position before capture
+  var allMaps = [MAP_2020, MAP_2022, MAP_2025, MAP6_ZOOM, MAP6_OVER, MAP8_ZOOM, MAP8_OVER];
+  allMaps.forEach(function(m) { if (m) m.invalidateSize(); });
+
+  /*
+  if (window.SELECTED) {
+    var clat = getAttr(window.SELECTED, 'CENTER_LAT');
+    var clng = getAttr(window.SELECTED, 'CENTER_LNG');
+    if (clat && clng) {
+      var center = [clat, clng];
+      if (MAP_2020) MAP_2020.setView(center, 17, {animate: false});
+      if (MAP_2022) MAP_2022.setView(center, 17, {animate: false});
+      if (MAP_2025) MAP_2025.setView(center, 17, {animate: false});
+      if (MAP6_ZOOM) MAP6_ZOOM.setView(center, 17, {animate: false});
+      if (MAP8_ZOOM) MAP8_ZOOM.setView(center, 17, {animate: false});
+    }
+  }*/
+
+  await new Promise(function(r) { setTimeout(r, 1000); });
+
+  var jsPDF = window.jspdf.jsPDF;
+  var pdf = new jsPDF({orientation:'landscape',unit:'px',format:[1280,720]});
+  var slides = document.querySelectorAll('.slide');
+  for (var i = 0; i < slides.length; i++) {
+    lt.textContent = 'Rendering slide ' + (i+1) + ' of ' + slides.length + '...';
+    await new Promise(function(r) { setTimeout(r, 300); });
+    var canvas = await html2canvas(slides[i], {scale:2,useCORS:true,allowTaint:true,backgroundColor:'#ffffff',width:1280,height:720});
+    var img = canvas.toDataURL('image/jpeg', 0.92);
+    if (i > 0) pdf.addPage([1280,720],'landscape');
+    pdf.addImage(img,'JPEG',0,0,1280,720);
+  }
+  var nm = document.getElementById('roadName').textContent || 'Report';
+  pdf.save('KPI_' + nm.replace(/\s+/g,'_') + '.pdf');
+  ov.classList.remove('active');
+}
+// ═══════════════════════════════════════════════════
+// Slide 6: Current Canopy Maps
+// ═══════════════════════════════════════════════════
+var MAP6_ZOOM, MAP6_OVER, S6_LAYERS = [];
+
+function initSlide6Maps(proj) {
+  if (MAP6_ZOOM) { MAP6_ZOOM.remove(); MAP6_ZOOM = null; }
+  if (MAP6_OVER) { MAP6_OVER.remove(); MAP6_OVER = null; }
+
+  var latLngs = ringsToLatLngs(proj.geometry);
+  if (latLngs.length === 0) return;
+  var clat = getAttr(proj, 'CENTER_LAT');
+  var clng = getAttr(proj, 'CENTER_LNG');
+  if (!clat || !clng) { var lg=latLngs[0]; for(var i=1;i<latLngs.length;i++) if(latLngs[i].length>lg.length) lg=latLngs[i]; var b=L.latLngBounds(lg); clat=b.getCenter().lat; clng=b.getCenter().lng; } var center = [clat, clng];
+  var allPts = [];
+  latLngs.forEach(function(r) { allPts = allPts.concat(r); });
+  var bounds = L.latLngBounds(allPts);
+
+  // Map 1: Zoomed in
+  MAP6_ZOOM = L.map('map6Zoom', {center: center, zoom: 17, zoomControl: false, attributionControl: false, preferCanvas: true});
+  L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP6_ZOOM);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP6_ZOOM);
+  var nc6=L.control({position:'topleft'});nc6.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc6.addTo(MAP6_ZOOM);
+  
+
+  // Project boundary - black
+  latLngs.forEach(function(ring) {
+    L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP6_ZOOM);
+  });
+
+  // Load data layers (Plantable, Canopy Current, Tree Species)
+  var safeName6 = getAttr(proj, 'NAME_ENGLI').replace(/\s+/g, '_');
+  loadSlide6Layers(safeName6, MAP6_ZOOM);
+
+  // Map 2: Overview
+  MAP6_OVER = L.map('map6Overview', {center: center, zoom: 14, zoomControl: false, attributionControl: false, scrollWheelZoom: true, dragging: true, preferCanvas: true});
+  L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP6_OVER);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP6_OVER);
+  var nc6o=L.control({position:'topleft'});nc6o.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc6o.addTo(MAP6_OVER);
+  latLngs.forEach(function(ring) {
+    L.polygon(ring, {color: '#4CAF50', weight: 3, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP6_OVER);
+  });
+  MAP6_OVER.fitBounds(bounds, {padding: [15, 15]});
+
+  // Red extent box
+  var extentRect = L.rectangle(MAP6_ZOOM.getBounds(), {color: '#e74c3c', weight: 2, fill: false, dashArray: '5,3'}).addTo(MAP6_OVER);
+  MAP6_ZOOM.on('moveend', function() {
+    var zb=MAP6_ZOOM.getBounds();var minSize=0.01;var c6=zb.getCenter();if(zb.getNorth()-zb.getSouth()<minSize){zb=L.latLngBounds([c6.lat-minSize/2,c6.lng-minSize/2],[c6.lat+minSize/2,c6.lng+minSize/2]);}extentRect.setBounds(zb);
+  });
+
+  // Sync MAP6_ZOOM back to slide 3 maps
+  MAP6_ZOOM.on('move', function() {
+    if (SYNCING) return;
+    SYNCING = true;
+    var c = MAP6_ZOOM.getCenter();
+    var z = MAP6_ZOOM.getZoom();
+    [MAP_2020, MAP_2022, MAP_2025].forEach(function(m) { if(m) m.setView(c, z, {animate:false}); });
+    if (MAP8_ZOOM) MAP8_ZOOM.setView(c, z, {animate:false});
+    SYNCING = false;
+  });
+
+  setTimeout(function() {
+    MAP6_ZOOM.invalidateSize();
+    MAP6_OVER.invalidateSize();
+  }, 300);
+}
+// ═══════════════════════════════════════════════════
+var S6_DATA_LAYERS = [];
+
+function loadSlide6Layers(safeName, map) {
+  S6_DATA_LAYERS.forEach(function(l) { if(l) map.removeLayer(l); });
+  S6_DATA_LAYERS = [null, null, null];
+
+  // 0. Plantable Area - RED boundary (#FF0000)
+  fetch('plantable_data/' + safeName + '.geojson')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        style: {color: '#FF0000', weight: 2, fillOpacity: 0}
+      }).addTo(map);
+      S6_DATA_LAYERS[0] = lyr;
+    }).catch(function(e) { console.log('No plantable data:', safeName); });
+
+  // 1. Canopy Current - GREEN fill (#38A800)
+  fetch('canopy_current_data/' + safeName + '.geojson?v=3')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        style: {color: '#38A800', weight: 1, fillColor: '#38A800', fillOpacity: 0.5}
+      }).addTo(map);
+      S6_DATA_LAYERS[1] = lyr;
+    }).catch(function(e) { console.log('No canopy current:', safeName); });
+
+  // 2. Tree Species - ORANGE dots (#FFAA00)
+  fetch('species_data/' + safeName + '.geojson')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        pointToLayer: function(f, ll) {
+          return L.circleMarker(ll, {radius: 2, color: getSpeciesColor(f.properties.species || f.properties.Species || 'Unknown'), fillColor: getSpeciesColor(f.properties.species || f.properties.Species || 'Unknown'), fillOpacity: 0.9, weight: 0.5});
+        }
+      }).addTo(map);
+      S6_DATA_LAYERS[2] = lyr;
+	  var sCounts = {};
+      data.features.forEach(function(f) { var s=f.properties.species||f.properties.Species||'Unknown'; sCounts[s]=(sCounts[s]||0)+1; });
+      var top3 = Object.keys(sCounts).sort(function(a,b){return sCounts[b]-sCounts[a];}).slice(0,3);
+      var legHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
+      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
+      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>';
+      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div><div class="s6-legend-item"><div class="ctx-view"></div>Context View</div><br>';
+      legHTML += '</div><div class="s6-legend" style="margin-top:-6px"><span style="font-weight:700;font-size:9px">Tree Species:</span>'; top3.forEach(function(sp) { var spName = (sp==='Unknown'||sp==='No Name'||sp==='N/A') ? 'Unknown Species' : sp; legHTML += '<div class="s6-legend-item"><div class="s6-legend-dot" style="background:'+getSpeciesColor(sp)+'"></div>'+spName+'</div>'; });
+      document.getElementById('s6Legend').innerHTML = legHTML;
+    }).catch(function(e) { console.log('No species data:', safeName); });
+}
+
+// ═══════════════════════════════════════════════════
+// Toggle Layer Visibility (Slide 6)
+// ═══════════════════════════════════════════════════
+function toggleS6Layer(idx, btn) {
+  if (!S6_DATA_LAYERS[idx] || !MAP6_ZOOM) return;
+  if (MAP6_ZOOM.hasLayer(S6_DATA_LAYERS[idx])) {
+    MAP6_ZOOM.removeLayer(S6_DATA_LAYERS[idx]);
+    btn.style.opacity = '0.3';
+  } else {
+    MAP6_ZOOM.addLayer(S6_DATA_LAYERS[idx]);
+    btn.style.opacity = '1';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Slide 8: Mature Canopy Maps
+// ═══════════════════════════════════════════════════
+var MAP8_ZOOM, MAP8_OVER;
+var S8_DATA_LAYERS = [];
+
+function initSlide8Maps(proj) {
+  if (MAP8_ZOOM) { MAP8_ZOOM.remove(); MAP8_ZOOM = null; }
+  if (MAP8_OVER) { MAP8_OVER.remove(); MAP8_OVER = null; }
+
+  var latLngs = ringsToLatLngs(proj.geometry);
+  if (latLngs.length === 0) return;
+  var clat = getAttr(proj, 'CENTER_LAT');
+  var clng = getAttr(proj, 'CENTER_LNG');
+  var center = (clat && clng) ? [clat, clng] : [latLngs[0][0][0], latLngs[0][0][1]];
+  var allPts = [];
+  latLngs.forEach(function(r) { allPts = allPts.concat(r); });
+  var bounds = L.latLngBounds(allPts);
+
+  // Map 1: Zoomed in
+  MAP8_ZOOM = L.map('map8Zoom', {center: center, zoom: 17, zoomControl: false, attributionControl: false, preferCanvas: true});
+  L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP8_ZOOM);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP8_ZOOM);
+  var nc8=L.control({position:'topleft'});nc8.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc8.addTo(MAP8_ZOOM);
+  
+
+  // Project boundary - black
+  latLngs.forEach(function(ring) {
+    L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP8_ZOOM);
+  });
+
+  // Load data layers (Plantable, Canopy Mature, Additional Trees)
+  var safeName8 = getAttr(proj, 'NAME_ENGLI').replace(/\s+/g, '_');
+  loadSlide8Layers(safeName8, MAP8_ZOOM);
+
+  // Map 2: Overview
+  MAP8_OVER = L.map('map8Overview', {center: center, zoom: 14, zoomControl: false, attributionControl: false, scrollWheelZoom: true, dragging: true, preferCanvas: true});
+  L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP8_OVER);
+  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP8_OVER);
+  var nc8o=L.control({position:'topleft'});nc8o.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc8o.addTo(MAP8_OVER);
+  latLngs.forEach(function(ring) {
+    L.polygon(ring, {color: '#4CAF50', weight: 3, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP8_OVER);
+  });
+  MAP8_OVER.fitBounds(bounds, {padding: [15, 15]});
+
+  // Red extent box
+  var extentRect8 = L.rectangle(MAP8_ZOOM.getBounds(), {color: '#e74c3c', weight: 2, fill: false, dashArray: '5,3'}).addTo(MAP8_OVER);
+  MAP8_ZOOM.on('moveend', function() {
+    var zb8=MAP8_ZOOM.getBounds();var minSize8=0.01;var c8=zb8.getCenter();if(zb8.getNorth()-zb8.getSouth()<minSize8){zb8=L.latLngBounds([c8.lat-minSize8/2,c8.lng-minSize8/2],[c8.lat+minSize8/2,c8.lng+minSize8/2]);}extentRect8.setBounds(zb8);
+  });
+
+  // Sync MAP8_ZOOM back to slide 3 and slide 6 maps
+  MAP8_ZOOM.on('move', function() {
+    if (SYNCING) return;
+    SYNCING = true;
+    var c = MAP8_ZOOM.getCenter();
+    var z = MAP8_ZOOM.getZoom();
+    [MAP_2020, MAP_2022, MAP_2025].forEach(function(m) { if(m) m.setView(c, z, {animate:false}); });
+    if (MAP6_ZOOM) MAP6_ZOOM.setView(c, z, {animate:false});
+    SYNCING = false;
+  });
+
+  setTimeout(function() {
+    MAP8_ZOOM.invalidateSize();
+    MAP8_OVER.invalidateSize();
+  }, 300);
+}
+
+function loadSlide8Layers(safeName, map) {
+  S8_DATA_LAYERS.forEach(function(l) { if(l) map.removeLayer(l); });
+  S8_DATA_LAYERS = [null, null, null];
+
+  // 0. Plantable Area - RED plain boundary
+  fetch('plantable_data/' + safeName + '.geojson')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        style: {color: '#FF0000', weight: 2, fillOpacity: 0}
+      }).addTo(map);
+      S8_DATA_LAYERS[0] = lyr;
+    }).catch(function(e) { console.log('No plantable data:', safeName); });
+
+  // 1. Canopy Mature - DARK GREEN fill (#1D753B)
+  fetch('canopy_mature_data/' + safeName + '.geojson?v=3')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        style: {color: '#1D753B', weight: 1, fillColor: '#1D753B', fillOpacity: 0.5}
+      }).addTo(map);
+      S8_DATA_LAYERS[1] = lyr;
+    }).catch(function(e) { console.log('No canopy mature:', safeName); });
+
+  // 2. Additional Trees - LIGHT GREEN dots (#AAFF00)
+  fetch('additional_trees_data/' + safeName + '.geojson?v=3')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        style: {color: '#AAFF00', weight: 1, fillColor: '#AAFF00', fillOpacity: 0.6},
+        pointToLayer: function(f, ll) {
+          return L.circleMarker(ll, {radius: 3, color: '#AAFF00', fillColor: '#AAFF00', fillOpacity: 0.8, weight: 1});
+        }
+      }).addTo(map);
+      S8_DATA_LAYERS[2] = lyr;
+    }).catch(function(e) { console.log('No additional trees:', safeName); });
+}
+
+function toggleS8Layer(idx, btn) {
+  if (!S8_DATA_LAYERS[idx] || !MAP8_ZOOM) return;
+  if (MAP8_ZOOM.hasLayer(S8_DATA_LAYERS[idx])) {
+    MAP8_ZOOM.removeLayer(S8_DATA_LAYERS[idx]);
+    btn.style.opacity = '0.3';
+  } else {
+    MAP8_ZOOM.addLayer(S8_DATA_LAYERS[idx]);
+    btn.style.opacity = '1';
+  }
+}
+function loadSlide4Species(safeName, exData) {
+  var table = document.querySelector('#slide4 .s4-table tbody');
+  var tfoot = document.querySelector('#slide4 .s4-table tfoot');
+  var matRow = '<tr style="font-weight:700;border-top:1px solid #22763C;color:#22763C"><td style="font-size:8.5px;padding:3px 3px;white-space:nowrap;overflow:visible">Calculated Mature Canopy Area</td><td></td><td></td><td></td><td style="font-size:8.5px;padding:3px 3px">' + (exData ? fmt(exData.matCanopy) + ' **' : '–') + '</td></tr>';
+  if (table) table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:10px;color:#999">No data available</td></tr>' + matRow;
+  if (tfoot) tfoot.style.display = 'none';
+  fetch('species_data/' + safeName + '.geojson?v=3')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var counts = {};
+      data.features.forEach(function(f) {
+        var sp = f.properties.species || f.properties.Species || 'Unknown';
+        counts[sp] = (counts[sp] || 0) + 1;
+      });
+      var sorted = Object.keys(counts).sort(function(a,b) { return counts[b] - counts[a]; });
+      var total = data.features.length;
+      var rowCount = sorted.length;
+
+      // Auto-adjust font size based on row count
+      var fontSize = rowCount > 30 ? 7 : 8.5;
+      var lineH = rowCount > 30 ? 1.7 : 1.3;
+      var padY = rowCount > 30 ? 0 : 1;
+
+      var tbody = '';
+      var grandTotalArea = 0;
+      sorted.forEach(function(sp) {
+        var diam = getDiameter(sp);
+        var diamStr = (typeof diam === 'number') ? Math.round(diam*10)/10 : ''; if(diamStr === '') console.log('NO DIAMETER:', sp);
+        var perTreeArea = (typeof diam === 'number') ? Math.round(Math.PI*Math.pow(diam/2,2)) : null;
+        var areaVal = (typeof diam === 'number') ? Math.round(Math.PI*Math.pow(diam/2,2)*counts[sp]) : null;
+        if (areaVal !== null) grandTotalArea += areaVal;
+        tbody += '<tr><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + sp + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + counts[sp].toLocaleString() + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + diamStr + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + (perTreeArea !== null ? perTreeArea.toLocaleString() : '') + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + (areaVal !== null ? areaVal.toLocaleString() : '') + '</td></tr>';
+      });
+      tbody += '<tr style="font-weight:700;border-top:2px solid #22763C;color:#22763C"><td style="font-size:'+(fontSize+1)+'px;padding:3px 3px">Total</td><td style="font-size:'+(fontSize+1)+'px;padding:3px 3px">' + total.toLocaleString() + '</td><td></td><td></td><td style="font-size:'+(fontSize+1)+'px;padding:3px 3px">' + grandTotalArea.toLocaleString() + ' *</td></tr>';
+      tbody += matRow;
+      var table = document.querySelector('#slide4 .s4-table tbody');
+      var tfoot = document.querySelector('#slide4 .s4-table tfoot');
+      if (table) table.innerHTML = tbody;
+      if (tfoot) tfoot.style.display = 'none';
+    }).catch(function(e) { console.log('No species data:', safeName); });
+}
+var SPECIES_COLORS = {};
+var SPECIES_PALETTE = ['#FFAA00','#FF5733','#00BCD4','#E91E63','#9C27B0','#4CAF50','#FF9800','#795548','#607D8B','#CDDC39','#3F51B5','#009688','#F44336','#2196F3','#8BC34A','#FFC107','#673AB7','#00ACC1','#D81B60','#558B2F'];
+
+function getSpeciesColor(species, counts) {
+  if (SPECIES_COLORS[species]) return SPECIES_COLORS[species];
+  var idx = Object.keys(SPECIES_COLORS).length % SPECIES_PALETTE.length;
+  SPECIES_COLORS[species] = SPECIES_PALETTE[idx];
+  return SPECIES_COLORS[species];
+}
+</script>
+</body>
+</html>
