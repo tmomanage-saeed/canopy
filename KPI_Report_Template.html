@@ -975,6 +975,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // PDF Generation
 // ═══════════════════════════════════════════════════
 async function generatePDF() {
+  // Open the tab synchronously (still inside the click event) so browser popup
+  // blockers allow it — opening it later after the async rendering below would get blocked.
+  var pdfWindow = window.open('', '_blank');
+  if (pdfWindow) { pdfWindow.document.write('Generating PDF, please wait…'); }
+
   var ov = document.getElementById('loadingOverlay');
   var lt = document.getElementById('loadingText');
   ov.classList.add('active');
@@ -1012,18 +1017,26 @@ async function generatePDF() {
   }
   var nm = document.getElementById('roadName').textContent || 'Report';
   var fileName = 'KPI_' + nm.replace(/\s+/g,'_') + '.pdf';
-  var dataUri = pdf.output('datauristring');
   ov.classList.remove('active');
   var blob = pdf.output('blob');
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
-  document.body.appendChild(dlOverlay); */
+
+  if (pdfWindow && !pdfWindow.closed) {
+    // Opens the PDF in the new tab (browser's built-in PDF viewer), where the
+    // user can view/print/save it themselves — works even when this page is
+    // embedded in an iframe (e.g. Experience Builder) that blocks forced downloads.
+    pdfWindow.location.href = url;
+  } else {
+    // Popup was blocked — fall back to a forced download in the current tab.
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); }, 1000);
+  }
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
 }
 // ═══════════════════════════════════════════════════
 // Slide 6: Current Canopy Maps
