@@ -95,6 +95,9 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
 .spinner{width:50px;height:50px;border:5px solid #e0e0e0;border-top-color:#2d8c30;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;color:#555;font-weight:500}
+.loading-bar-wrap{width:60%;max-width:460px;height:16px;background:#e6e6e6;border-radius:8px;overflow:hidden;display:none}
+.loading-bar{height:100%;width:0%;background:linear-gradient(90deg,#38A800,#1D753B);border-radius:8px;transition:width .25s linear}
+.loading-pct{font-size:16px;font-weight:700;color:#1D753B;display:none}
 
 /* ─── Print ─── */
 @media print{
@@ -199,6 +202,8 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
 <div class="loading" id="loadingOverlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loadingText">Generating PDF...</div>
+  <div class="loading-bar-wrap" id="loadingBarWrap"><div class="loading-bar" id="loadingBar"></div></div>
+  <div class="loading-pct" id="loadingPct">0%</div>
 </div>
 
 <!-- ─── Slides ─── -->
@@ -998,10 +1003,23 @@ async function generatePDF() {
     );
     pdfWindow.document.close();
   }
+  // Keep focus on this (main) window instead of the new tab. A single call right
+  // after window.open() can lose a race with the browser's own tab-switch, so
+  // pull focus back a couple more times over the next moment as a safety net.
+  window.focus();
+  setTimeout(function(){ window.focus(); }, 50);
+  setTimeout(function(){ window.focus(); }, 300);
 
   var ov = document.getElementById('loadingOverlay');
   var lt = document.getElementById('loadingText');
+  var barWrapEl = document.getElementById('loadingBarWrap');
+  var barEl = document.getElementById('loadingBar');
+  var pctEl = document.getElementById('loadingPct');
   ov.classList.add('active');
+  barWrapEl.style.display = 'block';
+  pctEl.style.display = 'block';
+  barEl.style.width = '0%';
+  pctEl.textContent = '0%';
 
   // Reset all maps to correct position before capture
   var allMaps = [MAP_2020, MAP_2022, MAP_2025, MAP6_ZOOM, MAP6_OVER, MAP8_ZOOM, MAP8_OVER];
@@ -1034,12 +1052,16 @@ async function generatePDF() {
     if (i > 0) pdf.addPage([1280,720],'landscape');
     pdf.addImage(img,'JPEG',0,0,1280,720);
 
+    var slidePct = Math.round((i+1) / slides.length * 100);
+    // Update this (main) window's own progress bar.
+    barEl.style.width = slidePct + '%';
+    pctEl.textContent = slidePct + '%';
+
     if (pdfWindow && !pdfWindow.closed) {
-      var slidePct = Math.round((i+1) / slides.length * 100);
-      var barEl = pdfWindow.document.getElementById('bar');
-      var pctEl = pdfWindow.document.getElementById('pct');
-      if (barEl) barEl.style.width = slidePct + '%';
-      if (pctEl) pctEl.textContent = slidePct + '%';
+      var tabBarEl = pdfWindow.document.getElementById('bar');
+      var tabPctEl = pdfWindow.document.getElementById('pct');
+      if (tabBarEl) tabBarEl.style.width = slidePct + '%';
+      if (tabPctEl) tabPctEl.textContent = slidePct + '%';
     }
   }
   var nm = document.getElementById('roadName').textContent || 'Report';
@@ -1058,19 +1080,25 @@ async function generatePDF() {
     // The progress bar was already tracking real per-slide render progress — just
     // finish it off and trigger the download, without rewriting the whole page.
     var titleEl = pdfWindow.document.getElementById('titleMsg');
-    var barEl = pdfWindow.document.getElementById('bar');
-    var pctEl = pdfWindow.document.getElementById('pct');
+    var tabBarEl2 = pdfWindow.document.getElementById('bar');
+    var tabPctEl2 = pdfWindow.document.getElementById('pct');
     var doneEl = pdfWindow.document.getElementById('done');
     var dlEl = pdfWindow.document.getElementById('manualDl');
     if (titleEl) titleEl.innerHTML = 'Downloading <b>' + fileName + '</b>';
-    if (barEl) barEl.style.width = '100%';
-    if (pctEl) pctEl.style.display = 'none';
+    if (tabBarEl2) tabBarEl2.style.width = '100%';
+    if (tabPctEl2) tabPctEl2.style.display = 'none';
     if (doneEl) doneEl.style.display = 'block';
     if (dlEl) {
       dlEl.href = dataUri;
       dlEl.download = fileName;
       dlEl.click();
     }
+    // Auto-close the tab shortly after — it only exists to escape the iframe's
+    // download restriction, the user shouldn't need to look at or dismiss it.
+    setTimeout(function(){
+      if (!pdfWindow.closed) pdfWindow.close();
+      window.focus();
+    }, 500);
   } else {
     // Popup was blocked — fall back to a forced download in the current tab.
     var a = document.createElement('a');
