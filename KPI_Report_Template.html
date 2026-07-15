@@ -982,23 +982,29 @@ document.addEventListener('DOMContentLoaded', function() {
 async function generatePDF() {
   // Open the tab synchronously (still inside the click event) so browser popup
   // blockers allow it — opening it later after the async rendering below would get blocked.
-  var pdfWindow = window.open('', '_blank');
+  // Window features (small size + explicit position) hint the browser to open this as
+  // a tiny separate popup window (near the download button, top-right of the screen)
+  // rather than a normal full-size visible tab — most desktop browsers honor this for
+  // window.open() calls that include size/position features.
+  var pdfWinW = 150, pdfWinH = 150;
+  var pdfWinLeft = Math.max(0, window.screen.width - pdfWinW - 20);
+  var pdfWindow = window.open('', 'pdfDownloadWindow', 'width=' + pdfWinW + ',height=' + pdfWinH + ',left=' + pdfWinLeft + ',top=80');
   if (pdfWindow) {
     pdfWindow.document.write(
       '<html><head><style>' +
-      'body{font-family:"Segoe UI",Poppins,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#fff}' +
-      '.title{font-size:19px;color:#222;margin-bottom:26px}' +
-      '.bar-wrap{width:60%;max-width:460px;height:16px;background:#e6e6e6;border-radius:8px;overflow:hidden}' +
-      '.bar{height:100%;width:0%;background:linear-gradient(90deg,#38A800,#1D753B);border-radius:8px;transition:width .25s linear}' +
-      '.pct{margin-top:14px;font-size:16px;font-weight:700;color:#1D753B}' +
-      '.done{display:none;font-size:22px;color:#1D753B;font-weight:700;margin-top:22px}' +
-      '.fallback{margin-top:18px;font-size:12px;color:#888}' +
+      'body{font-family:"Segoe UI",Poppins,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#fff;padding:6px;box-sizing:border-box;text-align:center}' +
+      '.title{font-size:10px;color:#222;margin-bottom:10px;line-height:1.3}' +
+      '.bar-wrap{width:90%;height:9px;background:#e6e6e6;border-radius:5px;overflow:hidden}' +
+      '.bar{height:100%;width:0%;background:linear-gradient(90deg,#38A800,#1D753B);border-radius:5px;transition:width .25s linear}' +
+      '.pct{margin-top:7px;font-size:11px;font-weight:700;color:#1D753B}' +
+      '.done{display:none;font-size:11px;color:#1D753B;font-weight:700;margin-top:8px;line-height:1.3}' +
+      '.fallback{margin-top:8px;font-size:8px;color:#888}' +
       '</style></head><body>' +
       '<div class="title" id="titleMsg">Preparing your PDF…</div>' +
       '<div class="bar-wrap"><div class="bar" id="bar"></div></div>' +
       '<div class="pct" id="pct">0%</div>' +
-      '<div class="done" id="done">&#10003; Download Complete!</div>' +
-      '<div class="fallback">If the download did not start, <a id="manualDl" href="#">click here</a>.</div>' +
+      '<div class="done" id="done">&#10003; Done!</div>' +
+      '<div class="fallback">Didn\'t start? <a id="manualDl" href="#">click here</a>.</div>' +
       '</body></html>'
     );
     pdfWindow.document.close();
