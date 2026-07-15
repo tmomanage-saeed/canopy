@@ -1016,7 +1016,7 @@ async function generatePDF() {
   ov.classList.remove('active');
   var dlOverlay = document.createElement('div');
   dlOverlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center';
-  dlOverlay.innerHTML = '<div style="background:#fff;padding:30px 40px;border-radius:12px;text-align:center"><h3 style="margin:0 0 15px;color:#22763C">PDF Ready!</h3><a href="' + dataUri + '" download="' + fileName + '" target="_top" style="background:#22763C;color:#fff;padding:12px 30px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:600;display:inline-block">Download PDF</a><br><span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#999;font-size:13px;margin-top:10px;display:inline-block">Close</span></div>';
+  dlOverlay.innerHTML = '<div style="background:#fff;padding:30px 40px;border-radius:12px;text-align:center"><h3 style="margin:0 0 15px;color:#22763C">PDF Ready!</h3><a href="' + dataUri + '" download="' + fileName + '" target="_top" style="background:#22763C;color:#fff;padding:12px 30px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:600;display:inline-block">Download PDF</a><br><a href="' + dataUri + '" target="_top" style="color:#22763C;font-size:12px;margin-top:8px;display:inline-block">Open PDF in new tab</a><br><span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#999;font-size:13px;margin-top:10px;display:inline-block">Close</span></div>';
   document.body.appendChild(dlOverlay);
 }
 // ═══════════════════════════════════════════════════
