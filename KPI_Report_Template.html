@@ -978,7 +978,26 @@ async function generatePDF() {
   // Open the tab synchronously (still inside the click event) so browser popup
   // blockers allow it — opening it later after the async rendering below would get blocked.
   var pdfWindow = window.open('', '_blank');
-  if (pdfWindow) { pdfWindow.document.write('Generating PDF, please wait…'); }
+  if (pdfWindow) {
+    pdfWindow.document.write(
+      '<html><head><style>' +
+      'body{font-family:"Segoe UI",Poppins,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#fff}' +
+      '.title{font-size:19px;color:#222;margin-bottom:26px}' +
+      '.bar-wrap{width:60%;max-width:460px;height:16px;background:#e6e6e6;border-radius:8px;overflow:hidden}' +
+      '.bar{height:100%;width:0%;background:linear-gradient(90deg,#38A800,#1D753B);border-radius:8px;transition:width .25s linear}' +
+      '.pct{margin-top:14px;font-size:16px;font-weight:700;color:#1D753B}' +
+      '.done{display:none;font-size:22px;color:#1D753B;font-weight:700;margin-top:22px}' +
+      '.fallback{margin-top:18px;font-size:12px;color:#888}' +
+      '</style></head><body>' +
+      '<div class="title" id="titleMsg">Preparing your PDF…</div>' +
+      '<div class="bar-wrap"><div class="bar" id="bar"></div></div>' +
+      '<div class="pct" id="pct">0%</div>' +
+      '<div class="done" id="done">&#10003; Download Complete!</div>' +
+      '<div class="fallback">If the download did not start, <a id="manualDl" href="#">click here</a>.</div>' +
+      '</body></html>'
+    );
+    pdfWindow.document.close();
+  }
 
   var ov = document.getElementById('loadingOverlay');
   var lt = document.getElementById('loadingText');
@@ -1014,6 +1033,14 @@ async function generatePDF() {
     var img = canvas.toDataURL('image/jpeg', 0.92);
     if (i > 0) pdf.addPage([1280,720],'landscape');
     pdf.addImage(img,'JPEG',0,0,1280,720);
+
+    if (pdfWindow && !pdfWindow.closed) {
+      var slidePct = Math.round((i+1) / slides.length * 100);
+      var barEl = pdfWindow.document.getElementById('bar');
+      var pctEl = pdfWindow.document.getElementById('pct');
+      if (barEl) barEl.style.width = slidePct + '%';
+      if (pctEl) pctEl.textContent = slidePct + '%';
+    }
   }
   var nm = document.getElementById('roadName').textContent || 'Report';
   var fileName = 'KPI_' + nm.replace(/\s+/g,'_') + '.pdf';
@@ -1025,34 +1052,22 @@ async function generatePDF() {
     // The new tab is a real top-level window (not inside the Experience Builder
     // iframe's sandbox), so a download link clicked THERE triggers an actual
     // save-to-disk instead of just opening the browser's PDF viewer.
-    pdfWindow.document.open();
-    pdfWindow.document.write(
-      '<html><head><style>' +
-      'body{font-family:"Segoe UI",Poppins,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#fff}' +
-      '.title{font-size:19px;color:#222;margin-bottom:26px}' +
-      '.bar-wrap{width:60%;max-width:460px;height:16px;background:#e6e6e6;border-radius:8px;overflow:hidden}' +
-      '.bar{height:100%;width:0%;background:linear-gradient(90deg,#38A800,#1D753B);border-radius:8px;transition:width .25s linear}' +
-      '.pct{margin-top:14px;font-size:16px;font-weight:700;color:#1D753B}' +
-      '.done{display:none;font-size:22px;color:#1D753B;font-weight:700;margin-top:22px}' +
-      '.fallback{margin-top:18px;font-size:12px;color:#888}' +
-      '</style></head><body>' +
-      '<div class="title">Downloading <b>' + fileName + '</b></div>' +
-      '<div class="bar-wrap"><div class="bar" id="bar"></div></div>' +
-      '<div class="pct" id="pct">0%</div>' +
-      '<div class="done" id="done">&#10003; Download Complete!</div>' +
-      '<div class="fallback">If the download did not start, <a id="manualDl" href="' + url + '" download="' + fileName + '">click here</a>.</div>' +
-      '<script>' +
-      'var bar=document.getElementById("bar"),pct=document.getElementById("pct"),done=document.getElementById("done");' +
-      'var p=0;var iv=setInterval(function(){' +
-      'p+=Math.random()*18;' +
-      'if(p>=100){p=100;clearInterval(iv);pct.style.display="none";done.style.display="block";}' +
-      'bar.style.width=p+"%";pct.textContent=Math.round(p)+"%";' +
-      '},150);' +
-      'document.getElementById("manualDl").click();' +
-      '<\/script>' +
-      '</body></html>'
-    );
-    pdfWindow.document.close();
+    // The progress bar was already tracking real per-slide render progress — just
+    // finish it off and trigger the download, without rewriting the whole page.
+    var titleEl = pdfWindow.document.getElementById('titleMsg');
+    var barEl = pdfWindow.document.getElementById('bar');
+    var pctEl = pdfWindow.document.getElementById('pct');
+    var doneEl = pdfWindow.document.getElementById('done');
+    var dlEl = pdfWindow.document.getElementById('manualDl');
+    if (titleEl) titleEl.innerHTML = 'Downloading <b>' + fileName + '</b>';
+    if (barEl) barEl.style.width = '100%';
+    if (pctEl) pctEl.style.display = 'none';
+    if (doneEl) doneEl.style.display = 'block';
+    if (dlEl) {
+      dlEl.href = url;
+      dlEl.download = fileName;
+      dlEl.click();
+    }
   } else {
     // Popup was blocked — fall back to a forced download in the current tab.
     var a = document.createElement('a');
