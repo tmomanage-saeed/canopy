@@ -189,10 +189,10 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
     Download PDF
   </button>
   <div style="display:flex;gap:4px;margin-left:8px">
-    <button class="s6-toggle" onclick="toggleS6Layer(0,this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plantable</button>
+    <button class="s6-toggle" onclick="toggleBoundaryAll(this)" style="border:2px solid #4CAF50;background:#fff;color:#4CAF50;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Boundary</button>
+    <button class="s6-toggle" onclick="togglePlantableAreaAll(this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plantable Area</button>
     <button class="s6-toggle" onclick="toggleS6Layer(1,this)" style="border:2px solid #38A800;background:#fff;color:#38A800;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Current</button>
     <button class="s6-toggle" onclick="toggleS6Layer(2,this)" style="border:2px solid #FFAA00;background:#fff;color:#FFAA00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Species</button>
-    <button class="s6-toggle" onclick="toggleS8Layer(0,this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plant-M</button>
     <button class="s6-toggle" onclick="toggleS8Layer(1,this)" style="border:2px solid #1D753B;background:#fff;color:#1D753B;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Mature</button>
     <button class="s6-toggle" onclick="toggleS8Layer(2,this)" style="border:2px solid #AAFF00;background:#fff;color:#AAFF00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Additional</button>
   </div>
@@ -640,7 +640,15 @@ function webMercToLatLng(x, y) {
   return [lat, lng];
 }
 
-var BOUNDARY_LAYERS = [];
+// Layers for the unified Boundary / Plantable Area toggle buttons.
+// Slide 3's layers span 3 maps at once, so each entry keeps its own map reference.
+var S3_BOUNDARY_LAYERS = []; // [{layer, map}]
+var S3_PLANTABLE_LAYERS = []; // [{layer, map}]
+var S6_BOUNDARY_LAYERS = []; // all on MAP6_ZOOM
+var S8_BOUNDARY_LAYERS = []; // all on MAP8_ZOOM
+var BOUNDARY_VISIBLE = true;
+var PLANTABLE_VISIBLE = true;
+
 function getRings(geom) {
   if (!geom) return [];
   if (geom.rings) return geom.rings;
@@ -732,9 +740,13 @@ function syncMaps(source, targets) {
 
 function centerMapsOnRoad(proj) {
   if (!MAP_2020) return;
-  BOUNDARY_LAYERS.forEach(function(l){l.remove()});
-  BOUNDARY_LAYERS = [];
-  var latLngs3=ringsToLatLngs(proj.geometry);var safeName3=getAttr(proj,'NAME_ENGLI').replace(/\s+/g,'_');latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillOpacity:0}).addTo(m);BOUNDARY_LAYERS.push(l)})});fetch('plantable_data/'+safeName3+'.geojson?v=3').then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}}).addTo(m);BOUNDARY_LAYERS.push(l)})}).catch(function(e){});
+  S3_BOUNDARY_LAYERS.forEach(function(p){p.layer.remove()});
+  S3_BOUNDARY_LAYERS = [];
+  S3_PLANTABLE_LAYERS.forEach(function(p){p.layer.remove()});
+  S3_PLANTABLE_LAYERS = [];
+  var latLngs3=ringsToLatLngs(proj.geometry);var safeName3=getAttr(proj,'NAME_ENGLI').replace(/\s+/g,'_');
+  latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillOpacity:0});if(BOUNDARY_VISIBLE)l.addTo(m);S3_BOUNDARY_LAYERS.push({layer:l,map:m})})});
+  fetch('plantable_data/'+safeName3+'.geojson?v=3').then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}});if(PLANTABLE_VISIBLE)l.addTo(m);S3_PLANTABLE_LAYERS.push({layer:l,map:m})})}).catch(function(e){});
   var clat = getAttr(proj, 'CENTER_LAT');
   var clng = getAttr(proj, 'CENTER_LNG');
   if (!clat || !clng) { var ll=ringsToLatLngs(proj.geometry); var lg=ll[0]; for(var i=1;i<ll.length;i++) if(ll[i].length>lg.length) lg=ll[i]; var b=L.latLngBounds(lg); clat=b.getCenter().lat; clng=b.getCenter().lng; }
@@ -1142,8 +1154,11 @@ function initSlide6Maps(proj) {
   
 
   // Project boundary - black
+  S6_BOUNDARY_LAYERS = [];
   latLngs.forEach(function(ring) {
-    L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP6_ZOOM);
+    var bl = L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15});
+    if (BOUNDARY_VISIBLE) bl.addTo(MAP6_ZOOM);
+    S6_BOUNDARY_LAYERS.push(bl);
   });
 
   // Load data layers (Plantable, Canopy Current, Tree Species)
@@ -1195,7 +1210,8 @@ function loadSlide6Layers(safeName, map) {
     .then(function(data) {
       var lyr = L.geoJSON(data, {
         style: {color: '#FF0000', weight: 2, fillOpacity: 0}
-      }).addTo(map);
+      });
+      if (PLANTABLE_VISIBLE) lyr.addTo(map);
       S6_DATA_LAYERS[0] = lyr;
     }).catch(function(e) { console.log('No plantable data:', safeName); });
 
@@ -1272,8 +1288,11 @@ function initSlide8Maps(proj) {
   
 
   // Project boundary - black
+  S8_BOUNDARY_LAYERS = [];
   latLngs.forEach(function(ring) {
-    L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP8_ZOOM);
+    var bl = L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15});
+    if (BOUNDARY_VISIBLE) bl.addTo(MAP8_ZOOM);
+    S8_BOUNDARY_LAYERS.push(bl);
   });
 
   // Load data layers (Plantable, Canopy Mature, Additional Trees)
@@ -1323,7 +1342,8 @@ function loadSlide8Layers(safeName, map) {
     .then(function(data) {
       var lyr = L.geoJSON(data, {
         style: {color: '#FF0000', weight: 2, fillOpacity: 0}
-      }).addTo(map);
+      });
+      if (PLANTABLE_VISIBLE) lyr.addTo(map);
       S8_DATA_LAYERS[0] = lyr;
     }).catch(function(e) { console.log('No plantable data:', safeName); });
 
@@ -1360,6 +1380,27 @@ function toggleS8Layer(idx, btn) {
     MAP8_ZOOM.addLayer(S8_DATA_LAYERS[idx]);
     btn.style.opacity = '1';
   }
+}
+
+// ═══════════════════════════════════════════════════
+// Unified Boundary / Plantable Area toggles — control slide 3 (all 3 maps),
+// slide 6 left/zoom map, and slide 8 left/zoom map together. Right/overview
+// maps on slides 6 & 8 are intentionally not affected.
+// ═══════════════════════════════════════════════════
+function toggleBoundaryAll(btn) {
+  BOUNDARY_VISIBLE = !BOUNDARY_VISIBLE;
+  S3_BOUNDARY_LAYERS.forEach(function(p) { if (BOUNDARY_VISIBLE) p.layer.addTo(p.map); else p.layer.remove(); });
+  S6_BOUNDARY_LAYERS.forEach(function(l) { if (BOUNDARY_VISIBLE) { if (MAP6_ZOOM) l.addTo(MAP6_ZOOM); } else l.remove(); });
+  S8_BOUNDARY_LAYERS.forEach(function(l) { if (BOUNDARY_VISIBLE) { if (MAP8_ZOOM) l.addTo(MAP8_ZOOM); } else l.remove(); });
+  btn.style.opacity = BOUNDARY_VISIBLE ? '1' : '0.3';
+}
+
+function togglePlantableAreaAll(btn) {
+  PLANTABLE_VISIBLE = !PLANTABLE_VISIBLE;
+  S3_PLANTABLE_LAYERS.forEach(function(p) { if (PLANTABLE_VISIBLE) p.layer.addTo(p.map); else p.layer.remove(); });
+  if (S6_DATA_LAYERS[0]) { if (PLANTABLE_VISIBLE) { if (MAP6_ZOOM) S6_DATA_LAYERS[0].addTo(MAP6_ZOOM); } else S6_DATA_LAYERS[0].remove(); }
+  if (S8_DATA_LAYERS[0]) { if (PLANTABLE_VISIBLE) { if (MAP8_ZOOM) S8_DATA_LAYERS[0].addTo(MAP8_ZOOM); } else S8_DATA_LAYERS[0].remove(); }
+  btn.style.opacity = PLANTABLE_VISIBLE ? '1' : '0.3';
 }
 function loadSlide4Species(safeName, exData) {
   var table = document.querySelector('#slide4 .s4-table tbody');
