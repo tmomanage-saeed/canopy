@@ -1151,7 +1151,7 @@ function initSlide6Maps(proj) {
   loadSlide6Layers(safeName6, MAP6_ZOOM);
 
   // Map 2: Overview
-  MAP6_OVER = L.map('map6Overview', {center: center, zoom: 14, zoomControl: false, attributionControl: false, scrollWheelZoom: true, dragging: true, preferCanvas: true});
+  MAP6_OVER = L.map('map6Overview', {center: center, zoom: 14, zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, tap: false, preferCanvas: true});
   L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP6_OVER);
   L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP6_OVER);
   var nc6o=L.control({position:'topleft'});nc6o.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc6o.addTo(MAP6_OVER);
@@ -1281,7 +1281,7 @@ function initSlide8Maps(proj) {
   loadSlide8Layers(safeName8, MAP8_ZOOM);
 
   // Map 2: Overview
-  MAP8_OVER = L.map('map8Overview', {center: center, zoom: 14, zoomControl: false, attributionControl: false, scrollWheelZoom: true, dragging: true, preferCanvas: true});
+  MAP8_OVER = L.map('map8Overview', {center: center, zoom: 14, zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, tap: false, preferCanvas: true});
   L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP8_OVER);
   L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP8_OVER);
   var nc8o=L.control({position:'topleft'});nc8o.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc8o.addTo(MAP8_OVER);
