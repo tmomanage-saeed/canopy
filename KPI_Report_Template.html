@@ -745,7 +745,7 @@ function centerMapsOnRoad(proj) {
   S3_PLANTABLE_LAYERS.forEach(function(p){p.layer.remove()});
   S3_PLANTABLE_LAYERS = [];
   var latLngs3=ringsToLatLngs(proj.geometry);var safeName3=getAttr(proj,'NAME_ENGLI').replace(/\s+/g,'_');
-  latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillOpacity:0});if(BOUNDARY_VISIBLE)l.addTo(m);S3_BOUNDARY_LAYERS.push({layer:l,map:m})})});
+  latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillColor:'#4CAF50',fillOpacity:0.10});if(BOUNDARY_VISIBLE)l.addTo(m);S3_BOUNDARY_LAYERS.push({layer:l,map:m})})});
   fetch('plantable_data/'+safeName3+'.geojson?v=3').then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}});if(PLANTABLE_VISIBLE)l.addTo(m);S3_PLANTABLE_LAYERS.push({layer:l,map:m})})}).catch(function(e){});
   var clat = getAttr(proj, 'CENTER_LAT');
   var clng = getAttr(proj, 'CENTER_LNG');
@@ -822,7 +822,7 @@ function buildKpiParagraph(exData, dName) {
   if (!exData) return '';
   var status = exData.maturePct < exData.plannedKpi ? 'slightly below' : 'exceeds';
   var para = '<ul style="list-style:disc;padding-left:20px;margin:0;line-height:2.2">';
-  para += '<li><b>' + dName + '</b> currently achieves a estimated KPI of <b>' + exData.maturePct + '%</b> with <b>' + fmt(exData.curTrees) + '</b> existing trees mature, which is ' + status + ' the Green Riyadh target KPI of <b>' + exData.plannedKpi + '%</b>.</li>';
+  para += '<li><b>' + dName + '</b> is projected to achieve a KPI of <b>' + exData.maturePct + '%</b> once the existing <b>' + fmt(exData.curTrees) + '</b> trees reach maturity, which is ' + status + ' the Green Riyadh target KPI of <b>' + exData.plannedKpi + '%</b>.</li>';
   para += '<li style="margin-top:6px">An estimated <b>' + fmt(exData.treesToPlant) + '</b> additional trees are required to achieve the <b>' + exData.plannedKpi + '%</b> canopy cover KPI.</li>';
   para += '<li style="margin-top:6px">The assessment identified <b>' + fmt(exData.additional) + '</b> feasible planting opportunities. Full implementation would increase the tree population to approximately <b>' + fmt(exData.totalTrees) + '</b> trees and raise canopy cover to an estimated <b>' + exData.futureKpi + '%</b>, exceeding the Green Riyadh target by a substantial margin.</li>';
   para += '</ul>';
@@ -1156,7 +1156,7 @@ function initSlide6Maps(proj) {
   // Project boundary - black
   S6_BOUNDARY_LAYERS = [];
   latLngs.forEach(function(ring) {
-    var bl = L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15});
+    var bl = L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.10});
     if (BOUNDARY_VISIBLE) bl.addTo(MAP6_ZOOM);
     S6_BOUNDARY_LAYERS.push(bl);
   });
@@ -1171,7 +1171,7 @@ function initSlide6Maps(proj) {
   L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP6_OVER);
   var nc6o=L.control({position:'topleft'});nc6o.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc6o.addTo(MAP6_OVER);
   latLngs.forEach(function(ring) {
-    L.polygon(ring, {color: '#4CAF50', weight: 3, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP6_OVER);
+    L.polygon(ring, {color: '#4CAF50', weight: 3, fillColor: '#4CAF50', fillOpacity: 0.10}).addTo(MAP6_OVER);
   });
   MAP6_OVER.fitBounds(bounds, {padding: [15, 15]});
 
@@ -1290,7 +1290,7 @@ function initSlide8Maps(proj) {
   // Project boundary - black
   S8_BOUNDARY_LAYERS = [];
   latLngs.forEach(function(ring) {
-    var bl = L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.15});
+    var bl = L.polygon(ring, {color: '#4CAF50', weight: 5, fillColor: '#4CAF50', fillOpacity: 0.10});
     if (BOUNDARY_VISIBLE) bl.addTo(MAP8_ZOOM);
     S8_BOUNDARY_LAYERS.push(bl);
   });
@@ -1305,7 +1305,7 @@ function initSlide8Maps(proj) {
   L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP8_OVER);
   var nc8o=L.control({position:'topleft'});nc8o.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc8o.addTo(MAP8_OVER);
   latLngs.forEach(function(ring) {
-    L.polygon(ring, {color: '#4CAF50', weight: 3, fillColor: '#4CAF50', fillOpacity: 0.15}).addTo(MAP8_OVER);
+    L.polygon(ring, {color: '#4CAF50', weight: 3, fillColor: '#4CAF50', fillOpacity: 0.10}).addTo(MAP8_OVER);
   });
   MAP8_OVER.fitBounds(bounds, {padding: [15, 15]});
 
