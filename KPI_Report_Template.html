@@ -820,9 +820,9 @@ function selectRoad(index) {
 // ── SLIDE 10: KPI summary paragraph (shared by roads and wadis) ──
 function buildKpiParagraph(exData, dName) {
   if (!exData) return '';
-  var status = exData.maturePct < exData.plannedKpi ? 'slightly below' : 'exceeds';
+  var status = exData.maturePct < exData.plannedKpi ? 'is slightly below' : 'exceeds';
   var para = '<ul style="list-style:disc;padding-left:20px;margin:0;line-height:2.2">';
-  para += '<li><b>' + dName + '</b> is projected to achieve a KPI of <b>' + exData.maturePct + '%</b> once the existing <b>' + fmt(exData.curTrees) + '</b> trees reach maturity, which is ' + status + ' the Green Riyadh target KPI of <b>' + exData.plannedKpi + '%</b>.</li>';
+  para += '<li><b>' + dName + '</b> is projected to achieve a KPI of <b>' + exData.maturePct + '%</b> once the existing <b>' + fmt(exData.curTrees) + '</b> trees reach maturity, which ' + status + ' the Green Riyadh target KPI of <b>' + exData.plannedKpi + '%</b>.</li>';
   para += '<li style="margin-top:6px">An estimated <b>' + fmt(exData.treesToPlant) + '</b> additional trees are required to achieve the <b>' + exData.plannedKpi + '%</b> canopy cover KPI.</li>';
   para += '<li style="margin-top:6px">The assessment identified <b>' + fmt(exData.additional) + '</b> feasible planting opportunities. Full implementation would increase the tree population to approximately <b>' + fmt(exData.totalTrees) + '</b> trees and raise canopy cover to an estimated <b>' + exData.futureKpi + '%</b>, exceeding the Green Riyadh target by a substantial margin.</li>';
   para += '</ul>';
