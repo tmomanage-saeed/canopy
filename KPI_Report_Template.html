@@ -182,6 +182,7 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
   <select id="ddType" style="margin-right:6px">
     <option value="road">Road</option>
     <option value="wadi">Wadi</option>
+    <option value="largepark">Large Park</option>
   </select>
   <select id="dd"><option value="">— Select Road —</option></select>
   <button class="btn btn-pdf" onclick="generatePDF()">
@@ -190,6 +191,7 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
   </button>
   <div style="display:flex;gap:4px;margin-left:8px">
     <button class="s6-toggle" onclick="toggleBoundaryAll(this)" style="border:2px solid #4CAF50;background:#fff;color:#4CAF50;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Boundary</button>
+    <button class="s6-toggle" onclick="togglePlantable3Maps(this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plantable 3 maps</button>
     <button class="s6-toggle" onclick="togglePlantableAreaAll(this)" style="border:2px solid #FF0000;background:#fff;color:#FF0000;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Plantable Area</button>
     <button class="s6-toggle" onclick="toggleS6Layer(1,this)" style="border:2px solid #38A800;background:#fff;color:#38A800;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Current</button>
     <button class="s6-toggle" onclick="toggleS6Layer(2,this)" style="border:2px solid #FFAA00;background:#fff;color:#FFAA00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Species</button>
@@ -535,12 +537,14 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
 // ═══════════════════════════════════════════════════
 var PROJECTS = [];
 var WADI_PROJECTS = [];
+var LARGEPARK_PROJECTS = [];
 var CURRENT_TYPE = 'road';
 var MAP_2020, MAP_2022, MAP_2025;
 var SYNCING = false;
 
 var EXCEL_DATA = {};
 var WADI_EXCEL_DATA = {};
+var LARGEPARK_EXCEL_DATA = {};
 
 function round2(n) {
   if (typeof n !== 'number') return n;
@@ -587,6 +591,31 @@ function loadExcelData() {
     .catch(function(err) { console.error('Error loading roads_data.xlsx:', err); });
 }
 
+// Large Park data lives in its own workbook (largepark_work/KPI PARKS GR.xlsx),
+// single "Parks" section, same 15-column layout as roads_data.xlsx.
+function loadLargeParkExcelData() {
+  return fetch('largepark_work/KPI PARKS GR.xlsx?v=' + Date.now())
+    .then(function(r) { return r.arrayBuffer(); })
+    .then(function(buf) {
+      var wb = XLSX.read(buf, {type: 'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true});
+      var data = {};
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row || !row[0] || typeof row[1] !== 'number') continue; // skip section label/blank rows
+        data[String(row[0]).trim()] = {
+          project: row[1], plantable: row[2], curTrees: row[3], curCanopy: row[4],
+          matCanopy: row[5], available: row[6], additional: row[7], totalTrees: row[8],
+          addCanopy: row[9], plannedKpi: round2(row[10]), currentPct: round2(row[11]), maturePct: round2(row[12]),
+          futureKpi: round2(row[13]), treesToPlant: row[14]
+        };
+      }
+      LARGEPARK_EXCEL_DATA = data;
+    })
+    .catch(function(err) { console.error('Error loading KPI PARKS GR.xlsx:', err); });
+}
+
 function normalizeName(s) {
   return s.toLowerCase().replace(/[\s_()]/g, '');
 }
@@ -603,12 +632,77 @@ function getWadiExcelData(wadiName) {
   return null;
 }
 
+function getLargeParkExcelData(parkName) {
+  var norm = normalizeName(parkName);
+  for (var k in LARGEPARK_EXCEL_DATA) { if (normalizeName(k) === norm) return LARGEPARK_EXCEL_DATA[k]; }
+  return null;
+}
+
 var CANOPY_DIAMETER = {'Acacia ampliceps':8,'Acacia aneura':9,'Acacia asak':10,'Acacia auriculiformis':4,'Acacia coriacea':5,'Acacia ehrenbergiana':11.5,'Acacia etbaica':10,'Acacia farnesiana':8,'Acacia gerrardii var. iraquensis':10,'Acacia gerrardii var. najdensis':10,'Acacia inaequilatera':3.5,'Acacia karroo':15,'Acacia ligulata':4.5,'Acacia nilotica var. nilotica':9,'Acacia nilotica var. tomentosa':9,'Acacia pruinocarpa':8,'Acacia pycnantha':8,'Acacia salicina':6,'Acacia saligna':6,'Acacia seyal':14,'Acacia tortilis subsp. raddiana':14,'Acacia tortilis subsp. spirocarpa':16,'Acacia victoriae':6,'Acacia xanthophloea':10,'Acoelorrhaphe wrightii':6,'Acokanthera schimperi':5.5,'Adansonia digitata':15,'Albizia lebbeck':18,'Albizia odoratissima':20,'Azadirachta indica':20,'Balanites aegyptiaca':5,'Barringtonia asiatica':10,'Bauhinia blakeana':20.5,'Bauhinia purpurea':10,'Bauhinia variegata':4,'Bismarckia nobilis':5,'Bombax ceiba':40,'Boswellia sacra':6,'Brachychiton acerifolius':8,'Brachychiton populneus':15,'Brachychiton Rupestris':15,'Breonadia salicina':8,'Bucida buceras':8,'Bulnesia arborea':9,'Bursera simaruba':10,'Callistemon citrinus':3.5,'Callistemon viminalis':4,'Carica papaya':3,'Cassia fistula':12,'Cassia glauca':7,'Cassia javanica':15,'Casuarina equisetifolia':8,'Celtis reticulata':8,'Ceratonia siliqua':10,'Cerbera odollam':8,'Cercidium floridum':4,'Chamaerops humilis':3,'Chilopsis linearis':9,'Chitalpa tashkentensis':5,'Chorisia speciosa':11.5,'Cinnamomum camphora':15,'Citharexylum quadrangulare':12,'Citrus paradisi':8,'Citrus aurantiifolia':3,'Citrus aurantium':5,'Citrus limon':5,'Citrus reticulata':5,'Citrus sinensis':8,'Coccoloba uvifera':5,'Cochlospermum religiosum':6,'Combretum aculeatum':2.5,'Commiphora myrrha':4,'Conocarpus erectus':12,'Conocarpus lancifolius':12,'Cordia myxa':10,'Cordia sebestena':10,'Cordia sinensis Lam':6,'Crescentia cujete':9,'Cupressus arizonica':4,'Cupressus sempervirens':5,'Cycas revoluta':2.5,'Dalbergia sissoo':9,'Delonix elata':10,'Delonix regia':15,'Derris indica':10,'Dobera glabra':10,'Dolichandrone serrulata':15,'Dracaena draco':8,'Dracaena ombet':4,'Eriobotrya japonica':10,'Erythrina indica':12,'Eucalyptus camaldulensis':10,'Eucalyptus globulus':10,'Eucalyptus gomphocephala':12,'Faidherbia albida':14,'Ficus altissima':16,'Ficus benghalensis':18,'Ficus benjamina':15,'Ficus carica':12,'Ficus ingens':12,'Ficus microcarpa var. nitida':20,'Ficus nitida':20,'Ficus pseudosycomorus':9,'Ficus religiosa':18,'Ficus rubiginosa':15,'Ficus salicifolia':10,'Ficus sycomorus':15,'Ficus vasta':20,'Ficus virens':15,'Grevillea robusta':20,'Hibiscus tiliaceus':10,'Hyphaene thebaica':10,'Jacaranda mimosifolia':10,'Jatropha multifida':3,'Kigelia africana':15,'Lagerstroemia floribunda':10,'Lagerstroemia indica':6,'Lagerstroemia loudonii':10,'Lagerstromia speciosa':20,'Lagunaria patersonii':9,'Latania loddigesii':4.5,'Leucaena leucocephala':10,'Leucaena retusa':5,'Limonia acidissima':8,'Maerua crassifolia':6,'Mangifera indica':30,'Melia azedarach':12,'Milletia brandisiana':16.5,'Millettia pinnata':18,'Millingtonia hortensis':15,'Mimusops laurifolia':18,'Moringa oleifera':8,'Moringa peregrina':8,'Morus alba':15,'Morus nigra':15,'Nuxia congesta':8,'Olea europaea':8,'Olneya tesota':9,'Pandanus utilis':6,'Parkinsonia aculeata':10,'Parkinsonia florida':6,'Peltophorum inerme':8,'Peltophorum pterocarpum':10,'Phoenix caespitosa':4,'Phoenix canariensis':7,'Phoenix dactylifera':10,'Phoenix roebelenii':3,'Phyllanthus embelica':18,'Phytolacca dioica':15,'Pinus halepensis':12,'Pistacia lentiscus':6.5,'Pistacia terebinthus':8,'Pithecellobium dulce':12,'Pithecellobium flexicaule':4.5,'Platycladus orientalis':9,'Plumeria obtusa':6,'Plumeria rubra f. acutifolia':6,'Podocarpus macrophyllus':4,'Polyalthia longifolia':4.5,'Pongamia pinnata':28,'Populus euphratica':10,'Prosopis alba':10.5,'Prosopis chilensis':10.5,'Prosopis cineraria':12,'Prosopis juliflora':9,'Prosopis koelziana':12,'Psidium guajava':6,'Pterocarpus indicus':30,'Punica granatum':8,'Rhus lancea':5,'Roystonea regia':9,'Sabal palmetto':6,'Salix acmophylla':12,'Salix mucronata':10,'Schinus molle':15,'Schinus terebinthifolius':10,'Schizolobium parahyba':20,'Searsia natalensis':9,'Searsia pendulina':9,'Searsia tripartita':6,'Senegalia laeta':10,'Senna alata':2,'Sideroxylon mascatense':8.5,'Sophora secundiflora':6.5,'Spathodea campanulata':15,'Sterculia foetida':25,'Streblus asper':10,'Strelitzia nicolai':4,'Swietenia macrophylla':25,'Syzygium cumini':8,'Tabebuia argentea':13.5,'Tabebuia chrysantha':11.5,'Tabebuia rosea':15,'Tamarindus indica':15,'Tamarix aphylla':12,'Tamarix arabica':5,'Tamarix gallica':7,'Tamarix nilotica':7,'Tarchonanthus camphoratus':6,'Tecomella undulata':10,'Terminalia arjuna':20,'Terminalia bentzoe':9,'Terminalia catappa':15,'Terminalia ivorensis':8,'Terminalia mantaly':8,'Thespesia populnea':10,'Thuja orientalis':18,'Tipuana tipu':14,'Vachellia farnesiana':8,'Vachellia gerrardii':10,'Vachellia gerrardii var. iraquensis':10,'Vachellia gerrardii var. najdensis':10,'Vachellia nilotica':9,'Vachellia nilotica var. nilotica':9,'Vachellia seyal':14,'Vachellia tortilis':14,'Vachellia xanthophloea':10,'Washingtonia filifera':5,'Washingtonia robusta':5,'Yucca elephantipes':6,'Ziziphus jujuba':8,'Ziziphus spina-christi':10,'Polyalthia longifolium':4,'Vachellia etbaica':10,'Senna surattensis':7};
+
+// Large Park's species names are messier than roads' (underscores instead of
+// spaces, trailing batch codes like ".A"/"_B"/"_1", and a few misspellings/
+// synonyms). These map the raw messy name straight to a CANOPY_DIAMETER key.
+// Keys here are the name AFTER cleanSpeciesName() has already stripped a
+// trailing batch code (single letter or short number) -- not the raw name.
+var SPECIES_ALIASES = {
+  'acacia erehbergiana': 'Acacia ehrenbergiana',
+  'acacia erenbergiana': 'Acacia ehrenbergiana',
+  'acacianilotica': 'Vachellia nilotica',
+  'acacia nilotica': 'Vachellia nilotica',
+  'acacia gerrardii': 'Acacia gerrardii var. najdensis',
+  'acacia tortilis raddiana': 'Acacia tortilis subsp. raddiana',
+  'acacia tortilis radianna': 'Acacia tortilis subsp. raddiana',
+  'acacia tortilis spirocarpa': 'Acacia tortilis subsp. spirocarpa',
+  'milettia pinnata': 'Millettia pinnata',
+  'milletia pinnata': 'Millettia pinnata',
+  'ziziphus spina christi': 'Ziziphus spina-christi',
+  'zizphus': 'Ziziphus spina-christi',
+  'ficus religosa': 'Ficus religiosa',
+  'olea europea': 'Olea europaea',
+  'prosopis cinearia': 'Prosopis cineraria',
+  'maerula crossifolia': 'Maerua crassifolia',
+  'acacia arabica': 'Vachellia nilotica',
+  'callistemon vimialis': 'Callistemon viminalis',
+  'nursery tree': null // not a real species -- fall through to the Unknown default
+};
+
+// Clean up messy raw names (underscores/periods -> spaces, strip a trailing
+// batch code like " A" / " 1" left over from tree IDs) before matching.
+function cleanSpeciesName(species) {
+  var s = species.replace(/[_.]+/g, ' ').replace(/\s+/g, ' ').trim();
+  var withoutSuffix = s.replace(/\s+(?:[A-Za-z]|\d{1,3})$/, '');
+  return withoutSuffix.length > 2 ? withoutSuffix : s;
+}
+
+// Resolves a raw (possibly messy) species name to a canonical display name --
+// merges typo/underscore/batch-code variants of the same species (e.g.
+// "Acacia_ehrenbergiana" and "Acacia Erehbergiana_A") into one row instead of
+// listing them separately.
+function canonicalSpeciesName(species) {
+  if (species === 'Unknown' || species === 'No Name' || species === 'N/A') return species;
+  var cleaned = cleanSpeciesName(species);
+  var aliasKey = cleaned.toLowerCase();
+  if (SPECIES_ALIASES.hasOwnProperty(aliasKey)) {
+    return SPECIES_ALIASES[aliasKey] || 'Unknown';
+  }
+  var sl = cleaned.toLowerCase();
+  for (var k in CANOPY_DIAMETER) { if (k.toLowerCase() === sl) return k; }
+  return cleaned;
+}
 
 function getDiameter(species) {
   if (species === 'Unknown' || species === 'No Name' || species === 'N/A') return 11.284;
   if (CANOPY_DIAMETER[species] !== undefined) return CANOPY_DIAMETER[species];
-  var sl = species.toLowerCase();
+
+  var cleaned = cleanSpeciesName(species);
+  var aliasKey = cleaned.toLowerCase();
+  if (SPECIES_ALIASES.hasOwnProperty(aliasKey)) {
+    var aliasTarget = SPECIES_ALIASES[aliasKey];
+    return aliasTarget ? CANOPY_DIAMETER[aliasTarget] : 11.284;
+  }
+
+  var sl = cleaned.toLowerCase();
   for (var k in CANOPY_DIAMETER) { if (k.toLowerCase() === sl) return CANOPY_DIAMETER[k]; }
   for (var k in CANOPY_DIAMETER) { if (sl.indexOf(k.toLowerCase()) === 0 || k.toLowerCase().indexOf(sl) === 0) return CANOPY_DIAMETER[k]; }
   return '';
@@ -647,7 +741,8 @@ var S3_PLANTABLE_LAYERS = []; // [{layer, map}]
 var S6_BOUNDARY_LAYERS = []; // all on MAP6_ZOOM
 var S8_BOUNDARY_LAYERS = []; // all on MAP8_ZOOM
 var BOUNDARY_VISIBLE = true;
-var PLANTABLE_VISIBLE = true;
+var PLANTABLE_VISIBLE = true; // slide 6 & 8 only
+var PLANTABLE_S3_VISIBLE = true; // slide 3 only ("Plantable 3 maps" button)
 
 function getRings(geom) {
   if (!geom) return [];
@@ -746,7 +841,7 @@ function centerMapsOnRoad(proj) {
   S3_PLANTABLE_LAYERS = [];
   var latLngs3=ringsToLatLngs(proj.geometry);var safeName3=getAttr(proj,'NAME_ENGLI').replace(/\s+/g,'_');
   latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillColor:'#4CAF50',fillOpacity:0.10});if(BOUNDARY_VISIBLE)l.addTo(m);S3_BOUNDARY_LAYERS.push({layer:l,map:m})})});
-  fetch('plantable_data/'+safeName3+'.geojson?v=3').then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}});if(PLANTABLE_VISIBLE)l.addTo(m);S3_PLANTABLE_LAYERS.push({layer:l,map:m})})}).catch(function(e){});
+  fetch('plantable_data/'+safeName3+'.geojson?v='+Date.now()).then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}});if(PLANTABLE_S3_VISIBLE)l.addTo(m);S3_PLANTABLE_LAYERS.push({layer:l,map:m})})}).catch(function(e){});
   var clat = getAttr(proj, 'CENTER_LAT');
   var clng = getAttr(proj, 'CENTER_LNG');
   if (!clat || !clng) { var ll=ringsToLatLngs(proj.geometry); var lg=ll[0]; for(var i=1;i<ll.length;i++) if(ll[i].length>lg.length) lg=ll[i]; var b=L.latLngBounds(lg); clat=b.getCenter().lat; clng=b.getCenter().lng; }
@@ -893,6 +988,50 @@ function selectWadi(index) {
 }
 
 // ═══════════════════════════════════════════════════
+// Select Large Park → Update ALL slides (full data, same as roads)
+// ═══════════════════════════════════════════════════
+function selectLargePark(index) {
+  var proj = LARGEPARK_PROJECTS[index];
+  if (!proj) return;
+  var name = getAttr(proj, 'NAME_ENGLI') || '—';
+  var safeName = name.replace(/\s+/g, '_');
+
+  // SLIDE 1
+  document.getElementById('roadName').textContent = name;
+
+  // SLIDE 3: center maps on park boundary + plantable overlay
+  if (proj.geometry) centerMapsOnRoad(proj);
+
+  // SLIDE 2, 5, 7 & 9: fixed large park divider image (one shared image for all four)
+  document.getElementById('s2Bg').style.backgroundImage = "url('largepark_work/current_canopy.jpeg')";
+  document.getElementById('s5Bg').style.backgroundImage = "url('largepark_work/current_canopy.jpeg')";
+  document.getElementById('s7Bg').style.backgroundImage = "url('largepark_work/current_canopy.jpeg')";
+  document.getElementById('s9Bg').style.backgroundImage = "url('largepark_work/current_canopy.jpeg')";
+
+  // SLIDE 6: current canopy maps
+  if (proj.geometry) initSlide6Maps(proj);
+
+  // SLIDE 8: mature canopy maps
+  if (proj.geometry) initSlide8Maps(proj);
+
+  var exData = getLargeParkExcelData(name);
+  populateKpiTables(exData);
+
+  loadSlide4Species(safeName, exData);
+  var bName = document.getElementById('s8BoundaryName'); if(bName) bName.textContent = 'Project Boundary';
+
+  // SLIDE 10: fixed large park photo + KPI paragraph (from Excel)
+  document.getElementById('s10Para').innerHTML = buildKpiParagraph(exData, name);
+  var s10img = document.getElementById('s10Photo');
+  s10img.src = 'largepark_work/10_slide.webp';
+  s10img.style.display = '';
+
+  window.SELECTED = proj;
+  window.SELECTED_INDEX = index;
+  console.log('Selected large park:', name);
+}
+
+// ═══════════════════════════════════════════════════
 // Load JSON + Populate Dropdown
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
@@ -900,6 +1039,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initMaps();
 
   var excelReady = loadExcelData();
+  loadLargeParkExcelData();
 
   fetch('Projects_boundry.json?v=2')
     .then(function(r) { return r.json(); })
@@ -958,21 +1098,50 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(function(err) { console.error('Error loading Wadis_boundary.json:', err); });
 
+  fetch('LargePark_boundary.json?v=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var features = data.features || [];
+      LARGEPARK_PROJECTS = features.map(function(f) {
+        return { attributes: f.attributes || f.properties, geometry: f.geometry };
+      });
+      LARGEPARK_PROJECTS.sort(function(a, b) {
+        return (getAttr(a, 'NAME_ENGLI') || '').localeCompare(getAttr(b, 'NAME_ENGLI') || '');
+      });
+    })
+    .catch(function(err) { console.error('Error loading LargePark_boundary.json:', err); });
+
+  function typeList() {
+    if (CURRENT_TYPE === 'wadi') return WADI_PROJECTS;
+    if (CURRENT_TYPE === 'largepark') return LARGEPARK_PROJECTS;
+    return PROJECTS;
+  }
+  function typeLabel() {
+    if (CURRENT_TYPE === 'wadi') return 'Wadi';
+    if (CURRENT_TYPE === 'largepark') return 'Large Park';
+    return 'Road';
+  }
+  function selectByType(idx) {
+    if (CURRENT_TYPE === 'wadi') selectWadi(idx);
+    else if (CURRENT_TYPE === 'largepark') selectLargePark(idx);
+    else selectRoad(idx);
+  }
+
   function populateDropdown() {
     var dd = document.getElementById('dd');
-    var list = CURRENT_TYPE === 'wadi' ? WADI_PROJECTS : PROJECTS;
-    dd.innerHTML = '<option value="">— Select ' + (CURRENT_TYPE === 'wadi' ? 'Wadi' : 'Road') + ' —</option>';
+    var list = typeList();
+    dd.innerHTML = '<option value="">— Select ' + typeLabel() + ' —</option>';
     list.forEach(function(p, i) {
       var opt = document.createElement('option');
       opt.value = i;
       var label = getAttr(p, 'NAME_ENGLI') || 'Unknown';
-      if (CURRENT_TYPE !== 'wadi') label = label.replace(/_/g, ' ').replace(/\bRd\b/g, 'Road');
+      if (CURRENT_TYPE === 'road') label = label.replace(/_/g, ' ').replace(/\bRd\b/g, 'Road');
       opt.textContent = label;
       dd.appendChild(opt);
     });
     if (list.length > 0) {
       dd.value = 0;
-      if (CURRENT_TYPE === 'wadi') selectWadi(0); else selectRoad(0);
+      selectByType(0);
     }
   }
 
@@ -983,8 +1152,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('dd').addEventListener('change', function(e) {
     if (e.target.value === '') return;
-    var idx = parseInt(e.target.value);
-    if (CURRENT_TYPE === 'wadi') selectWadi(idx); else selectRoad(idx);
+    selectByType(parseInt(e.target.value));
   });
 });
 
@@ -1178,7 +1346,7 @@ function initSlide6Maps(proj) {
   // Red extent box
   var extentRect = L.rectangle(MAP6_ZOOM.getBounds(), {color: '#e74c3c', weight: 2, fill: false, dashArray: '5,3'}).addTo(MAP6_OVER);
   MAP6_ZOOM.on('moveend', function() {
-    var zb=MAP6_ZOOM.getBounds();var minSize=0.01;var c6=zb.getCenter();if(zb.getNorth()-zb.getSouth()<minSize){zb=L.latLngBounds([c6.lat-minSize/2,c6.lng-minSize/2],[c6.lat+minSize/2,c6.lng+minSize/2]);}extentRect.setBounds(zb);
+    var zb=MAP6_ZOOM.getBounds();var minSize=(CURRENT_TYPE==='largepark')?0.0008:0.01;var c6=zb.getCenter();if(zb.getNorth()-zb.getSouth()<minSize){zb=L.latLngBounds([c6.lat-minSize/2,c6.lng-minSize/2],[c6.lat+minSize/2,c6.lng+minSize/2]);}extentRect.setBounds(zb);
   });
 
   // Sync MAP6_ZOOM back to slide 3 maps
@@ -1205,7 +1373,7 @@ function loadSlide6Layers(safeName, map) {
   S6_DATA_LAYERS = [null, null, null];
 
   // 0. Plantable Area - RED boundary (#FF0000)
-  fetch('plantable_data/' + safeName + '.geojson')
+  fetch('plantable_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var lyr = L.geoJSON(data, {
@@ -1216,7 +1384,7 @@ function loadSlide6Layers(safeName, map) {
     }).catch(function(e) { console.log('No plantable data:', safeName); });
 
   // 1. Canopy Current - GREEN fill (#38A800)
-  fetch('canopy_current_data/' + safeName + '.geojson?v=3')
+  fetch('canopy_current_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var lyr = L.geoJSON(data, {
@@ -1226,17 +1394,18 @@ function loadSlide6Layers(safeName, map) {
     }).catch(function(e) { console.log('No canopy current:', safeName); });
 
   // 2. Tree Species - ORANGE dots (#FFAA00)
-  fetch('species_data/' + safeName + '.geojson')
+  fetch('species_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var lyr = L.geoJSON(data, {
         pointToLayer: function(f, ll) {
-          return L.circleMarker(ll, {radius: 2, color: getSpeciesColor(f.properties.species || f.properties.Species || 'Unknown'), fillColor: getSpeciesColor(f.properties.species || f.properties.Species || 'Unknown'), fillOpacity: 0.9, weight: 0.5});
+          var sp = canonicalSpeciesName(f.properties.species || f.properties.Species || 'Unknown');
+          return L.circleMarker(ll, {radius: 2, color: getSpeciesColor(sp), fillColor: getSpeciesColor(sp), fillOpacity: 0.9, weight: 0.5});
         }
       }).addTo(map);
       S6_DATA_LAYERS[2] = lyr;
 	  var sCounts = {};
-      data.features.forEach(function(f) { var s=f.properties.species||f.properties.Species||'Unknown'; sCounts[s]=(sCounts[s]||0)+1; });
+      data.features.forEach(function(f) { var s=canonicalSpeciesName(f.properties.species||f.properties.Species||'Unknown'); sCounts[s]=(sCounts[s]||0)+1; });
       var top3 = Object.keys(sCounts).sort(function(a,b){return sCounts[b]-sCounts[a];}).slice(0,3);
       var legHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
@@ -1312,7 +1481,7 @@ function initSlide8Maps(proj) {
   // Red extent box
   var extentRect8 = L.rectangle(MAP8_ZOOM.getBounds(), {color: '#e74c3c', weight: 2, fill: false, dashArray: '5,3'}).addTo(MAP8_OVER);
   MAP8_ZOOM.on('moveend', function() {
-    var zb8=MAP8_ZOOM.getBounds();var minSize8=0.01;var c8=zb8.getCenter();if(zb8.getNorth()-zb8.getSouth()<minSize8){zb8=L.latLngBounds([c8.lat-minSize8/2,c8.lng-minSize8/2],[c8.lat+minSize8/2,c8.lng+minSize8/2]);}extentRect8.setBounds(zb8);
+    var zb8=MAP8_ZOOM.getBounds();var minSize8=(CURRENT_TYPE==='largepark')?0.0008:0.01;var c8=zb8.getCenter();if(zb8.getNorth()-zb8.getSouth()<minSize8){zb8=L.latLngBounds([c8.lat-minSize8/2,c8.lng-minSize8/2],[c8.lat+minSize8/2,c8.lng+minSize8/2]);}extentRect8.setBounds(zb8);
   });
 
   // Sync MAP8_ZOOM back to slide 3 and slide 6 maps
@@ -1337,7 +1506,7 @@ function loadSlide8Layers(safeName, map) {
   S8_DATA_LAYERS = [null, null, null];
 
   // 0. Plantable Area - RED plain boundary
-  fetch('plantable_data/' + safeName + '.geojson')
+  fetch('plantable_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var lyr = L.geoJSON(data, {
@@ -1348,7 +1517,7 @@ function loadSlide8Layers(safeName, map) {
     }).catch(function(e) { console.log('No plantable data:', safeName); });
 
   // 1. Canopy Mature - DARK GREEN fill (#1D753B)
-  fetch('canopy_mature_data/' + safeName + '.geojson?v=3')
+  fetch('canopy_mature_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var lyr = L.geoJSON(data, {
@@ -1358,7 +1527,7 @@ function loadSlide8Layers(safeName, map) {
     }).catch(function(e) { console.log('No canopy mature:', safeName); });
 
   // 2. Additional Trees - LIGHT GREEN dots (#AAFF00)
-  fetch('additional_trees_data/' + safeName + '.geojson?v=3')
+  fetch('additional_trees_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var lyr = L.geoJSON(data, {
@@ -1395,12 +1564,21 @@ function toggleBoundaryAll(btn) {
   btn.style.opacity = BOUNDARY_VISIBLE ? '1' : '0.3';
 }
 
+// Controls slide 6 & 8's plantable layer only (slide 3 has its own
+// "Plantable 3 maps" button below, unlinked from this one).
 function togglePlantableAreaAll(btn) {
   PLANTABLE_VISIBLE = !PLANTABLE_VISIBLE;
-  S3_PLANTABLE_LAYERS.forEach(function(p) { if (PLANTABLE_VISIBLE) p.layer.addTo(p.map); else p.layer.remove(); });
   if (S6_DATA_LAYERS[0]) { if (PLANTABLE_VISIBLE) { if (MAP6_ZOOM) S6_DATA_LAYERS[0].addTo(MAP6_ZOOM); } else S6_DATA_LAYERS[0].remove(); }
   if (S8_DATA_LAYERS[0]) { if (PLANTABLE_VISIBLE) { if (MAP8_ZOOM) S8_DATA_LAYERS[0].addTo(MAP8_ZOOM); } else S8_DATA_LAYERS[0].remove(); }
   btn.style.opacity = PLANTABLE_VISIBLE ? '1' : '0.3';
+}
+
+// Controls slide 3's plantable layer only (all 3 maps there), for
+// roads/wadi/large park alike.
+function togglePlantable3Maps(btn) {
+  PLANTABLE_S3_VISIBLE = !PLANTABLE_S3_VISIBLE;
+  S3_PLANTABLE_LAYERS.forEach(function(p) { if (PLANTABLE_S3_VISIBLE) p.layer.addTo(p.map); else p.layer.remove(); });
+  btn.style.opacity = PLANTABLE_S3_VISIBLE ? '1' : '0.3';
 }
 function loadSlide4Species(safeName, exData) {
   var table = document.querySelector('#slide4 .s4-table tbody');
@@ -1408,12 +1586,12 @@ function loadSlide4Species(safeName, exData) {
   var matRow = '<tr style="font-weight:700;border-top:1px solid #22763C;color:#22763C"><td style="font-size:8.5px;padding:3px 3px;white-space:nowrap;overflow:visible">Calculated Mature Canopy Area</td><td></td><td></td><td></td><td style="font-size:8.5px;padding:3px 3px">' + (exData ? fmt(exData.matCanopy) + ' **' : '–') + '</td></tr>';
   if (table) table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:10px;color:#999">No data available</td></tr>' + matRow;
   if (tfoot) tfoot.style.display = 'none';
-  fetch('species_data/' + safeName + '.geojson?v=3')
+  fetch('species_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var counts = {};
       data.features.forEach(function(f) {
-        var sp = f.properties.species || f.properties.Species || 'Unknown';
+        var sp = canonicalSpeciesName(f.properties.species || f.properties.Species || 'Unknown');
         counts[sp] = (counts[sp] || 0) + 1;
       });
       var sorted = Object.keys(counts).sort(function(a,b) { return counts[b] - counts[a]; });
