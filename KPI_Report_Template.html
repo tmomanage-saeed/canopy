@@ -255,7 +255,7 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
     </div>
     <div class="s3-body">
       <div class="s3-title">Introduction</div>
-      <div class="s3-desc">This assessment compares the current and projected mature tree canopy cover within the Road Projects against the Green Riyadh KPI targets.</div>
+      <div class="s3-desc">This assessment compares the current and projected mature tree canopy cover within the <span id="s3ProjectsLabel">Road Projects</span> against the Green Riyadh KPI targets.</div>
       <div class="s3-desc">Chronological satellite imagery illustrating the progression of landscape development over time from pre-construction through implementation and current conditions.</div>
       <div class="s3-maps">
         <div class="s3-map-box">
@@ -399,8 +399,8 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
         </div>
       </div>
       <div class="s6-right">
-        <div class="s6-map-wrap"><div id="map6Zoom"></div></div>
-        <div class="s6-map-wrap"><div id="map6Overview"></div></div>
+        <div class="s6-map-wrap" id="s6ZoomWrap"><div id="map6Zoom"></div></div>
+        <div class="s6-map-wrap" id="s6OverWrap"><div id="map6Overview"></div></div>
       </div>
     </div>
     <div class="s-ftr">
@@ -467,12 +467,12 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div><span id="s8BoundaryName">Road Boundary</span></div>
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:#1D753B"></div>Canopy Mature</div>
-          <div class="s6-legend-item"><div class="s6-legend-dot" style="background:#AAFF00"></div>Additional Potential Trees</div><div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>
+          <div class="s6-legend-item"><div class="s6-legend-dot" style="background:#AAFF00"></div>Additional Potential Trees</div><div class="s6-legend-item" id="s8CtxViewItem"><div class="ctx-view"></div>Context View</div>
         </div>
       </div>
       <div class="s6-right">
-        <div class="s6-map-wrap"><div id="map8Zoom"></div></div>
-        <div class="s6-map-wrap"><div id="map8Overview"></div></div>
+        <div class="s6-map-wrap" id="s8ZoomWrap"><div id="map8Zoom"></div></div>
+        <div class="s6-map-wrap" id="s8OverWrap"><div id="map8Overview"></div></div>
       </div>
     </div>
     <div class="s-ftr">
@@ -779,6 +779,45 @@ function getGeometryCenter(geom) {
   return [avgY, avgX]; // GeoJSON: [lng, lat] → [lat, lng]
 }
 
+// Large Park only: a scale bar that rounds to the nearest 10m instead of
+// Leaflet's default control.scale, which only ever shows "nice" numbers like
+// 10/20/50/100/200 and so jumps straight from 50m to 100m. This one can show
+// 30m, 40m, 60m, 70m, 80m etc. too, updating on every zoom/pan.
+// Same look as Leaflet's built-in L.control.scale (same CSS classes, so it's
+// styled identically), but with an extra breakpoint so the bar can read 80m
+// instead of jumping straight from 50m to 100m: ...,20,50,80,100,200,500,800,1000...
+function addCustomScale(map) {
+  var control = L.control({position: 'bottomleft'});
+  control.onAdd = function() {
+    var div = L.DomUtil.create('div', 'leaflet-control-scale');
+    var line = L.DomUtil.create('div', 'leaflet-control-scale-line', div);
+    var maxWidth = 100;
+    function roundNum(num) {
+      var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1);
+      var d = num / pow10;
+      d = d >= 8 ? 8 : d >= 5 ? 5 : d >= 2 ? 2 : 1;
+      return pow10 * d;
+    }
+    function update() {
+      var bounds = map.getBounds();
+      var centerLat = bounds.getCenter().lat;
+      var halfWorldMeters = 6378137 * Math.PI * Math.cos(centerLat * Math.PI / 180);
+      var dist = halfWorldMeters * (bounds.getNorthEast().lng - bounds.getSouthWest().lng) / 180;
+      var size = map.getSize();
+      if (size.x <= 0 || !dist) return;
+      var maxMeters = dist * (maxWidth / size.x);
+      var meters = roundNum(maxMeters);
+      var ratio = meters / maxMeters;
+      line.style.width = Math.round(maxWidth * ratio) + 'px';
+      line.innerHTML = meters < 1000 ? meters + ' m' : (Math.round(meters / 100) / 10) + ' km';
+    }
+    map.on('moveend zoomend', update);
+    update();
+    return div;
+  };
+  control.addTo(map);
+}
+
 // ═══════════════════════════════════════════════════
 // Initialize Slide 3 Maps
 // ═══════════════════════════════════════════════════
@@ -853,6 +892,26 @@ function centerMapsOnRoad(proj) {
   setTimeout(function() { SYNCING = false; }, 100);
 }
 
+// Large Park (only): hide slide 6 & 8's right/overview map and let the left
+// /zoom map expand to fill the space (flex:1 on the remaining map-wrap does
+// this automatically once its sibling is display:none). Roads/wadi keep
+// both maps as before.
+function setSlide68MapLayout(hideOverview) {
+  var s6OverWrap = document.getElementById('s6OverWrap');
+  var s8OverWrap = document.getElementById('s8OverWrap');
+  if (s6OverWrap) s6OverWrap.style.display = hideOverview ? 'none' : '';
+  if (s8OverWrap) s8OverWrap.style.display = hideOverview ? 'none' : '';
+  // "Context View" in the legend explains the red box on the (now hidden) overview map.
+  var s8CtxItem = document.getElementById('s8CtxViewItem');
+  if (s8CtxItem) s8CtxItem.style.display = hideOverview ? 'none' : '';
+  setTimeout(function() {
+    if (MAP6_ZOOM) MAP6_ZOOM.invalidateSize();
+    if (MAP6_OVER) MAP6_OVER.invalidateSize();
+    if (MAP8_ZOOM) MAP8_ZOOM.invalidateSize();
+    if (MAP8_OVER) MAP8_OVER.invalidateSize();
+  }, 150);
+}
+
 // ═══════════════════════════════════════════════════
 // Select Road → Update ALL slides
 // ═══════════════════════════════════════════════════
@@ -892,6 +951,8 @@ function selectRoad(index) {
   // SLIDE 8: mature canopy maps
   if (proj.geometry) initSlide8Maps(proj);
 
+  setSlide68MapLayout(false);
+
   var exData = getExcelData(name);
   populateKpiTables(exData);
 
@@ -926,10 +987,21 @@ function buildKpiParagraph(exData, dName) {
 
 // ── SLIDE 6 & 8: Populate KPI tables (from Excel, or placeholders if none) ──
 function populateKpiTables(exData) {
+  // Report month is July everywhere (first page + every footer), for roads/wadi/parks alike.
+  // Internal satellite-imagery date labels (slide 3's "June 2022", slide 4's "June 2025"
+  // imagery description) are untouched -- those are real capture dates, not the report date.
+  var reportMonth = 'July';
+  var reportDateEl = document.getElementById('reportDate'); if (reportDateEl) reportDateEl.textContent = reportMonth + ' 2026';
+  document.querySelectorAll('.ftr-l').forEach(function(el) { el.textContent = 'TMO | Canopy Cover Review | ' + reportMonth + ' 2026'; });
+
+  var catLabel = (CURRENT_TYPE === 'largepark') ? 'Park' : 'Main Road';
+  var s6cat = document.getElementById('s6KpiCat2'); if (s6cat) s6cat.textContent = catLabel;
+  var s8cat = document.getElementById('s8KpiCat'); if (s8cat) s8cat.textContent = catLabel;
+  var s3ProjLabel = document.getElementById('s3ProjectsLabel'); if (s3ProjLabel) s3ProjLabel.textContent = (CURRENT_TYPE === 'largepark') ? 'Park Projects' : 'Road Projects';
   var s6kv = document.getElementById('s6KpiVal2'); if(s6kv) s6kv.textContent = exData ? exData.plannedKpi + ' %' : '12 %';
   var s8kv = document.getElementById('s8KpiVal'); if(s8kv) s8kv.textContent = exData ? exData.plannedKpi + ' %' : '12 %';
   document.getElementById('s6CanopyProj').textContent = exData ? fmt(exData.curCanopy) + ' m²' : '–';
-  document.getElementById('s6PctProj').textContent = exData ? exData.currentPct + ' %' : '–';
+  document.getElementById('s6PctProj').textContent = (exData && typeof exData.currentPct === 'number') ? exData.currentPct + ' %' : '–';
   document.getElementById('s6AreaProj').textContent = exData ? fmt(exData.project) + ' m²' : '–';
   document.getElementById('s6AreaPlant').textContent = exData ? fmt(exData.plantable) + ' m²' : '–';
 
@@ -969,6 +1041,8 @@ function selectWadi(index) {
 
   // SLIDE 8: mature canopy maps (boundary only, same reason)
   if (proj.geometry) initSlide8Maps(proj);
+
+  setSlide68MapLayout(false);
 
   var exData = getWadiExcelData(name);
   populateKpiTables(exData);
@@ -1013,6 +1087,8 @@ function selectLargePark(index) {
 
   // SLIDE 8: mature canopy maps
   if (proj.geometry) initSlide8Maps(proj);
+
+  setSlide68MapLayout(true);
 
   var exData = getLargeParkExcelData(name);
   populateKpiTables(exData);
@@ -1317,7 +1393,7 @@ function initSlide6Maps(proj) {
   // Map 1: Zoomed in
   MAP6_ZOOM = L.map('map6Zoom', {center: center, zoom: 17, zoomControl: false, attributionControl: false, preferCanvas: true});
   L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP6_ZOOM);
-  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP6_ZOOM);
+  addCustomScale(MAP6_ZOOM);
   var nc6=L.control({position:'topleft'});nc6.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc6.addTo(MAP6_ZOOM);
   
 
@@ -1410,7 +1486,7 @@ function loadSlide6Layers(safeName, map) {
       var legHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>';
-      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div><div class="s6-legend-item"><div class="ctx-view"></div>Context View</div><br>';
+      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>' + (CURRENT_TYPE !== 'largepark' ? '<div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>' : '') + '<br>';
       legHTML += '</div><div class="s6-legend" style="margin-top:-6px"><span style="font-weight:700;font-size:9px">Tree Species:</span>'; top3.forEach(function(sp) { var spName = (sp==='Unknown'||sp==='No Name'||sp==='N/A') ? 'Unknown Species' : sp; legHTML += '<div class="s6-legend-item"><div class="s6-legend-dot" style="background:'+getSpeciesColor(sp)+'"></div>'+spName+'</div>'; });
       document.getElementById('s6Legend').innerHTML = legHTML;
     }).catch(function(e) { console.log('No species data:', safeName); });
@@ -1452,7 +1528,7 @@ function initSlide8Maps(proj) {
   // Map 1: Zoomed in
   MAP8_ZOOM = L.map('map8Zoom', {center: center, zoom: 17, zoomControl: false, attributionControl: false, preferCanvas: true});
   L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 21}).addTo(MAP8_ZOOM);
-  L.control.scale({position:'bottomleft',metric:true,imperial:false}).addTo(MAP8_ZOOM);
+  addCustomScale(MAP8_ZOOM);
   var nc8=L.control({position:'topleft'});nc8.onAdd=function(){var d=L.DomUtil.create('div');d.innerHTML='<div style="font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;text-align:center;line-height:1">N<br>▲</div>';return d;};nc8.addTo(MAP8_ZOOM);
   
 
