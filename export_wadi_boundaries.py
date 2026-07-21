@@ -10,6 +10,14 @@ attributes + esriGeometryPolygon rings in WGS84.
 Scope for now: ONLY boundary + name + centroid (CENTER_LAT/CENTER_LNG).
 No plantable / current canopy / mature canopy / species / additional
 trees attributes are added at this stage -- that comes later.
+
+Fix: geometry conversion now uses arcpy's own __geo_interface__ (Esri's own
+tested implementation) instead of manually walking parts/points, plus a
+densify step for any true-curve geometry. The old hand-rolled version
+produced corrupted/extra-line boundaries for some wadis (same root cause
+found and fixed in the Large Park export) -- multi-part boundaries got
+folded together wrong, and any circular-arc segments only kept their 2
+control points instead of the real curve.
 """
 import arcpy, json, os
 
@@ -36,6 +44,35 @@ def clean_name(fc_name):
     if fc_name in NAME_OVERRIDES:
         return NAME_OVERRIDES[fc_name]
     return fc_name.replace('_', ' ').strip()
+
+
+def densify_if_curved(geom):
+    """Some boundaries include true curve segments (arcs) -- a curve can be
+    stored as just 2 control points plus curve metadata. Naive point
+    iteration (and even __geo_interface__ without this step) only grabs
+    those 2 control points, producing a corrupted/short boundary segment
+    instead of the real curve. Densify replaces the curve with closely
+    spaced straight segments that approximate it, in the geometry's
+    original (projected, metres) units -- do this BEFORE reprojecting."""
+    if getattr(geom, 'hasCurves', False):
+        return geom.densify("DISTANCE", 0.5, 0)
+    return geom
+
+
+def polygon_to_esri_rings(geom84):
+    """Flatten a geometry's rings into the Esri-JSON 'rings' shape, via
+    arcpy's own __geo_interface__ (Esri-maintained, spec-correct) instead
+    of manually walking parts/points and splitting on None separators."""
+    gi = geom84.__geo_interface__
+    if gi['type'] == 'Polygon':
+        return [list(ring) for ring in gi['coordinates']]
+    if gi['type'] == 'MultiPolygon':
+        rings = []
+        for poly in gi['coordinates']:
+            for ring in poly:
+                rings.append(list(ring))
+        return rings
+    return []
 
 
 def list_all_polygon_fcs(gdb):
@@ -83,14 +120,11 @@ for fc in fc_list:
 
     with arcpy.da.SearchCursor(dissolved, ['SHAPE@']) as cursor:
         for row in cursor:
-            geom = row[0]
+            geom = densify_if_curved(row[0])
             geom84 = geom.projectAs(wgs84)
             centroid = geom84.centroid
 
-            rings = []
-            for part in geom84:
-                ring = [[pnt.X, pnt.Y] for pnt in part if pnt]
-                rings.append(ring)
+            rings = polygon_to_esri_rings(geom84)
 
             features_out.append({
                 "attributes": {

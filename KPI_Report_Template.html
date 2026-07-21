@@ -1346,7 +1346,7 @@ function initSlide6Maps(proj) {
   // Red extent box
   var extentRect = L.rectangle(MAP6_ZOOM.getBounds(), {color: '#e74c3c', weight: 2, fill: false, dashArray: '5,3'}).addTo(MAP6_OVER);
   MAP6_ZOOM.on('moveend', function() {
-    var zb=MAP6_ZOOM.getBounds();var minSize=(CURRENT_TYPE==='largepark')?0.0008:0.01;var c6=zb.getCenter();if(zb.getNorth()-zb.getSouth()<minSize){zb=L.latLngBounds([c6.lat-minSize/2,c6.lng-minSize/2],[c6.lat+minSize/2,c6.lng+minSize/2]);}extentRect.setBounds(zb);
+    var zb=MAP6_ZOOM.getBounds();var ob6=MAP6_OVER.getBounds();var minSize=(ob6.getNorth()-ob6.getSouth())*0.03;var c6=zb.getCenter();if(zb.getNorth()-zb.getSouth()<minSize){zb=L.latLngBounds([c6.lat-minSize/2,c6.lng-minSize/2],[c6.lat+minSize/2,c6.lng+minSize/2]);}extentRect.setBounds(zb);
   });
 
   // Sync MAP6_ZOOM back to slide 3 maps
@@ -1481,7 +1481,7 @@ function initSlide8Maps(proj) {
   // Red extent box
   var extentRect8 = L.rectangle(MAP8_ZOOM.getBounds(), {color: '#e74c3c', weight: 2, fill: false, dashArray: '5,3'}).addTo(MAP8_OVER);
   MAP8_ZOOM.on('moveend', function() {
-    var zb8=MAP8_ZOOM.getBounds();var minSize8=(CURRENT_TYPE==='largepark')?0.0008:0.01;var c8=zb8.getCenter();if(zb8.getNorth()-zb8.getSouth()<minSize8){zb8=L.latLngBounds([c8.lat-minSize8/2,c8.lng-minSize8/2],[c8.lat+minSize8/2,c8.lng+minSize8/2]);}extentRect8.setBounds(zb8);
+    var zb8=MAP8_ZOOM.getBounds();var ob8=MAP8_OVER.getBounds();var minSize8=(ob8.getNorth()-ob8.getSouth())*0.03;var c8=zb8.getCenter();if(zb8.getNorth()-zb8.getSouth()<minSize8){zb8=L.latLngBounds([c8.lat-minSize8/2,c8.lng-minSize8/2],[c8.lat+minSize8/2,c8.lng+minSize8/2]);}extentRect8.setBounds(zb8);
   });
 
   // Sync MAP8_ZOOM back to slide 3 and slide 6 maps
