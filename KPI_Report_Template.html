@@ -197,6 +197,7 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
     <button class="s6-toggle" onclick="toggleS6Layer(2,this)" style="border:2px solid #FFAA00;background:#fff;color:#FFAA00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Species</button>
     <button class="s6-toggle" onclick="toggleS8Layer(1,this)" style="border:2px solid #1D753B;background:#fff;color:#1D753B;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Mature</button>
     <button class="s6-toggle" onclick="toggleS8Layer(2,this)" style="border:2px solid #AAFF00;background:#fff;color:#AAFF00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Additional</button>
+    <button class="s6-toggle" id="linkMapsBtn" onclick="toggleSlide3Link(this)" style="border:2px solid #2196F3;background:#fff;color:#2196F3;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600">Link Maps</button>
   </div>
 </div>
 
@@ -743,6 +744,7 @@ var S8_BOUNDARY_LAYERS = []; // all on MAP8_ZOOM
 var BOUNDARY_VISIBLE = true;
 var PLANTABLE_VISIBLE = true; // slide 6 & 8 only
 var PLANTABLE_S3_VISIBLE = true; // slide 3 only ("Plantable 3 maps" button)
+var SLIDE3_LINKED = true; // manual "Link Maps" button -- whether slide 6/8's zoom maps drag slide 3's maps along with them
 
 function getRings(geom) {
   if (!geom) return [];
@@ -881,21 +883,34 @@ function centerMapsOnRoad(proj) {
   var latLngs3=ringsToLatLngs(proj.geometry);var safeName3=getAttr(proj,'NAME_ENGLI').replace(/\s+/g,'_');
   latLngs3.forEach(function(ring){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.polygon(ring,{color:'#4CAF50',weight:5,fillColor:'#4CAF50',fillOpacity:0.10});if(BOUNDARY_VISIBLE)l.addTo(m);S3_BOUNDARY_LAYERS.push({layer:l,map:m})})});
   fetch('plantable_data/'+safeName3+'.geojson?v='+Date.now()).then(function(r){return r.json()}).then(function(data){[MAP_2020,MAP_2022,MAP_2025].forEach(function(m){var l=L.geoJSON(data,{style:{color:'#FF0000',weight:2,fillOpacity:0}});if(PLANTABLE_S3_VISIBLE)l.addTo(m);S3_PLANTABLE_LAYERS.push({layer:l,map:m})})}).catch(function(e){});
-  var clat = getAttr(proj, 'CENTER_LAT');
-  var clng = getAttr(proj, 'CENTER_LNG');
-  if (!clat || !clng) { var ll=ringsToLatLngs(proj.geometry); var lg=ll[0]; for(var i=1;i<ll.length;i++) if(ll[i].length>lg.length) lg=ll[i]; var b=L.latLngBounds(lg); clat=b.getCenter().lat; clng=b.getCenter().lng; }
-  var center = [clat, clng];
   SYNCING = true;
-  MAP_2020.setView(center, 17);
-  MAP_2022.setView(center, 17);
-  MAP_2025.setView(center, 17);
+  if (CURRENT_TYPE === 'wadi' || CURRENT_TYPE === 'largepark') {
+    // Show the whole boundary instead of a fixed zoom-17 centered on the
+    // centroid -- a wadi/park can be much bigger than a fixed zoom shows.
+    var allPts3 = [];
+    latLngs3.forEach(function(r) { allPts3 = allPts3.concat(r); });
+    if (allPts3.length) {
+      var wadiBounds = L.latLngBounds(allPts3);
+      MAP_2020.fitBounds(wadiBounds, {padding: [20, 20]});
+      MAP_2022.fitBounds(wadiBounds, {padding: [20, 20]});
+      MAP_2025.fitBounds(wadiBounds, {padding: [20, 20]});
+    }
+  } else {
+    var clat = getAttr(proj, 'CENTER_LAT');
+    var clng = getAttr(proj, 'CENTER_LNG');
+    if (!clat || !clng) { var ll=ringsToLatLngs(proj.geometry); var lg=ll[0]; for(var i=1;i<ll.length;i++) if(ll[i].length>lg.length) lg=ll[i]; var b=L.latLngBounds(lg); clat=b.getCenter().lat; clng=b.getCenter().lng; }
+    var center = [clat, clng];
+    MAP_2020.setView(center, 17);
+    MAP_2022.setView(center, 17);
+    MAP_2025.setView(center, 17);
+  }
   setTimeout(function() { SYNCING = false; }, 100);
 }
 
-// Large Park (only): hide slide 6 & 8's right/overview map and let the left
+// Large Park & Wadi: hide slide 6 & 8's right/overview map and let the left
 // /zoom map expand to fill the space (flex:1 on the remaining map-wrap does
-// this automatically once its sibling is display:none). Roads/wadi keep
-// both maps as before.
+// this automatically once its sibling is display:none). Roads keep both
+// maps as before -- left untouched intentionally.
 function setSlide68MapLayout(hideOverview) {
   var s6OverWrap = document.getElementById('s6OverWrap');
   var s8OverWrap = document.getElementById('s8OverWrap');
@@ -987,6 +1002,17 @@ function buildKpiParagraph(exData, dName) {
 
 // ── SLIDE 6 & 8: Populate KPI tables (from Excel, or placeholders if none) ──
 function populateKpiTables(exData) {
+  // "Link Maps" button: only relevant for wadi/large park (roads always stay linked, untouched).
+  var linkBtn = document.getElementById('linkMapsBtn');
+  if (linkBtn) {
+    if (CURRENT_TYPE === 'road') {
+      linkBtn.style.display = 'none';
+    } else {
+      linkBtn.style.display = '';
+      linkBtn.style.opacity = SLIDE3_LINKED ? '1' : '0.3';
+    }
+  }
+
   // Report month is July everywhere (first page + every footer), for roads/wadi/parks alike.
   // Internal satellite-imagery date labels (slide 3's "June 2022", slide 4's "June 2025"
   // imagery description) are untouched -- those are real capture dates, not the report date.
@@ -994,10 +1020,10 @@ function populateKpiTables(exData) {
   var reportDateEl = document.getElementById('reportDate'); if (reportDateEl) reportDateEl.textContent = reportMonth + ' 2026';
   document.querySelectorAll('.ftr-l').forEach(function(el) { el.textContent = 'TMO | Canopy Cover Review | ' + reportMonth + ' 2026'; });
 
-  var catLabel = (CURRENT_TYPE === 'largepark') ? 'Park' : 'Main Road';
+  var catLabel = (CURRENT_TYPE === 'largepark') ? 'Park' : (CURRENT_TYPE === 'wadi') ? 'Wadi' : 'Main Road';
   var s6cat = document.getElementById('s6KpiCat2'); if (s6cat) s6cat.textContent = catLabel;
   var s8cat = document.getElementById('s8KpiCat'); if (s8cat) s8cat.textContent = catLabel;
-  var s3ProjLabel = document.getElementById('s3ProjectsLabel'); if (s3ProjLabel) s3ProjLabel.textContent = (CURRENT_TYPE === 'largepark') ? 'Park Projects' : 'Road Projects';
+  var s3ProjLabel = document.getElementById('s3ProjectsLabel'); if (s3ProjLabel) s3ProjLabel.textContent = (CURRENT_TYPE === 'largepark') ? 'Park Projects' : (CURRENT_TYPE === 'wadi') ? 'Wadi Projects' : 'Road Projects';
   var s6kv = document.getElementById('s6KpiVal2'); if(s6kv) s6kv.textContent = exData ? exData.plannedKpi + ' %' : '12 %';
   var s8kv = document.getElementById('s8KpiVal'); if(s8kv) s8kv.textContent = exData ? exData.plannedKpi + ' %' : '12 %';
   document.getElementById('s6CanopyProj').textContent = exData ? fmt(exData.curCanopy) + ' m²' : '–';
@@ -1042,7 +1068,7 @@ function selectWadi(index) {
   // SLIDE 8: mature canopy maps (boundary only, same reason)
   if (proj.geometry) initSlide8Maps(proj);
 
-  setSlide68MapLayout(false);
+  setSlide68MapLayout(true);
 
   var exData = getWadiExcelData(name);
   populateKpiTables(exData);
@@ -1425,13 +1451,17 @@ function initSlide6Maps(proj) {
     var zb=MAP6_ZOOM.getBounds();var ob6=MAP6_OVER.getBounds();var minSize=(ob6.getNorth()-ob6.getSouth())*0.03;var c6=zb.getCenter();if(zb.getNorth()-zb.getSouth()<minSize){zb=L.latLngBounds([c6.lat-minSize/2,c6.lng-minSize/2],[c6.lat+minSize/2,c6.lng+minSize/2]);}extentRect.setBounds(zb);
   });
 
-  // Sync MAP6_ZOOM back to slide 3 maps
+  // Sync MAP6_ZOOM back to slide 3 maps -- gated by the manual "Link Maps"
+  // button (SLIDE3_LINKED) instead of hardcoded per-type logic, so it can be
+  // switched on/off on demand for any type.
   MAP6_ZOOM.on('move', function() {
     if (SYNCING) return;
     SYNCING = true;
     var c = MAP6_ZOOM.getCenter();
     var z = MAP6_ZOOM.getZoom();
-    [MAP_2020, MAP_2022, MAP_2025].forEach(function(m) { if(m) m.setView(c, z, {animate:false}); });
+    if (CURRENT_TYPE === 'road' || SLIDE3_LINKED) {
+      [MAP_2020, MAP_2022, MAP_2025].forEach(function(m) { if(m) m.setView(c, z, {animate:false}); });
+    }
     if (MAP8_ZOOM) MAP8_ZOOM.setView(c, z, {animate:false});
     SYNCING = false;
   });
@@ -1447,6 +1477,18 @@ var S6_DATA_LAYERS = [];
 function loadSlide6Layers(safeName, map) {
   S6_DATA_LAYERS.forEach(function(l) { if(l) map.removeLayer(l); });
   S6_DATA_LAYERS = [null, null, null];
+
+  // Build the base legend synchronously (not inside the species fetch's
+  // success callback) so it always reflects the CURRENT selection's type --
+  // if species data 404s (e.g. wadi doesn't have it yet), the legend from
+  // whatever was previously selected must not be left showing on screen.
+  var baseLegHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
+  baseLegHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
+  baseLegHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>';
+  baseLegHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>' + ((CURRENT_TYPE !== 'largepark' && CURRENT_TYPE !== 'wadi') ? '<div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>' : '') + '<br>';
+  baseLegHTML += '</div><div class="s6-legend" style="margin-top:-6px;width:100%"><span style="font-weight:700;font-size:9px">Tree Species:</span></div>';
+  var s6LegendEl = document.getElementById('s6Legend');
+  if (s6LegendEl) s6LegendEl.innerHTML = baseLegHTML;
 
   // 0. Plantable Area - RED boundary (#FF0000)
   fetch('plantable_data/' + safeName + '.geojson?v=' + Date.now())
@@ -1486,8 +1528,8 @@ function loadSlide6Layers(safeName, map) {
       var legHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>';
-      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>' + (CURRENT_TYPE !== 'largepark' ? '<div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>' : '') + '<br>';
-      legHTML += '</div><div class="s6-legend" style="margin-top:-6px"><span style="font-weight:700;font-size:9px">Tree Species:</span>'; top3.forEach(function(sp) { var spName = (sp==='Unknown'||sp==='No Name'||sp==='N/A') ? 'Unknown Species' : sp; legHTML += '<div class="s6-legend-item"><div class="s6-legend-dot" style="background:'+getSpeciesColor(sp)+'"></div>'+spName+'</div>'; });
+      legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>' + ((CURRENT_TYPE !== 'largepark' && CURRENT_TYPE !== 'wadi') ? '<div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>' : '') + '<br>';
+      legHTML += '</div><div class="s6-legend" style="margin-top:-6px;width:100%"><span style="font-weight:700;font-size:9px">Tree Species:</span>'; top3.forEach(function(sp) { var spName = (sp==='Unknown'||sp==='No Name'||sp==='N/A') ? 'Unknown Species' : sp; legHTML += '<div class="s6-legend-item"><div class="s6-legend-dot" style="background:'+getSpeciesColor(sp)+'"></div>'+spName+'</div>'; });
       document.getElementById('s6Legend').innerHTML = legHTML;
     }).catch(function(e) { console.log('No species data:', safeName); });
 }
@@ -1560,13 +1602,15 @@ function initSlide8Maps(proj) {
     var zb8=MAP8_ZOOM.getBounds();var ob8=MAP8_OVER.getBounds();var minSize8=(ob8.getNorth()-ob8.getSouth())*0.03;var c8=zb8.getCenter();if(zb8.getNorth()-zb8.getSouth()<minSize8){zb8=L.latLngBounds([c8.lat-minSize8/2,c8.lng-minSize8/2],[c8.lat+minSize8/2,c8.lng+minSize8/2]);}extentRect8.setBounds(zb8);
   });
 
-  // Sync MAP8_ZOOM back to slide 3 and slide 6 maps
+  // Sync MAP8_ZOOM back to slide 3 and slide 6 maps -- same SLIDE3_LINKED gate as MAP6_ZOOM above
   MAP8_ZOOM.on('move', function() {
     if (SYNCING) return;
     SYNCING = true;
     var c = MAP8_ZOOM.getCenter();
     var z = MAP8_ZOOM.getZoom();
-    [MAP_2020, MAP_2022, MAP_2025].forEach(function(m) { if(m) m.setView(c, z, {animate:false}); });
+    if (CURRENT_TYPE === 'road' || SLIDE3_LINKED) {
+      [MAP_2020, MAP_2022, MAP_2025].forEach(function(m) { if(m) m.setView(c, z, {animate:false}); });
+    }
     if (MAP6_ZOOM) MAP6_ZOOM.setView(c, z, {animate:false});
     SYNCING = false;
   });
@@ -1655,6 +1699,15 @@ function togglePlantable3Maps(btn) {
   PLANTABLE_S3_VISIBLE = !PLANTABLE_S3_VISIBLE;
   S3_PLANTABLE_LAYERS.forEach(function(p) { if (PLANTABLE_S3_VISIBLE) p.layer.addTo(p.map); else p.layer.remove(); });
   btn.style.opacity = PLANTABLE_S3_VISIBLE ? '1' : '0.3';
+}
+
+// Manual on/off switch for whether slide 6/8's zoom maps drag slide 3's maps
+// along with them when panned/zoomed. Works for any type (road/wadi/park) --
+// turn it off whenever slide 3 should keep its own view (e.g. showing a full
+// wadi boundary) instead of following slide 6/8.
+function toggleSlide3Link(btn) {
+  SLIDE3_LINKED = !SLIDE3_LINKED;
+  btn.style.opacity = SLIDE3_LINKED ? '1' : '0.3';
 }
 function loadSlide4Species(safeName, exData) {
   var table = document.querySelector('#slide4 .s4-table tbody');
