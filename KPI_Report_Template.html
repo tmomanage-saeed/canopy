@@ -469,6 +469,7 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:#1D753B"></div>Canopy Mature</div>
           <div class="s6-legend-item"><div class="s6-legend-dot" style="background:#AAFF00"></div>Additional Potential Trees</div><div class="s6-legend-item" id="s8CtxViewItem"><div class="ctx-view"></div>Context View</div>
+          <div class="s6-legend-item" id="s8TreesItem" style="display:none"><div class="s6-legend-dot" style="background:#228B22"></div>Trees</div>
         </div>
       </div>
       <div class="s6-right">
@@ -744,7 +745,22 @@ var S8_BOUNDARY_LAYERS = []; // all on MAP8_ZOOM
 var BOUNDARY_VISIBLE = true;
 var PLANTABLE_VISIBLE = true; // slide 6 & 8 only
 var PLANTABLE_S3_VISIBLE = true; // slide 3 only ("Plantable 3 maps" button)
-var SLIDE3_LINKED = true; // manual "Link Maps" button -- whether slide 6/8's zoom maps drag slide 3's maps along with them
+var SLIDE3_LINKED = false; // manual "Link Maps" button -- default OFF, click to link slide 6/8's zoom maps to slide 3's maps
+
+// Sends a layer (single Path or a GeoJSON/FeatureGroup of many) behind
+// everything else currently on the map, regardless of which layer finished
+// loading (fetching) first -- used to keep Plantable Area under the canopy
+// fill layers on slide 6 & 8.
+function bringLayerToBack(lyr) {
+  if (!lyr) return;
+  if (typeof lyr.bringToBack === 'function') { lyr.bringToBack(); }
+  if (typeof lyr.eachLayer === 'function') { lyr.eachLayer(function(l) { if (l.bringToBack) l.bringToBack(); }); }
+}
+function bringLayerToFront(lyr) {
+  if (!lyr) return;
+  if (typeof lyr.bringToFront === 'function') { lyr.bringToFront(); }
+  if (typeof lyr.eachLayer === 'function') { lyr.eachLayer(function(l) { if (l.bringToFront) l.bringToFront(); }); }
+}
 
 function getRings(geom) {
   if (!geom) return [];
@@ -876,6 +892,12 @@ function syncMaps(source, targets) {
 
 function centerMapsOnRoad(proj) {
   if (!MAP_2020) return;
+  // Default state for slide 3's plantable layer: ON for roads (unchanged),
+  // OFF for wadi/large park -- the "Plantable 3 maps" button can still turn
+  // it on for that view.
+  PLANTABLE_S3_VISIBLE = (CURRENT_TYPE === 'road');
+  var plantable3Btn = document.querySelector('button[onclick="togglePlantable3Maps(this)"]');
+  if (plantable3Btn) plantable3Btn.style.opacity = PLANTABLE_S3_VISIBLE ? '1' : '0.3';
   S3_BOUNDARY_LAYERS.forEach(function(p){p.layer.remove()});
   S3_BOUNDARY_LAYERS = [];
   S3_PLANTABLE_LAYERS.forEach(function(p){p.layer.remove()});
@@ -1498,6 +1520,7 @@ function loadSlide6Layers(safeName, map) {
         style: {color: '#FF0000', weight: 2, fillOpacity: 0}
       });
       if (PLANTABLE_VISIBLE) lyr.addTo(map);
+      bringLayerToBack(lyr); // keep it behind Canopy Current, whichever loads first
       S6_DATA_LAYERS[0] = lyr;
     }).catch(function(e) { console.log('No plantable data:', safeName); });
 
@@ -1623,7 +1646,20 @@ function initSlide8Maps(proj) {
 
 function loadSlide8Layers(safeName, map) {
   S8_DATA_LAYERS.forEach(function(l) { if(l) map.removeLayer(l); });
-  S8_DATA_LAYERS = [null, null, null];
+  S8_DATA_LAYERS = [null, null, null, null];
+
+  // "Trees" (index 3) is wadi/large park only, not roads -- same species_data
+  // as slide 6, but shown as one single color instead of per-species colors.
+  var s8TreesItemEl = document.getElementById('s8TreesItem');
+  if (s8TreesItemEl) s8TreesItemEl.style.display = (CURRENT_TYPE === 'wadi' || CURRENT_TYPE === 'largepark') ? '' : 'none';
+
+  // Keeps stacking order Plantable (bottom) < Trees (middle) < Mature (top),
+  // no matter which of the three finishes loading (fetching) first.
+  function enforceSlide8Order() {
+    bringLayerToBack(S8_DATA_LAYERS[0]);
+    bringLayerToFront(S8_DATA_LAYERS[3]);
+    bringLayerToFront(S8_DATA_LAYERS[1]);
+  }
 
   // 0. Plantable Area - RED plain boundary
   fetch('plantable_data/' + safeName + '.geojson?v=' + Date.now())
@@ -1634,6 +1670,7 @@ function loadSlide8Layers(safeName, map) {
       });
       if (PLANTABLE_VISIBLE) lyr.addTo(map);
       S8_DATA_LAYERS[0] = lyr;
+      enforceSlide8Order();
     }).catch(function(e) { console.log('No plantable data:', safeName); });
 
   // 1. Canopy Mature - DARK GREEN fill (#1D753B)
@@ -1644,7 +1681,23 @@ function loadSlide8Layers(safeName, map) {
         style: {color: '#1D753B', weight: 1, fillColor: '#1D753B', fillOpacity: 0.5}
       }).addTo(map);
       S8_DATA_LAYERS[1] = lyr;
+      enforceSlide8Order();
     }).catch(function(e) { console.log('No canopy mature:', safeName); });
+
+  // 3. Trees - ORANGE dots, single color (wadi/large park, not roads) - same source as slide 6's species
+  if (CURRENT_TYPE === 'wadi' || CURRENT_TYPE === 'largepark') {
+    fetch('species_data/' + safeName + '.geojson?v=' + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var lyr = L.geoJSON(data, {
+          pointToLayer: function(f, ll) {
+            return L.circleMarker(ll, {radius: 2, color: '#228B22', fillColor: '#228B22', fillOpacity: 0.9, weight: 0.5});
+          }
+        }).addTo(map);
+        S8_DATA_LAYERS[3] = lyr;
+        enforceSlide8Order();
+      }).catch(function(e) { console.log('No species/trees data:', safeName); });
+  }
 
   // 2. Additional Trees - LIGHT GREEN dots (#AAFF00)
   fetch('additional_trees_data/' + safeName + '.geojson?v=' + Date.now())
