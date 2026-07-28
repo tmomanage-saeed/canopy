@@ -666,7 +666,12 @@ var SPECIES_ALIASES = {
   'maerula crossifolia': 'Maerua crassifolia',
   'acacia arabica': 'Vachellia nilotica',
   'callistemon vimialis': 'Callistemon viminalis',
-  'nursery tree': null // not a real species -- fall through to the Unknown default
+  'nursery tree': null, // not a real species -- fall through to the Unknown default
+  'other': null, // placeholder value, not a real species
+  'acacia sp': null, // genus only, no specific species given -- no exact match possible
+  'lycium shawii': null, // not in the canopy diameter reference sheet
+  'vitex agnus-castus': null, // not in the canopy diameter reference sheet
+  'ficus cordata': null // not in the canopy diameter reference sheet
 };
 
 // Clean up messy raw names (underscores/periods -> spaces, strip a trailing
@@ -1762,12 +1767,43 @@ function toggleSlide3Link(btn) {
   SLIDE3_LINKED = !SLIDE3_LINKED;
   btn.style.opacity = SLIDE3_LINKED ? '1' : '0.3';
 }
+// Species rows are paginated across as many slides as needed instead of being
+// shrunk to fit -- slide4's box is a fixed 1280x720 with overflow:hidden (also
+// exactly what html2canvas captures for the PDF export), so a long species list
+// used to just get silently clipped at the bottom instead of shrinking safely.
+// How many rows fit is measured live against the actual rendered layout (see
+// s4PageOverflows) rather than guessed from a hardcoded row count -- a fixed
+// guess either overflows (data loss) or wastes most of the page depending on
+// font metrics, so each page is filled to just short of the footer instead.
+// Continuation slides (class s4-continuation) are cloned from slide4 and
+// re-created from scratch on every call so switching projects never leaves
+// stale continuation slides behind.
+var S4_FONT_SIZE = 8.5, S4_LINE_H = 1.3, S4_PAD_Y = 1;
+
+// True if this slide's table now extends past its footer -- i.e. this page
+// has too much content and needs to shed rows onto a continuation slide.
+function s4PageOverflows(slideEl) {
+  var ftr = slideEl.querySelector('.s-ftr');
+  var right = slideEl.querySelector('.s4-right');
+  if (!ftr || !right) return false;
+  return right.getBoundingClientRect().bottom > ftr.getBoundingClientRect().top - 2;
+}
+
+function s4MatRow(exData) {
+  return '<tr style="font-weight:700;border-top:1px solid #22763C;color:#22763C"><td style="font-size:8.5px;padding:3px 3px;white-space:nowrap;overflow:visible">Calculated Mature Canopy Area</td><td></td><td></td><td></td><td style="font-size:8.5px;padding:3px 3px">' + (exData ? fmt(exData.matCanopy) + ' **' : '–') + '</td></tr>';
+}
+
 function loadSlide4Species(safeName, exData) {
+  document.querySelectorAll('.s4-continuation').forEach(function(el) { el.remove(); });
+
   var table = document.querySelector('#slide4 .s4-table tbody');
-  var tfoot = document.querySelector('#slide4 .s4-table tfoot');
-  var matRow = '<tr style="font-weight:700;border-top:1px solid #22763C;color:#22763C"><td style="font-size:8.5px;padding:3px 3px;white-space:nowrap;overflow:visible">Calculated Mature Canopy Area</td><td></td><td></td><td></td><td style="font-size:8.5px;padding:3px 3px">' + (exData ? fmt(exData.matCanopy) + ' **' : '–') + '</td></tr>';
-  if (table) table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:10px;color:#999">No data available</td></tr>' + matRow;
-  if (tfoot) tfoot.style.display = 'none';
+  if (table) table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:10px;color:#999">No data available</td></tr>' + s4MatRow(exData);
+  // slide4's static markup ships with a placeholder <tfoot>Total Trees / 6,501</tfoot>
+  // left over from the original template -- always hide it, we render our own
+  // "Total" row inside tbody instead (with the real, live count).
+  var staticTfoot = document.querySelector('#slide4 .s4-table tfoot');
+  if (staticTfoot) staticTfoot.style.display = 'none';
+
   fetch('species_data/' + safeName + '.geojson?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1778,29 +1814,68 @@ function loadSlide4Species(safeName, exData) {
       });
       var sorted = Object.keys(counts).sort(function(a,b) { return counts[b] - counts[a]; });
       var total = data.features.length;
-      var rowCount = sorted.length;
 
-      // Auto-adjust font size based on row count
-      var fontSize = rowCount > 30 ? 7 : 8.5;
-      var lineH = rowCount > 30 ? 1.7 : 1.3;
-      var padY = rowCount > 30 ? 0 : 1;
-
-      var tbody = '';
       var grandTotalArea = 0;
-      sorted.forEach(function(sp) {
+      var rows = sorted.map(function(sp) {
         var diam = getDiameter(sp);
         var diamStr = (typeof diam === 'number') ? Math.round(diam*10)/10 : ''; if(diamStr === '') console.log('NO DIAMETER:', sp);
         var perTreeArea = (typeof diam === 'number') ? Math.round(Math.PI*Math.pow(diam/2,2)) : null;
         var areaVal = (typeof diam === 'number') ? Math.round(Math.PI*Math.pow(diam/2,2)*counts[sp]) : null;
         if (areaVal !== null) grandTotalArea += areaVal;
-        tbody += '<tr><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + sp + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + counts[sp].toLocaleString() + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + diamStr + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + (perTreeArea !== null ? perTreeArea.toLocaleString() : '') + '</td><td style="font-size:'+fontSize+'px;padding:'+padY+'px 3px;line-height:'+lineH+'">' + (areaVal !== null ? areaVal.toLocaleString() : '') + '</td></tr>';
+        return '<tr><td style="font-size:'+S4_FONT_SIZE+'px;padding:'+S4_PAD_Y+'px 3px;line-height:'+S4_LINE_H+'">' + sp + '</td><td style="font-size:'+S4_FONT_SIZE+'px;padding:'+S4_PAD_Y+'px 3px;line-height:'+S4_LINE_H+'">' + counts[sp].toLocaleString() + '</td><td style="font-size:'+S4_FONT_SIZE+'px;padding:'+S4_PAD_Y+'px 3px;line-height:'+S4_LINE_H+'">' + diamStr + '</td><td style="font-size:'+S4_FONT_SIZE+'px;padding:'+S4_PAD_Y+'px 3px;line-height:'+S4_LINE_H+'">' + (perTreeArea !== null ? perTreeArea.toLocaleString() : '') + '</td><td style="font-size:'+S4_FONT_SIZE+'px;padding:'+S4_PAD_Y+'px 3px;line-height:'+S4_LINE_H+'">' + (areaVal !== null ? areaVal.toLocaleString() : '') + '</td></tr>';
       });
-      tbody += '<tr style="font-weight:700;border-top:2px solid #22763C;color:#22763C"><td style="font-size:'+(fontSize+1)+'px;padding:3px 3px">Total</td><td style="font-size:'+(fontSize+1)+'px;padding:3px 3px">' + total.toLocaleString() + '</td><td></td><td></td><td style="font-size:'+(fontSize+1)+'px;padding:3px 3px">' + grandTotalArea.toLocaleString() + ' *</td></tr>';
-      tbody += matRow;
-      var table = document.querySelector('#slide4 .s4-table tbody');
-      var tfoot = document.querySelector('#slide4 .s4-table tfoot');
-      if (table) table.innerHTML = tbody;
-      if (tfoot) tfoot.style.display = 'none';
+
+      var totalRowHTML = '<tr style="font-weight:700;border-top:2px solid #22763C;color:#22763C"><td style="font-size:'+(S4_FONT_SIZE+1)+'px;padding:3px 3px">Total</td><td style="font-size:'+(S4_FONT_SIZE+1)+'px;padding:3px 3px">' + total.toLocaleString() + '</td><td></td><td></td><td style="font-size:'+(S4_FONT_SIZE+1)+'px;padding:3px 3px">' + grandTotalArea.toLocaleString() + ' *</td></tr>';
+      var summaryHTML = totalRowHTML + s4MatRow(exData);
+
+      var slide4El = document.getElementById('slide4');
+      var pristine = slide4El.cloneNode(true); // template for continuation slides, before slide4's own tbody gets overwritten below
+
+      var idx = 0;
+      var currentSlide = slide4El;
+      var isFirstPage = true;
+      while (true) {
+        var tbodyEl = currentSlide.querySelector('.s4-table tbody');
+        var tfootEl = currentSlide.querySelector('.s4-table tfoot');
+        if (tfootEl) tfootEl.style.display = 'none';
+        if (!isFirstPage) {
+          var titleEl = currentSlide.querySelector('.s4-title');
+          if (titleEl) titleEl.textContent = 'Tree Species (continued)';
+          currentSlide.querySelectorAll('.s4-text, .s4-source').forEach(function(el) { el.remove(); });
+        }
+
+        if (rows.length === 0) {
+          tbodyEl.innerHTML = summaryHTML;
+          break;
+        }
+
+        // Fill this page with as many rows (starting at idx) as actually fit,
+        // shrinking from the end and re-measuring until it no longer overflows.
+        var endIdx = rows.length;
+        var fitted = false;
+        while (endIdx > idx) {
+          var isFinal = (endIdx === rows.length);
+          tbodyEl.innerHTML = rows.slice(idx, endIdx).join('') + (isFinal ? summaryHTML : '');
+          if (!s4PageOverflows(currentSlide)) { fitted = true; break; }
+          endIdx--;
+        }
+        if (!fitted) {
+          // Not even one row fits (shouldn't normally happen) -- place it
+          // anyway so pagination always makes forward progress.
+          endIdx = idx + 1;
+          tbodyEl.innerHTML = rows[idx] + (endIdx === rows.length ? summaryHTML : '');
+        }
+
+        idx = endIdx;
+        if (idx >= rows.length) break;
+
+        var clone = pristine.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.classList.add('s4-continuation');
+        currentSlide.insertAdjacentElement('afterend', clone);
+        currentSlide = clone;
+        isFirstPage = false;
+      }
     }).catch(function(e) { console.log('No species data:', safeName); });
 }
 var SPECIES_COLORS = {};
