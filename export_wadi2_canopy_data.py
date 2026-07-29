@@ -16,7 +16,7 @@ wadis live in one flat gdb, distinguished by that field.
 """
 import arcpy, json, os
 
-GDB = r"C:\Users\saeed\Downloads\wadis_2.1 (1)\wadis_2.1\TreeCanopy_Output.gdb"
+GDB = r"C:\Users\saeed\Downloads\wadi_2.3\wadi_2.3\TreeCanopy_Output.gdb"
 OUT_DIR = r"C:\Users\saeed\Downloads\Aa_Canopy"
 
 # PROJECT_ID (as stored in the gdb) -> display name used everywhere else on

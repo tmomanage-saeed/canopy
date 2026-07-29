@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Green Riyadh Canopy — Portfolio Overview</title>
+<title>Green Riyadh Canopy — Overview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,12 +24,17 @@
     --cat-road:       #2a78d6;
     --cat-wadi:       #eb6834;
     --cat-park:       #1baf7a;
+    --cat-violet:     #4a3aa7;
+    --brand-green:    #22763C;
 
     --seq-300:        #6da7ec;
     --seq-450:        #2a78d6;
     --seq-600:        #184f95;
 
     --success:        #006300;
+    --status-good:     #0ca30c;
+    --status-warning:  #fab219;
+    --status-critical: #d03b3b;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -47,12 +52,17 @@
       --cat-road:       #3987e5;
       --cat-wadi:       #d95926;
       --cat-park:       #199e70;
+      --cat-violet:     #9085e9;
+      --brand-green:    #22763C;
 
       --seq-300:        #5598e7;
       --seq-450:        #3987e5;
       --seq-600:        #1c5cab;
 
       --success:        #0ca30c;
+      --status-good:     #0ca30c;
+      --status-warning:  #fab219;
+      --status-critical: #d03b3b;
     }
   }
 
@@ -86,15 +96,50 @@
   button.refresh svg { width: 14px; height: 14px; }
 
   /* Stat tiles */
-  .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 40px; }
+  .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 40px; }
   @media (max-width: 900px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
   .stat-tile {
-    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
-    padding: 18px 20px; box-shadow: var(--card-shadow);
+    background: var(--surface-1); border: 1px solid var(--border); border-top: 3px solid var(--tile-accent, var(--gridline));
+    border-radius: 10px 10px 14px 14px; padding: 18px 20px; box-shadow: var(--card-shadow);
   }
+  .stat-tile:nth-child(1) { --tile-accent: var(--brand-green); }
+  .stat-tile:nth-child(2) { --tile-accent: var(--cat-road); }
+  .stat-tile:nth-child(3) { --tile-accent: var(--cat-wadi); }
+  .stat-tile:nth-child(4) { --tile-accent: var(--cat-park); }
+  .stat-tile:nth-child(5) { --tile-accent: var(--cat-violet); }
+  .stat-tile:nth-child(6) { --tile-accent: var(--cat-violet); }
   .stat-tile .label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
   .stat-tile .value { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
   .stat-tile .value small { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+
+  /* Insights: donuts + ranked bar chart */
+  .insight-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 32px; }
+  @media (max-width: 900px) { .insight-row { grid-template-columns: 1fr; } }
+  .insight-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--card-shadow); }
+  .insight-card.insight-wide { grid-column: 1 / -1; }
+  .insight-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 18px; }
+  .donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .donut-legend { display: flex; flex-direction: column; gap: 11px; flex: 1; min-width: 150px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .legend-label { flex: 1; color: var(--text-secondary); }
+  .legend-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .legend-val small { color: var(--text-muted); font-weight: 500; margin-left: 3px; }
+  .empty-note { font-size: 12.5px; color: var(--text-muted); }
+
+  /* Vertical bar charts (grouped KPI-by-category + stacked current/potential trees) */
+  .vbar-chart-wrap { margin-top: 6px; }
+  .vbar-chart { position: relative; }
+  .vbar-chart .gridline { position: absolute; left: 0; right: 0; border-top: 1px solid var(--gridline); }
+  .vbar-chart .gridline-label { position: absolute; left: 0; font-size: 10px; color: var(--text-muted); transform: translateY(50%); }
+  .vbar-groups-row { display: flex; align-items: flex-end; justify-content: space-around; padding: 0 12px 0 38px; }
+  .vbar-group { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .vbar-barwrap { position: relative; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+  .vbar-value { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--text-primary); white-space: nowrap; }
+  .vbar-cluster { display: flex; align-items: flex-end; gap: 4px; }
+  .vbar { width: 18px; border-radius: 3px 3px 0 0; transition: height .5s ease; }
+  .stack-bar { width: 48px; display: flex; flex-direction: column; border-radius: 4px 4px 0 0; overflow: hidden; }
+  .vbar-group-label { font-size: 11.5px; color: var(--text-secondary); font-weight: 600; margin-top: 4px; text-align: center; }
 
   /* Controls */
   .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; position: sticky; top: 0; z-index: 5; background: var(--page-plane); padding: 10px 0; }
@@ -177,8 +222,8 @@
 
   <header class="top">
     <div>
-      <h1>Canopy Portfolio Overview</h1>
-      <p class="sub">Live snapshot across Roads, Wadis &amp; Large Parks — pulled directly from the tracking sheet</p>
+      <h1>Canopy Overview</h1>
+      <p class="sub">Live snapshot across Roads, Wadis &amp; Large Parks</p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
       <button class="refresh" onclick="loadData()">
@@ -203,6 +248,8 @@
   <div id="content" class="hidden">
 
     <div class="stat-row" id="statRow"></div>
+
+    <div class="insight-row" id="insightRow"></div>
 
     <div class="controls">
       <div class="tabs" id="tabs"></div>
@@ -261,6 +308,7 @@ async function loadData() {
     document.getElementById("statusText").textContent = "Live — updated " + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     buildTabs();
     buildStats();
+    buildInsights();
     render();
   } catch (err) {
     console.error(err);
@@ -316,6 +364,7 @@ function buildStats() {
   const tiles = [
     { label: "Total Projects", value: fmt(agg.count) },
     { label: "Current Trees", value: fmt(agg.currentTrees) },
+    { label: "What We Can Add", value: fmt(agg.totalTrees - agg.currentTrees) },
     { label: "Total Trees (Potential)", value: fmt(agg.totalTrees) },
     { label: "Avg. Current KPI", value: pct(agg.avgCurrentKPI) },
     { label: "Avg. Future Potential KPI", value: pct(agg.avgFutureKPI) },
@@ -323,6 +372,122 @@ function buildStats() {
   document.getElementById("statRow").innerHTML = tiles.map(t =>
     `<div class="stat-tile"><div class="label">${t.label}</div><div class="value">${t.value}</div></div>`
   ).join("");
+}
+
+// Simple dependency-free donut: a ring built from stacked <circle> stroke-dasharrays,
+// rotated -90deg so the first segment starts at 12 o'clock. A 2px stroke-dasharray gap
+// is left between segments as a surface break (matches the rest of the page's mark spec).
+function donutSVG(segments, size) {
+  size = size || 168;
+  var r = size / 2 - 15, cx = size / 2, cy = size / 2, circ = 2 * Math.PI * r;
+  var total = segments.reduce(function(a, s) { return a + s.value; }, 0) || 1;
+  var offset = 0;
+  var arcs = segments.map(function(s) {
+    var frac = s.value / total;
+    var len = frac * circ;
+    var gap = segments.length > 1 ? 2 : 0;
+    var dash = Math.max(0, len - gap) + ' ' + (circ - len + gap);
+    var html = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + s.color + '" stroke-width="18" stroke-dasharray="' + dash + '" stroke-dashoffset="' + (-offset) + '"><title>' + s.label + ': ' + fmt(s.value) + ' (' + (frac * 100).toFixed(1) + '%)</title></circle>';
+    offset += len;
+    return html;
+  }).join('');
+  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" style="transform:rotate(-90deg);flex:none">' + arcs + '</svg>';
+}
+
+function legendListHTML(segments) {
+  var total = segments.reduce(function(a, s) { return a + s.value; }, 0) || 1;
+  return '<div class="donut-legend">' + segments.map(function(s) {
+    return '<div class="legend-row"><span class="legend-dot" style="background:' + s.color + '"></span>' +
+      '<span class="legend-label">' + s.label + '</span>' +
+      '<span class="legend-val">' + fmt(s.value) + ' <small>(' + (s.value / total * 100).toFixed(1) + '%)</small></span></div>';
+  }).join('') + '</div>';
+}
+
+// A vertical grouped/stacked bar chart, built from plain divs (no SVG needed --
+// each bar's pixel height is computed directly against chartH). Gridlines are
+// absolutely positioned inside a fixed-height relative box; the groups row is
+// pulled up over it with a negative margin so category labels can still sit
+// in normal flow underneath, outside the gridline box.
+function vbarChartHTML(chartH, gridlineVals, gridlineFmt, groupsHTML) {
+  var gridlines = gridlineVals.map(function(v) {
+    var y = v.max > 0 ? v.val / v.max * chartH : 0;
+    return '<div class="gridline" style="bottom:' + y + 'px"></div><div class="gridline-label" style="bottom:' + y + 'px">' + gridlineFmt(v.val) + '</div>';
+  }).join('');
+  return '<div class="vbar-chart-wrap"><div class="vbar-chart" style="height:' + chartH + 'px">' + gridlines + '</div>' +
+    '<div class="vbar-groups-row" style="margin-top:-' + chartH + 'px">' + groupsHTML + '</div></div>';
+}
+
+// Trees-by-category donut, average-KPI-by-category grouped bars, and a
+// current-vs-potential stacked bar chart -- all computed purely from the same
+// Excel-derived DATA used everywhere else on the page. Loops over DATA's own
+// category keys (skipping Neighbourhood, which has no numeric figures yet) so
+// a future category picks up automatically.
+function buildInsights() {
+  var catKeys = Object.keys(DATA).filter(function(k) { return k !== "Neighbourhood" && DATA[k].length; });
+  var CHART_H = 170;
+
+  var catSegs = catKeys.map(function(k) {
+    return { label: k + "s", value: aggregate(DATA[k]).currentTrees, color: CAT_COLOR[k] || "var(--cat-violet)" };
+  }).filter(function(s) { return s.value > 0; });
+
+  // Average Current/Mature/Future KPI% per category -- a real, always-informative
+  // comparison (unlike a target-achievement split, which just collapses to ~100%
+  // "below target" everywhere since canopy takes years to reach its planned KPI).
+  var kpiRows = catKeys.map(function(k) {
+    var a = aggregate(DATA[k]);
+    return { key: k, current: a.avgCurrentKPI, mature: a.avgMatureKPI, future: a.avgFutureKPI };
+  });
+  var kpiMax = 0;
+  kpiRows.forEach(function(r) { kpiMax = Math.max(kpiMax, r.current, r.mature, r.future); });
+  var kpiScaleMax = Math.max(10, Math.ceil(kpiMax / 10) * 10);
+  var kpiGridlines = [0, 0.25, 0.5, 0.75, 1].map(function(f) { return { val: kpiScaleMax * f, max: kpiScaleMax }; });
+  var kpiGroups = kpiRows.map(function(r) {
+    var cH = r.current / kpiScaleMax * CHART_H, mH = r.mature / kpiScaleMax * CHART_H, fH = r.future / kpiScaleMax * CHART_H;
+    return '<div class="vbar-group"><div class="vbar-barwrap" style="height:' + CHART_H + 'px"><div class="vbar-cluster">' +
+      '<div class="vbar" style="height:' + cH + 'px;background:var(--seq-300)" title="Current KPI: ' + r.current.toFixed(1) + '%"></div>' +
+      '<div class="vbar" style="height:' + mH + 'px;background:var(--seq-450)" title="Mature KPI: ' + r.mature.toFixed(1) + '%"></div>' +
+      '<div class="vbar" style="height:' + fH + 'px;background:var(--seq-600)" title="Future potential: ' + r.future.toFixed(1) + '%"></div>' +
+      '</div></div><div class="vbar-group-label">' + r.key + 's</div></div>';
+  }).join('');
+
+  // Current trees vs. remaining potential ("what we can add"), stacked per category.
+  var treeRows = catKeys.map(function(k) {
+    var a = aggregate(DATA[k]);
+    return { key: k, current: a.currentTrees, additional: Math.max(0, a.totalTrees - a.currentTrees), total: a.totalTrees, color: CAT_COLOR[k] || "var(--cat-violet)" };
+  });
+  var treeMax = 0;
+  treeRows.forEach(function(r) { treeMax = Math.max(treeMax, r.total); });
+  var treeGridlines = [0, 0.25, 0.5, 0.75, 1].map(function(f) { return { val: treeMax * f, max: treeMax }; });
+  var treeGroups = treeRows.map(function(r) {
+    var curH = treeMax > 0 ? r.current / treeMax * CHART_H : 0;
+    var addH = treeMax > 0 ? r.additional / treeMax * CHART_H : 0;
+    return '<div class="vbar-group"><div class="vbar-barwrap" style="height:' + CHART_H + 'px">' +
+      '<div class="vbar-value" style="bottom:' + (curH + addH + 6) + 'px">' + fmt(r.total) + '</div>' +
+      '<div class="stack-bar" style="height:' + (curH + addH) + 'px">' +
+      '<div style="height:' + addH + 'px;background:' + r.color + ';opacity:.32" title="' + r.key + ' – additional potential: ' + fmt(r.additional) + '"></div>' +
+      '<div style="height:' + curH + 'px;background:' + r.color + '" title="' + r.key + ' – current: ' + fmt(r.current) + '"></div>' +
+      '</div></div><div class="vbar-group-label">' + r.key + 's</div></div>';
+  }).join('');
+
+  document.getElementById("insightRow").innerHTML =
+    '<div class="insight-card"><div class="insight-title">Current Trees by Category</div>' +
+      (catSegs.length ? '<div class="donut-wrap">' + donutSVG(catSegs) + legendListHTML(catSegs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
+    '</div>' +
+    '<div class="insight-card"><div class="insight-title">Average Canopy KPI by Category</div>' +
+      vbarChartHTML(CHART_H, kpiGridlines, function(v) { return Math.round(v) + '%'; }, kpiGroups) +
+      '<div class="legend-note" style="margin:10px 0 0">' +
+        '<span><i style="background:var(--seq-300)"></i> Current</span>' +
+        '<span><i style="background:var(--seq-450)"></i> Mature</span>' +
+        '<span><i style="background:var(--seq-600)"></i> Future potential</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="insight-card insight-wide"><div class="insight-title">Current vs. Potential Trees by Category</div>' +
+      vbarChartHTML(CHART_H, treeGridlines, function(v) { return fmt(v); }, treeGroups) +
+      '<div class="legend-note" style="margin:10px 0 0">' +
+        '<span><i style="background:var(--text-secondary)"></i> Current trees</span>' +
+        '<span><i style="background:var(--text-secondary);opacity:.32"></i> Additional potential ("what we can add")</span>' +
+      '</div>' +
+    '</div>';
 }
 
 function buildTabs() {
@@ -369,7 +534,7 @@ function card(item) {
       ${barRow("Mature", item.matureKPI, "mature", refMax)}
       ${barRow("Future cap", item.futureKPI, "future", refMax)}
     </div>
-    <div class="footnote">Planned target: ${pct(item.plannedKPI)} · bars scaled to this project's future potential (${pct(item.futureKPI)})</div>
+    <div class="footnote">Planned target: ${pct(item.plannedKPI)}</div>
   </div>`;
 }
 
