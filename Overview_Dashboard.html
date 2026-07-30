@@ -267,7 +267,12 @@
 </div>
 
 <script>
-const SOURCE_URL = "/api/kpi.xlsx";
+// Direct dl.dropboxusercontent.com URL instead of www.dropbox.com -- this
+// serves the file in one hop with Access-Control-Allow-Origin: * (confirmed
+// via curl), unlike the www.dropbox.com share link, whose first redirect hop
+// has no CORS header and gets blocked by real browsers. Works on any static
+// host (GitHub Pages included) with no server-side proxy needed.
+const SOURCE_URL = "https://dl.dropboxusercontent.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1";
 const CATEGORY_LABELS = ["Road", "Wadi", "Large Park", "Neighbourhood"];
 const CAT_COLOR = { "Road": "var(--cat-road)", "Wadi": "var(--cat-wadi)", "Large Park": "var(--cat-park)" };
 const CAT_ICON  = { "Road": "🛣️", "Wadi": "🏞️", "Large Park": "🌳" };
