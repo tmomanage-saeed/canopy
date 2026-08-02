@@ -95,7 +95,10 @@
   @media (max-width: 900px) { .insight-row { grid-template-columns: 1fr; } }
   .insight-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--card-shadow); }
   .insight-card.insight-wide { grid-column: 1 / -1; }
-  .insight-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 18px; }
+  .insight-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .insight-subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400; text-transform: none; letter-spacing: normal; margin-bottom: 18px; }
+  .insight-hero-num { font-size: 36px; font-weight: 800; color: var(--brand-green); line-height: 1; margin: 6px 0 3px; letter-spacing: -0.01em; }
+  .insight-hero-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 18px; }
   .donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
   .donut-legend { display: flex; flex-direction: column; gap: 11px; flex: 1; min-width: 150px; }
   .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
@@ -140,11 +143,13 @@
   /* Section -- solid green header bar, matching the official TMO dashboard's
      "Information" panel headers. */
   section.category { margin-bottom: 44px; }
-  .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; background: var(--brand-green); padding: 10px 16px; border-radius: 8px; }
+  .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; background: var(--brand-green); padding: 10px 16px; border-radius: 8px; flex-wrap: wrap; row-gap: 4px; }
   .cat-badge { width: 10px; height: 10px; border-radius: 3px; box-shadow: 0 0 0 2px rgba(255,255,255,.5); }
   .cat-header h2 { font-size: 16px; font-weight: 700; margin: 0; color: #fff; }
   .cat-header .count { font-size: 13px; color: rgba(255,255,255,.8); font-weight: 500; }
-  .cat-summary { font-size: 13px; color: #fff; margin-left: auto; text-align: right; }
+  .cat-summary { font-size: 12px; color: #fff; margin-left: auto; text-align: right; }
+  .cat-summary-line { display: block; }
+  .cat-summary-dim { opacity: .8; font-size: 11px; margin-top: 1px; }
 
   .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 
@@ -158,17 +163,17 @@
   .card .meta b { color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
 
   .bars { display: flex; flex-direction: column; gap: 9px; }
-  .bar-row { display: grid; grid-template-columns: 74px 1fr 44px; align-items: center; gap: 8px; }
-  .bar-row .bar-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .bar-row { display: grid; grid-template-columns: 92px 1fr 44px; align-items: center; gap: 8px; }
+  .bar-row .bar-label { font-size: 11px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bar-track { position: relative; height: 6px; background: var(--gridline); border-radius: 4px; overflow: visible; }
   .bar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 4px; transition: width .5s ease; }
   .bar-fill.current { background: var(--seq-300); }
   .bar-fill.mature   { background: var(--seq-450); }
   .bar-fill.future   { background: var(--seq-600); width: 100% !important; opacity: .35; }
-  .target-mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text-primary); opacity: .55; border-radius: 1px; }
   .bar-row .bar-val { font-size: 11.5px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 
-  .card .footnote { margin-top: 12px; font-size: 10.5px; color: var(--text-muted); border-top: 1px solid var(--gridline); padding-top: 8px; }
+  .card .footnote { margin-top: 12px; font-size: 10.5px; color: var(--text-muted); border-top: 1px solid var(--gridline); padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .card .footnote .footnote-val { font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; font-size: 11.5px; }
 
   /* Coming soon card */
   .coming-soon {
@@ -210,8 +215,8 @@
 
   <header class="top">
     <div>
-      <h1>Canopy Overview</h1>
-      <p class="sub">Live snapshot across Roads, Wadis &amp; Large Parks</p>
+      <h1>Projects Canopy Cover Overview</h1>
+      <p class="sub" id="dataStamp"></p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
       <div style="display:flex; gap:8px;">
@@ -254,10 +259,9 @@
     </div>
 
     <div class="legend-note">
-      <span><i style="background:var(--seq-300)"></i> Current KPI</span>
-      <span><i style="background:var(--seq-450)"></i> Mature KPI (current trees)</span>
-      <span><i style="background:var(--seq-600); opacity:.35"></i> Future potential (100% reference)</span>
-      <span>‖ marker = planned KPI target</span>
+      <span><i style="background:var(--seq-300)"></i> Current Canopy</span>
+      <span><i style="background:var(--seq-450)"></i> Mature Canopy</span>
+      <span><i style="background:var(--seq-600); opacity:.35"></i> Future Canopy (100% reference)</span>
     </div>
 
     <div id="sections"></div>
@@ -300,6 +304,13 @@ async function loadData() {
     const ws = wb.Sheets["Tabelle1"] || wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
     parseRows(rows);
+    const stampEl = document.getElementById("dataStamp");
+    if (stampEl) {
+      const modified = wb.Props && wb.Props.ModifiedDate;
+      stampEl.textContent = modified
+        ? "Data last updated: " + modified.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" }) + " at " + modified.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "Data last updated: unknown";
+    }
     document.getElementById("loadingPanel").classList.add("hidden");
     document.getElementById("content").classList.remove("hidden");
     document.getElementById("statusDot").className = "dot";
@@ -357,15 +368,31 @@ function aggregate(items) {
   };
 }
 
+// Simple (unweighted) average of current/planned per project -- each project
+// gets an equal vote, so a handful of huge, low-density reserve parks (Tuwaiq
+// Reserve etc, 100x the area of a typical project) can't dominate the number
+// the way an area-weighted average would.
+function avgCompletion(items) {
+  var ratios = items.filter(function(p) { return Number(p.plannedKPI) > 0; })
+    .map(function(p) { return Number(p.currentKPI) / Number(p.plannedKPI) * 100; });
+  if (!ratios.length) return null;
+  return ratios.reduce(function(a, b) { return a + b; }, 0) / ratios.length;
+}
+
 function buildStats() {
   const all = [...DATA.Road, ...DATA.Wadi, ...DATA["Large Park"]];
   const agg = aggregate(all);
+  const completion = avgCompletion(all);
   const tiles = [
     { label: "Total Projects", value: fmt(agg.count) },
     { label: "Current Trees", value: fmt(agg.currentTrees) },
     { label: "What We Can Add", value: fmt(agg.totalTrees - agg.currentTrees) },
     { label: "Potential Trees", value: fmt(agg.totalTrees) },
-    { label: "Avg. Current KPI", value: pct(agg.avgCurrentKPI) },
+    // The one number the reviewer flagged as most important: how far along
+    // each project is toward its OWN planned target, not just raw canopy %
+    // (raw current KPI can look alarmingly small even for a healthy project
+    // if its planned target itself is a small percentage).
+    { label: "Target Achieved %", value: completion === null ? "—" : Math.round(completion) + "%" },
     { label: "Avg. Future KPI", value: pct(agg.avgFutureKPI) },
   ];
   document.getElementById("statRow").innerHTML = tiles.map(t =>
@@ -449,16 +476,29 @@ function buildInsights() {
       '</div></div><div class="vbar-group-label">' + r.key + 's</div></div>';
   }).join('');
 
+  var catTotal = catSegs.reduce(function(a, s) { return a + s.value; }, 0);
+  var CAT_REACH_LABEL = { Road: 'road', Wadi: 'wadi', 'Large Park': 'large park' };
+  var reachParts = catKeys.map(function(k) {
+    var n = DATA[k].length;
+    return n + ' ' + (CAT_REACH_LABEL[k] || k.toLowerCase()) + (n === 1 ? '' : 's');
+  });
+  var reachSentence = reachParts.length > 1
+    ? 'Spanning ' + reachParts.slice(0, -1).join(', ') + ' & ' + reachParts[reachParts.length - 1] + ' citywide'
+    : (reachParts.length ? 'Spanning ' + reachParts[0] + ' citywide' : '');
+
   document.getElementById("insightRow").innerHTML =
-    '<div class="insight-card"><div class="insight-title">Current Trees by Category</div>' +
+    '<div class="insight-card">' +
+      '<div class="insight-title">🌳 Trees Growing Across Riyadh</div>' +
+      '<div class="insight-hero-num">' + fmt(catTotal) + '</div>' +
+      '<div class="insight-hero-sub">' + reachSentence + '</div>' +
       (catSegs.length ? '<div class="donut-wrap">' + donutSVG(catSegs) + legendListHTML(catSegs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
     '</div>' +
     '<div class="insight-card"><div class="insight-title">Average Canopy KPI by Category</div>' +
       vbarChartHTML(CHART_H, kpiGridlines, function(v) { return Math.round(v) + '%'; }, kpiGroups) +
       '<div class="legend-note" style="margin:10px 0 0">' +
-        '<span><i style="background:var(--seq-300)"></i> Current</span>' +
-        '<span><i style="background:var(--seq-450)"></i> Mature</span>' +
-        '<span><i style="background:var(--seq-600)"></i> Future potential</span>' +
+        '<span><i style="background:var(--seq-300)"></i> Current Canopy</span>' +
+        '<span><i style="background:var(--seq-450)"></i> Mature Canopy</span>' +
+        '<span><i style="background:var(--seq-600)"></i> Future Canopy</span>' +
       '</div>' +
     '</div>';
 }
@@ -496,18 +536,15 @@ function barRow(label, value, cls, refMax) {
 
 function card(item) {
   const refMax = Number(item.futureKPI) || Math.max(Number(item.matureKPI) || 0, 1);
-  const targetPct = refMax > 0 ? Math.min(100, (Number(item.plannedKPI) || 0) / refMax * 100) : null;
   return `<div class="card">
     <div class="name">${item.name}</div>
-    <div class="meta">${item.area ? fmt(item.area) + " m² · " : ""}<b>${fmt(item.currentTrees)}</b> / ${fmt(item.totalTrees)} trees</div>
+    <div class="meta">${item.area ? "Project area: " + fmt(item.area) + " m² · " : ""}<b>${fmt(item.currentTrees)}</b> of ${fmt(item.totalTrees)} potential trees</div>
     <div class="bars">
-      <div style="position:relative">${barRow("Current", item.currentKPI, "current", refMax)}
-        ${targetPct !== null ? `<div class="target-mark" style="left:calc(74px + 8px + ${targetPct}% * (100% - 74px - 44px - 16px) / 100)"></div>` : ""}
-      </div>
-      ${barRow("Mature", item.matureKPI, "mature", refMax)}
-      ${barRow("Future cap", item.futureKPI, "future", refMax)}
+      ${barRow("Current Canopy", item.currentKPI, "current", refMax)}
+      ${barRow("Mature Canopy", item.matureKPI, "mature", refMax)}
+      ${barRow("Future Canopy", item.futureKPI, "future", refMax)}
     </div>
-    <div class="footnote">Planned target: ${pct(item.plannedKPI)}</div>
+    <div class="footnote"><span>Planned target</span><span class="footnote-val">${pct(item.plannedKPI)}</span></div>
   </div>`;
 }
 
@@ -518,12 +555,21 @@ function sectionHTML(catKey) {
   const filtered = q ? items.filter(i => i.name.toLowerCase().includes(q)) : items;
   if (!filtered.length) return "";
   const agg = aggregate(items);
+  const plantedPct = agg.totalTrees > 0 ? (agg.currentTrees / agg.totalTrees * 100) : null;
+  // Trees-planted % and canopy-cover % look contradictory side by side (e.g.
+  // "49% of trees planted" next to "2% canopy cover") unless it's clear WHY:
+  // a newly planted tree counts fully toward the tree total immediately, but
+  // contributes almost no canopy area until it matures over the following
+  // years -- so canopy % naturally lags tree-count % by a lot early on.
   return `<section class="category">
     <div class="cat-header">
       <span class="cat-badge" style="background:${CAT_COLOR[catKey]}"></span>
       <h2>${CAT_ICON[catKey]} ${catKey}s</h2>
       <span class="count">${items.length} project${items.length === 1 ? "" : "s"}</span>
-      <span class="cat-summary">${fmt(agg.currentTrees)} current trees · avg current KPI ${pct(agg.avgCurrentKPI)}</span>
+      <span class="cat-summary">
+        <span class="cat-summary-line">${fmt(agg.currentTrees)} of ${fmt(agg.totalTrees)} potential trees planted${plantedPct !== null ? ` (${plantedPct.toFixed(1)}%)` : ""}</span>
+        <span class="cat-summary-line cat-summary-dim">Canopy cover today: ${pct(agg.avgCurrentKPI)} of project area</span>
+      </span>
     </div>
     <div class="card-grid">${filtered.map(card).join("")}</div>
   </section>`;
