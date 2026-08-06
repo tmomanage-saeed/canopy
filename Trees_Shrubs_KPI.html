@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Riyadh — Trees & Shrubs KPI</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  @font-face{font-family:'NeoSansArabic';font-weight:300;src:url('GR fonts/NeoSansArabicLight.ttf')}
+  @font-face{font-family:'NeoSansArabic';font-weight:400;src:url('GR fonts/NeoSansArabicRegular.ttf')}
+  @font-face{font-family:'NeoSansArabic';font-weight:500;src:url('GR fonts/NeoSansArabicMedium.ttf')}
+  @font-face{font-family:'NeoSansArabic';font-weight:700;src:url('GR fonts/NeoSansArabicBold.ttf')}
+  @font-face{font-family:'NeoSansArabic';font-weight:800;src:url('GR fonts/NeoSansArabicBlack.ttf')}
+  @font-face{font-family:'NeoSansArabic';font-weight:900;src:url('GR fonts/NeoSansArabicUltra.ttf')}
+
+  :root {
+    --brand-green: #1a5c34;
+    --page-bg: #eef1ee;
+    --text-primary: #0b0b0b;
+    --text-muted: #6b6b68;
+    --highlight: #ffe066;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--page-bg); color: var(--text-primary);
+    font-family: 'NeoSansArabic', system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 70px 32px 70px; }
+  .page-title { text-align: left; font-size: 40px; font-weight: 700; color: var(--brand-green); padding: 90px 32px 0 0; max-width: 1200px; margin: 0 auto; transform: translateX(-40px); }
+
+
+  .state-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 20px; text-align: center; color: var(--text-muted); gap: 14px; }
+  .spinner { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #ddd; border-top-color: var(--brand-green); animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
+
+  .cards-row { display: flex; gap: 165px; justify-content: center; flex-wrap: wrap; }
+  .kpi-card {
+    position: relative; width: 340px; border-radius: 20px; overflow: hidden;
+    background-size: cover; background-position: center; color: #fff;
+    box-shadow: 0 10px 30px rgba(10,30,15,.25); display: flex; flex-direction: column;
+  }
+  .kpi-photo {
+    position: relative; background-size: cover; background-position: center; min-height: 460px;
+  }
+  .kpi-photo::after {
+    content: ''; position: absolute; inset: 0; z-index: 0;
+    background-image: url('new_sharabs_task/image_overly.png'); background-size: cover; background-position: center;
+  }
+  .kpi-photo::before {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, transparent 0%, transparent 66%, rgba(8,32,16,.72) 80%, rgba(6,26,13,.85) 100%);
+  }
+  .kpi-inner { position: relative; z-index: 2; height: 100%; padding: 22px 24px 20px; display: flex; flex-direction: column; align-items: center; }
+  .bottom-block { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .kpi-title { font-size: 21px; font-weight: 700; text-align: center; line-height: 1.25; margin-bottom: 4px; text-shadow: 0 1px 4px rgba(0,0,0,.3); min-height: 52px; display: flex; align-items: center; justify-content: center; }
+  .kpi-sub { font-size: 12px; opacity: .92; margin-bottom: 18px; letter-spacing: .01em; }
+
+  .glass-box {
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.45); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    border-radius: 25px; padding: 14px 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 225px;
+  }
+  .year-badge { font-size: 12px; font-weight: 700; padding: 3px 16px; border-radius: 20px; background: rgba(255,255,255,.9); color: var(--brand-green); }
+  .glass-value-row { display: flex; align-items: baseline; gap: 9px; }
+  .glass-gr { font-size: 16px; font-weight: 500; opacity: .85; }
+  .glass-num { font-size: 42px; font-weight: 800; letter-spacing: -0.01em; }
+
+  .timeline-wrap { width: 100%; padding: 0 12px; }
+  .timeline-labels { position: relative; height: 15px; font-size: 13px; font-weight: 500; opacity: .95; margin-bottom: 6px; }
+  .timeline-labels span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+  .timeline-labels span:first-child { transform: translateX(0); }
+  .timeline-track { position: relative; }
+  .timeline-bar { position: relative; height: 29px; border-radius: 15px; overflow: hidden; border: 2.5px solid #000; }
+  .tl-tick { position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; }
+  .tl-val { position: absolute; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); white-space: nowrap; top: 50%; transform: translateY(-50%); }
+  .tl-val.zero { left: 8px; }
+  .tl-val.end { right: 10px; font-size: 12px; opacity: .9; }
+  .tl-belowlabel { position: absolute; top: 100%; font-size: 12px; font-weight: 500; margin-top: 3px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); transform: translateX(-50%); opacity: .9; }
+
+  .timeline-caption { font-size: 12.5px; text-align: center; opacity: .85; margin: 20px 0 16px; font-style: italic; }
+
+  .footer-strip { background: #fff; color: #171717; padding: 14px 20px 16px; }
+  .footer-title { font-size: 10.5px; font-weight: 500; text-decoration: underline; margin-bottom: 10px; color: #171717; white-space: nowrap; }
+  .footer-info-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; font-size: 12px; color: #171717; background: #E2EFD9; border-radius: 10px; padding: 12px 16px; }
+  .footer-info-row b { font-weight: 700; }
+  .footer-right { display: flex; flex-direction: column; gap: 6px; text-align: right; }
+</style>
+</head>
+<body>
+<h1 class="page-title">Trees, Shrubs & Ground Cover Planted</h1>
+<div class="wrap">
+
+  <div id="loadingPanel" class="state-panel">
+    <div class="spinner"></div>
+    <div>Loading tree & shrub planting figures…</div>
+  </div>
+
+  <div id="errorPanel" class="state-panel hidden">
+    <div id="errorMsg">Couldn't load the data.</div>
+  </div>
+
+  <div id="content" class="cards-row hidden"></div>
+
+</div>
+
+<script>
+// Direct dl.dropboxusercontent.com URL instead of www.dropbox.com -- this
+// serves the file in one hop with a CORS header the www.dropbox.com share
+// link's first redirect hop lacks (same pattern as Overview_Dashboard.html).
+// Works on any static host (GitHub Pages included), no server-side proxy.
+const SOURCE_URL = "https://dl.dropboxusercontent.com/scl/fi/rcukna753b3snqh3zmroa/Trees-Shrubs-GC_Planted.xlsx?rlkey=uawaueulxv6i8z5rro5lpsvtm&st=dmafqbbi&dl=1";
+const BG_IMAGE = "new_sharabs_task/sharabs_pic.png";
+const BG_IMAGE_2 = "new_sharabs_task/CARD_sharabs_2.png";
+let DATA = null;
+let YEAR_MIN = 2018, YEAR_MID = 2026, YEAR_MAX = 2030;
+let DATE_YEAR_FRAC = null;
+let DATE_YEAR = null;
+
+function fmtM(n) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  return (Math.round(n * 100) / 100) + "M";
+}
+
+// SheetJS's own cellDates conversion anchors its epoch with `new Date(1899,11,30,...)`
+// (local time), which for some historical local-time zones bakes a multi-hour offset
+// into the resulting Date -- confirmed: cellDates:true turned serial 46113 (April 1,
+// 2026) into 2026-03-31T20:59:08Z. Converting the raw serial ourselves with pure UTC
+// math avoids that bug entirely, regardless of the browser's timezone.
+function excelSerialToUTCDate(serial) {
+  return new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 86400000);
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(SOURCE_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("Server responded with " + res.status);
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+
+    // The three Year rows aren't assumed to be literally 2018/2026/2030 --
+    // whatever numeric years actually appear in column A are read as-is
+    // (sorted: earliest/middle/latest), so editing the middle Year cell in
+    // Excel (e.g. 2026 -> 2027) moves the mid-point label/tick automatically.
+    const byYear = {};
+    const yearsFound = [];
+    rows.forEach(r => {
+      if (r && typeof r[0] === "number") {
+        yearsFound.push(r[0]);
+        byYear[r[0]] = { trees: Number(r[1]) || 0, shrubs: Number(r[2]) || 0 };
+      }
+    });
+    yearsFound.sort((a, b) => a - b);
+    if (yearsFound.length >= 3) {
+      YEAR_MIN = yearsFound[0];
+      YEAR_MID = yearsFound[1];
+      YEAR_MAX = yearsFound[yearsFound.length - 1];
+    }
+
+    let dateStr = "";
+    let gr = { trees: null, shrubs: null };
+    let stake = { trees: null, shrubs: null };
+    let oldTarget = { trees: null, shrubs: null };
+    rows.forEach(r => {
+      if (!r || !r[0]) return;
+      const label = String(r[0]).trim();
+      if (label === "Date" && typeof r[1] === "number") {
+        const dateObj = excelSerialToUTCDate(r[1]);
+        dateStr = dateObj.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" });
+        // Fractional year (year + month/12) so the mid tick's position can move
+        // month-by-month as the Date cell advances, not just jump once a year.
+        DATE_YEAR_FRAC = dateObj.getUTCFullYear() + dateObj.getUTCMonth() / 12;
+        DATE_YEAR = dateObj.getUTCFullYear();
+      } else if (label === "Green Riyadh") {
+        gr = { trees: Number(r[1]) || 0, shrubs: Number(r[2]) || 0 };
+      } else if (label === "Stakeholders") {
+        stake = { trees: Number(r[1]) || 0, shrubs: Number(r[2]) || 0 };
+      } else if (label === "Target") {
+        oldTarget = { trees: Number(r[1]) || 0, shrubs: Number(r[2]) || 0 };
+      }
+    });
+
+    DATA = {
+      trees: { byYear: { min: byYear[YEAR_MIN]?.trees ?? 0, mid: byYear[YEAR_MID]?.trees ?? 0, max: byYear[YEAR_MAX]?.trees ?? 0 }, oldTarget: oldTarget.trees, date: dateStr, greenRiyadh: gr.trees, stakeholders: stake.trees },
+      shrubs: { byYear: { min: byYear[YEAR_MIN]?.shrubs ?? 0, mid: byYear[YEAR_MID]?.shrubs ?? 0, max: byYear[YEAR_MAX]?.shrubs ?? 0 }, oldTarget: oldTarget.shrubs, date: dateStr, greenRiyadh: gr.shrubs, stakeholders: stake.shrubs }
+    };
+
+    document.getElementById("loadingPanel").classList.add("hidden");
+    document.getElementById("content").classList.remove("hidden");
+    render();
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loadingPanel").classList.add("hidden");
+    document.getElementById("errorPanel").classList.remove("hidden");
+    document.getElementById("errorMsg").textContent = "Couldn't load the data: " + err.message;
+  }
+}
+
+// TL_POS_MAX (the end-of-target-zone illustration point) stays fixed
+// regardless of data. TL_POS_MID is computed from the Date cell's fractional
+// year (year + month/12, e.g. July -> 2026.5) mapped between YEAR_MIN and
+// YEAR_MAX -- so it moves a little every month, not just once a year, and
+// editing the middle Year cell in Excel (e.g. 2026 -> 2027) both relabels
+// the mid tick AND slides its position further right automatically.
+// The mapping is fraction^2 * TL_POS_MAX (not a plain straight line) so it
+// stays comfortably spaced from the max tick for a mid-range date, but --
+// unlike the old scale+offset version -- it MUST mathematically converge
+// to exactly TL_POS_MAX once the date's year reaches YEAR_MAX, merging into
+// one point with the max tick instead of drifting past/short of it.
+// The bar's fill still grows in two stages so the max-year tick is only
+// crossed once the value actually passes the max-year target -- [0, target]
+// maps to [0%, TL_POS_MAX%], and only the excess above target (if any) maps
+// into [TL_POS_MAX%, 100%] against the old-target ceiling. A floor keeps the
+// fill visually reaching just past the mid tick whenever there's any value.
+const TL_POS_MAX = 65;
+
+function timelineHTML(key, d) {
+  // Two fully independent movements on this bar, on purpose:
+  // - tlPosMid (the tick + year label) moves on its OWN sequence -- purely
+  //   how far the Date cell has progressed between YEAR_MIN and YEAR_MAX.
+  //   It moves even if the trees/shrubs numbers never change.
+  // - fillPct (the color) moves on ITS OWN sequence -- purely how close
+  //   valueMid is to the target. It moves even if the Date cell never
+  //   changes. The two are NOT tied together, so if data lags behind
+  //   schedule, the color visibly falls behind the date tick, and if data
+  //   comes in without a date update, the color still advances toward target.
+  const midYearForPosition = DATE_YEAR_FRAC !== null ? DATE_YEAR_FRAC : YEAR_MID;
+  const dateFraction = YEAR_MAX > YEAR_MIN ? Math.min(1, Math.max(0, (midYearForPosition - YEAR_MIN) / (YEAR_MAX - YEAR_MIN))) : 0.5;
+  const tlPosMid = dateFraction * dateFraction * dateFraction * TL_POS_MAX;
+  const mergedWithMax = tlPosMid >= TL_POS_MAX - 1.5;
+  const target = d.byYear.max;
+  const valueMid = d.byYear.mid;
+  const showOldTarget = d.oldTarget > target;
+  const maxValue = showOldTarget ? d.oldTarget : target;
+  let fillPct;
+  if (valueMid <= target) {
+    fillPct = target > 0 ? (valueMid / target) * TL_POS_MAX : 0;
+  } else {
+    const extraRange = maxValue - target;
+    const extra = extraRange > 0 ? Math.min(1, (valueMid - target) / extraRange) : 1;
+    fillPct = TL_POS_MAX + extra * (100 - TL_POS_MAX);
+  }
+  if (valueMid > 0) fillPct = Math.max(6, fillPct);
+  fillPct = Math.min(100, Math.max(0, fillPct));
+  return `
+    <div class="timeline-wrap">
+      <div class="timeline-labels">
+        <span style="left:0%">${YEAR_MIN}</span>
+        ${mergedWithMax ? "" : `<span style="left:${tlPosMid}%">${DATE_YEAR !== null ? DATE_YEAR : YEAR_MID}</span>`}
+        <span style="left:${TL_POS_MAX}%">${YEAR_MAX}</span>
+      </div>
+      <div class="timeline-track">
+        <div class="timeline-bar" style="background:linear-gradient(90deg, #8bc34a 0%, #8bc34a ${fillPct}%, #1a5c34 ${Math.min(100, fillPct + 3)}%, #1a5c34 100%)">
+          <span class="tl-val zero">0</span>
+          <div class="tl-tick" style="left:0%"></div>
+          ${mergedWithMax ? "" : `<div class="tl-tick" style="left:${tlPosMid}%"></div>`}
+          <div class="tl-tick" style="left:${TL_POS_MAX}%"></div>
+          ${showOldTarget ? `<span class="tl-val end">${fmtM(d.oldTarget)}*</span>` : ""}
+        </div>
+        ${mergedWithMax ? "" : `<span class="tl-belowlabel" style="left:${tlPosMid}%">${fmtM(valueMid)}</span>`}
+        <span class="tl-belowlabel" style="left:${TL_POS_MAX}%">${fmtM(target)}</span>
+      </div>
+    </div>`;
+}
+
+function cardHTML(key, title, sub, d, bgImage) {
+  return `
+  <div class="kpi-card">
+    <div class="kpi-photo" style="background-image:url('${bgImage}')">
+      <div class="kpi-inner">
+        <div class="kpi-title">${title}</div>
+        <div class="kpi-sub">${sub}</div>
+        <div class="glass-box">
+          <div class="year-badge">${YEAR_MID}</div>
+          <div class="glass-value-row"><span class="glass-gr">GR</span><span class="glass-num">${fmtM(d.byYear.mid)}</span></div>
+        </div>
+        <div class="bottom-block">
+          ${timelineHTML(key, d)}
+          <div class="timeline-caption">*${YEAR_MAX} Target revised from ${fmtM(d.oldTarget)} to ${fmtM(d.byYear.max)}<br>due to updated phasing</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-strip">
+      <div class="footer-title">Breakdown of ${key === "trees" ? "Trees" : "Shrubs & GC"} to be planted by ${YEAR_MAX}:</div>
+      <div class="footer-info-row">
+        <div><b>Date:</b> ${d.date || "—"}</div>
+        <div class="footer-right">
+          <div><b>Green Riyadh:</b> ${fmtM(d.greenRiyadh)}</div>
+          <div><b>Stakeholders:</b> ${fmtM(d.stakeholders)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  document.getElementById("content").innerHTML =
+    cardHTML("trees", "Trees Planted", "In Riyadh Metropolitan Area", DATA.trees, BG_IMAGE) +
+    cardHTML("shrubs", "Shrubs & Ground Cover Planted", "In Riyadh Metropolitan Area", DATA.shrubs, BG_IMAGE_2);
+}
+
+loadData();
+</script>
+</body>
+</html>
