@@ -151,6 +151,26 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
 .s6-proj-table td:first-child{text-align:center;background:#fff}
 .s6-proj-table td:first-child span{color:#22763C;font-weight:700}
 .s6-source{font-size:10px;color:#555;font-style:italic;margin-top:auto;padding-bottom:10px}
+/* Slide 6 only (scoped by #slide6, doesn't affect slide 8's identical .s6-proj-table markup) -- compact sizing so the 4 stacked Project Information tables + legend + Tree Species (added async after species_data loads) fit the 720px slide */
+/* Everything below only applies when #slide6 has .s6-wadi-view (toggled in populateKpiTables() for CURRENT_TYPE==='wadi') -- Road/Large Park keep the original sizing/title/no-box look untouched. Sizes kept as close to the original 13px/5px-8px as still fits the 4 stacked tables + legend + Tree Species in 720px -- trimmed the tables' own margin-bottom (was 10px from the base .s6-proj-table rule) instead of shrinking text/padding further. */
+#slide6.s6-wadi-view .s6-kpi-box{padding:5px 12px;margin-bottom:6px}
+#slide6.s6-wadi-view .s6-kpi-heading{font-size:12px;margin-bottom:3px}
+#slide6.s6-wadi-view .s6-proj-title{font-size:12px;margin-bottom:3px;margin-top:4px}
+#slide6.s6-wadi-view .s6-proj-table{margin-bottom:4px}
+#slide6.s6-wadi-view .s6-proj-table th,#slide6.s6-wadi-view .s6-proj-table td{font-size:11px;padding:3px 6px;line-height:1.2}
+#slide6.s6-wadi-view .s6-total-box{border:2px solid #22763C;border-radius:6px;padding:3px 10px 5px}
+#slide6.s6-wadi-view .s6-total-box .s6-proj-title{margin-top:3px}
+.s6-breakdown-label{display:none;font-size:10px;font-weight:700;color:#22763C;text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+#slide6.s6-wadi-view .s6-breakdown-label{display:block}
+/* ═══ SLIDE 8b: Mature Canopy Breakdown (Wadi only) ═══ */
+.s8b-body{position:absolute;top:44px;left:0;right:0;bottom:36px;padding:16px 32px;display:flex;flex-direction:column;font-family:'Poppins',sans-serif}
+.s8b-corner{font-family:'NeoSansArabic',sans-serif;font-size:24px;font-weight:700;color:#22763C;margin-bottom:18px}
+.s8b-cols{display:flex;gap:24px;flex:1}
+.s8b-col{flex:1;display:flex;flex-direction:column;min-width:0}
+.s8b-col-title{font-family:'NeoSansArabic',sans-serif;font-size:17px;font-weight:700;color:#22763C;text-align:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #22763C}
+.s8b-table{width:100%;border-collapse:collapse;margin-bottom:14px;border:1px solid #ccc;table-layout:fixed}
+.s8b-table th{background:#F2F2F2;font-size:11.5px;font-weight:700;color:#22763C;padding:7px 6px;text-align:center;border:1px solid #999}
+.s8b-table td{padding:9px 6px;font-size:13px;font-weight:600;color:#333;border:1px solid #999;text-align:center;background:#fff}
 .s6-right{width:55%;display:flex;flex-direction:row;gap:8px}
 .s6-map-wrap{flex:1;border:2px solid #ccc;border-radius:10px;overflow:hidden;position:relative}
 .s6-map-wrap .leaflet-container{width:100%;height:100%}
@@ -383,13 +403,40 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
             <div class="s6-kpi-val" id="s6KpiVal">12 %</div>
           </div>
         </div>
-        <div class="s6-proj-title">Project Information Current</div>
-        <table class="s6-proj-table" style="table-layout:fixed">
-          <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Total Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
-          <tbody>
-            <tr><td id="s6CanopyProj">–m²</td><td id="s6PctProj">– %</td><td id="s6AreaProj">–m²</td><td id="s6AreaPlant">–m²</td></tr>
-          </tbody>
-        </table>
+        <div class="s6-total-box">
+          <div class="s6-proj-title" id="s6ProjTitleMain">Project Information Current</div>
+          <table class="s6-proj-table" style="table-layout:fixed">
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Total Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <tbody>
+              <tr><td id="s6CanopyProj">–m²</td><td id="s6PctProj">– %</td><td id="s6AreaProj">–m²</td><td id="s6AreaPlant">–m²</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Wadi-only: Top/Slope/Bed breakdown tables, same shape as Project Information Current. Hidden for Road/Large Park via populateKpiTables(). -->
+        <div id="s6WadiZoneTables" style="display:none">
+          <div class="s6-breakdown-label">Breakdown</div>
+          <div class="s6-proj-title">Top of Wadi Information</div>
+          <table class="s6-proj-table" style="table-layout:fixed">
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <tbody>
+              <tr><td id="s6CanopyProjTop">–m²</td><td id="s6PctProjTop">– %</td><td id="s6AreaProjTop">–m²</td><td id="s6AreaPlantTop">–m²</td></tr>
+            </tbody>
+          </table>
+          <div class="s6-proj-title">Slope of Wadi Information</div>
+          <table class="s6-proj-table" style="table-layout:fixed">
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <tbody>
+              <tr><td id="s6CanopyProjSlope">–m²</td><td id="s6PctProjSlope">– %</td><td id="s6AreaProjSlope">–m²</td><td id="s6AreaPlantSlope">–m²</td></tr>
+            </tbody>
+          </table>
+          <div class="s6-proj-title">Bed of Wadi Information</div>
+          <table class="s6-proj-table" style="table-layout:fixed">
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <tbody>
+              <tr><td id="s6CanopyProjBed">–m²</td><td id="s6PctProjBed">– %</td><td id="s6AreaProjBed">–m²</td><td id="s6AreaPlantBed">–m²</td></tr>
+            </tbody>
+          </table>
+        </div>
         <div class="s6-source"style="margin-top:auto;padding-bottom:0;margin-bottom:-4px">Data sources: Current Canopy – Tree Survey data, Machine learning &amp; Satellite image</div>
         <div style="display:flex;align-items:center;gap:8px;display:none;margin-top:6px;margin-left:350px"><img src="north_Arrow.png" style="height:30px"><div style="width:50px;height:6px;background:#000;display:inline-block"></div><div style="width:50px;height:6px;background:#fff;border:1px solid #000;display:inline-block"></div><span style="font-size:7px;color:#333;margin-left:3px">50m</span></div>
         <div class="s6-legend" id="s6Legend" style="margin-top:8px">
@@ -466,6 +513,9 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
         <div class="s6-legend" id="s8Legend" style="margin-top:8px">
           <span style="font-weight:700;font-size:9px">Legend:</span>
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div><span id="s8BoundaryName">Road Boundary</span></div>
+          <div class="s6-legend-item" id="s8ZoneTopItem" style="display:none"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>Top Boundary</div>
+          <div class="s6-legend-item" id="s8ZoneSlopeItem" style="display:none"><div class="s6-legend-rect" style="background:transparent;border:2px solid #9C27B0"></div>Slope Boundary</div>
+          <div class="s6-legend-item" id="s8ZoneBedItem" style="display:none"><div class="s6-legend-rect" style="background:transparent;border:2px solid #00BCD4"></div>Bed Boundary</div>
           <div class="s6-legend-item" id="s8PlantableItem"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:#1D753B"></div>Canopy Mature</div>
           <div class="s6-legend-item"><div class="s6-legend-dot" style="background:#AAFF00"></div>Additional Potential Trees</div><div class="s6-legend-item" id="s8CtxViewItem"><div class="ctx-view"></div>Context View</div>
@@ -475,6 +525,70 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
       <div class="s6-right">
         <div class="s6-map-wrap" id="s8ZoomWrap"><div id="map8Zoom"></div></div>
         <div class="s6-map-wrap" id="s8OverWrap"><div id="map8Overview"></div></div>
+      </div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 8b: Mature Canopy Breakdown (Wadi only -- Top/Slope/Bed) ═══════════ -->
+  <div class="slide" id="slide8b" style="display:none">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s8b-body">
+      <div class="s8b-corner">Breakdown</div>
+      <div class="s8b-cols">
+        <div class="s8b-col">
+          <div class="s8b-col-title">Top</div>
+          <table class="s8b-table">
+            <thead><tr><th>Total Plantable<br>Area</th><th>Mature Canopy<br>Cover Area (m²)</th><th>Remaining<br>Plantable Area</th></tr></thead>
+            <tbody><tr><td id="s8AreaPlantTop">–m²</td><td id="s8CanopyProjTop">–m²</td><td id="s8AreaAvailTop">–m²</td></tr></tbody>
+          </table>
+          <table class="s8b-table">
+            <thead><tr><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
+            <tbody><tr><td id="s8PctProjTop">– %</td><td id="s8TransTreesTop">–</td></tr></tbody>
+          </table>
+          <table class="s8b-table">
+            <thead><tr><th>Potential Additional<br>Trees</th><th>Potential Additional<br>Canopy Cover (m²)</th><th>Potential Total<br>Canopy Cover (%)</th></tr></thead>
+            <tbody><tr><td id="s8PotTreesTop">–</td><td id="s8PotCanopyTop">–m²</td><td id="s8PotKpiTop">– %</td></tr></tbody>
+          </table>
+        </div>
+        <div class="s8b-col">
+          <div class="s8b-col-title">Slope</div>
+          <table class="s8b-table">
+            <thead><tr><th>Total Plantable<br>Area</th><th>Mature Canopy<br>Cover Area (m²)</th><th>Remaining<br>Plantable Area</th></tr></thead>
+            <tbody><tr><td id="s8AreaPlantSlope">–m²</td><td id="s8CanopyProjSlope">–m²</td><td id="s8AreaAvailSlope">–m²</td></tr></tbody>
+          </table>
+          <table class="s8b-table">
+            <thead><tr><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
+            <tbody><tr><td id="s8PctProjSlope">– %</td><td id="s8TransTreesSlope">–</td></tr></tbody>
+          </table>
+          <table class="s8b-table">
+            <thead><tr><th>Potential Additional<br>Trees</th><th>Potential Additional<br>Canopy Cover (m²)</th><th>Potential Total<br>Canopy Cover (%)</th></tr></thead>
+            <tbody><tr><td id="s8PotTreesSlope">–</td><td id="s8PotCanopySlope">–m²</td><td id="s8PotKpiSlope">– %</td></tr></tbody>
+          </table>
+        </div>
+        <div class="s8b-col">
+          <div class="s8b-col-title">Bed</div>
+          <table class="s8b-table">
+            <thead><tr><th>Total Plantable<br>Area</th><th>Mature Canopy<br>Cover Area (m²)</th><th>Remaining<br>Plantable Area</th></tr></thead>
+            <tbody><tr><td id="s8AreaPlantBed">–m²</td><td id="s8CanopyProjBed">–m²</td><td id="s8AreaAvailBed">–m²</td></tr></tbody>
+          </table>
+          <table class="s8b-table">
+            <thead><tr><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
+            <tbody><tr><td id="s8PctProjBed">– %</td><td id="s8TransTreesBed">–</td></tr></tbody>
+          </table>
+          <table class="s8b-table">
+            <thead><tr><th>Potential Additional<br>Trees</th><th>Potential Additional<br>Canopy Cover (m²)</th><th>Potential Total<br>Canopy Cover (%)</th></tr></thead>
+            <tbody><tr><td id="s8PotTreesBed">–</td><td id="s8PotCanopyBed">–m²</td><td id="s8PotKpiBed">– %</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
     <div class="s-ftr">
@@ -638,6 +752,99 @@ function getLargeParkExcelData(parkName) {
   var norm = normalizeName(parkName);
   for (var k in LARGEPARK_EXCEL_DATA) { if (normalizeName(k) === norm) return LARGEPARK_EXCEL_DATA[k]; }
   return null;
+}
+
+// ── Wadi Top/Slope/Bed breakdown (slide 6 extra tables + slide 8b) ──
+// Source workbook only covers a subset of wadis so far (Gudwanah, Umm Qassar);
+// wadis without a match simply show placeholders via populateWadiZoneTables(null)/populateSlide8bZoneTables(null).
+// Columns (0-indexed): 3 project area, 4 plantable area, 6 current canopy cover(m2), 7 current canopy cover(%),
+// 8 mature canopy (current trees, m2), 9 remaining plantable area, 10 potential additional trees, 12 potential
+// additional canopy(m2), 13 trees to be transplanted, 16 mature canopy cover(%), 17 possible/future canopy cover(%).
+var WADI_ZONE_DATA = {};
+
+function loadWadiZoneExcelData() {
+  return fetch(encodeURI('wadies_work/2 wadis, gwdwana and ume gasser.xlsx') + '?v=' + Date.now())
+    .then(function(r) { return r.arrayBuffer(); })
+    .then(function(buf) {
+      var wb = XLSX.read(buf, {type: 'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true});
+      var data = {};
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row || !row[1] || !row[2]) continue;
+        var zone = String(row[2]).trim().toLowerCase(); // TOP / SLOPE / BED
+        var baseName = String(row[1]).replace(/\s*(top|slope|bed)\s*$/i, '').trim();
+        var entry = {
+          project: row[3], plantable: row[4], curCanopy: row[6], curPct: round2(row[7]),
+          matCanopy: row[8], available: row[9], additional: row[10], addCanopy: row[12],
+          treesToPlant: row[13], maturePct: round2(row[16]), futureKpi: round2(row[17])
+        };
+        if (!data[baseName]) data[baseName] = {};
+        data[baseName][zone] = entry;
+      }
+      WADI_ZONE_DATA = data;
+    })
+    .catch(function(err) { console.error('Error loading wadi Top/Slope/Bed workbook:', err); });
+}
+
+function getWadiZoneData(wadiName) {
+  var norm = normalizeName(wadiName);
+  for (var k in WADI_ZONE_DATA) { if (normalizeName(k) === norm) return WADI_ZONE_DATA[k]; }
+  return null;
+}
+
+// Fills the 4 stacked tables under "Total Project Information Current" on slide 6.
+// zones is {top, slope, bed} (any may be missing); Total is computed, not summed from Excel directly.
+function populateWadiZoneTables(zones) {
+  ['Top', 'Slope', 'Bed'].forEach(function(suffix) {
+    var z = zones && zones[suffix.toLowerCase()];
+    document.getElementById('s6CanopyProj' + suffix).textContent = z ? fmt(z.curCanopy) + ' m²' : '–m²';
+    document.getElementById('s6PctProj' + suffix).textContent = (z && typeof z.curPct === 'number') ? z.curPct + ' %' : '– %';
+    document.getElementById('s6AreaProj' + suffix).textContent = z ? fmt(z.project) + ' m²' : '–m²';
+    document.getElementById('s6AreaPlant' + suffix).textContent = z ? fmt(z.plantable) + ' m²' : '–m²';
+  });
+
+  var have = zones && (zones.top || zones.slope || zones.bed);
+  if (have) {
+    var sum = function(field) {
+      return ['top', 'slope', 'bed'].reduce(function(acc, k) {
+        return acc + ((zones[k] && typeof zones[k][field] === 'number') ? zones[k][field] : 0);
+      }, 0);
+    };
+    var totalProject = sum('project'), totalPlantable = sum('plantable'), totalCanopy = sum('curCanopy');
+    var totalPct = totalProject ? round2(totalCanopy / totalProject * 100) : 0;
+    document.getElementById('s6CanopyProj').textContent = fmt(totalCanopy) + ' m²';
+    document.getElementById('s6PctProj').textContent = totalPct + ' %';
+    document.getElementById('s6AreaProj').textContent = fmt(totalProject) + ' m²';
+    document.getElementById('s6AreaPlant').textContent = fmt(totalPlantable) + ' m²';
+
+    // Slide 8's Total row: same sum-of-zones treatment, requested separately for these 3 fields
+    // (Potential Additional Trees/Canopy, Trees To Be Transplanted, Mature Canopy Cover %).
+    var totalMatCanopy = sum('matCanopy'), totalAdditional = sum('additional'), totalAddCanopy = sum('addCanopy'), totalTreesToPlant = sum('treesToPlant');
+    var totalMaturePct = totalProject ? round2(totalMatCanopy / totalProject * 100) : 0;
+    document.getElementById('s8PotTrees').textContent = fmt(totalAdditional);
+    document.getElementById('s8PotCanopy').textContent = fmt(totalAddCanopy) + ' m²';
+    document.getElementById('s8TransTrees').textContent = fmt(totalTreesToPlant);
+    document.getElementById('s8PctProj').textContent = totalMaturePct + ' %';
+  }
+  // else: leave whatever populateKpiTables() already put in the Total row (from roads_data.xlsx's wadi section)
+}
+
+// Fills slide 8b's 3x3 (Top/Slope/Bed x 3 table sections) grid, mirroring slide 8's own fields.
+// No "Total" recompute here (unlike populateWadiZoneTables) -- slide 8 itself already shows the total.
+function populateSlide8bZoneTables(zones) {
+  ['Top', 'Slope', 'Bed'].forEach(function(suffix) {
+    var z = zones && zones[suffix.toLowerCase()];
+    document.getElementById('s8AreaPlant' + suffix).textContent = z ? fmt(z.plantable) + ' m²' : '–m²';
+    document.getElementById('s8CanopyProj' + suffix).textContent = z ? fmt(z.matCanopy) + ' m²' : '–m²';
+    document.getElementById('s8AreaAvail' + suffix).textContent = z ? fmt(z.available) + ' m²' : '–m²';
+    document.getElementById('s8PctProj' + suffix).textContent = (z && typeof z.maturePct === 'number') ? z.maturePct + ' %' : '– %';
+    document.getElementById('s8TransTrees' + suffix).textContent = z ? fmt(z.treesToPlant) : '–';
+    document.getElementById('s8PotTrees' + suffix).textContent = z ? fmt(z.additional) : '–';
+    document.getElementById('s8PotCanopy' + suffix).textContent = z ? fmt(z.addCanopy) + ' m²' : '–m²';
+    document.getElementById('s8PotKpi' + suffix).textContent = (z && typeof z.futureKpi === 'number') ? z.futureKpi + ' %' : '– %';
+  });
 }
 
 var CANOPY_DIAMETER = {'Acacia ampliceps':8,'Acacia aneura':9,'Acacia asak':10,'Acacia auriculiformis':4,'Acacia coriacea':5,'Acacia ehrenbergiana':11.5,'Acacia etbaica':10,'Acacia farnesiana':8,'Acacia gerrardii var. iraquensis':10,'Acacia gerrardii var. najdensis':10,'Acacia inaequilatera':3.5,'Acacia karroo':15,'Acacia ligulata':4.5,'Acacia nilotica var. nilotica':9,'Acacia nilotica var. tomentosa':9,'Acacia pruinocarpa':8,'Acacia pycnantha':8,'Acacia salicina':6,'Acacia saligna':6,'Acacia seyal':14,'Acacia tortilis subsp. raddiana':14,'Acacia tortilis subsp. spirocarpa':16,'Acacia victoriae':6,'Acacia xanthophloea':10,'Acoelorrhaphe wrightii':6,'Acokanthera schimperi':5.5,'Adansonia digitata':15,'Albizia lebbeck':18,'Albizia odoratissima':20,'Azadirachta indica':20,'Balanites aegyptiaca':5,'Barringtonia asiatica':10,'Bauhinia blakeana':20.5,'Bauhinia purpurea':10,'Bauhinia variegata':4,'Bismarckia nobilis':5,'Bombax ceiba':40,'Boswellia sacra':6,'Brachychiton acerifolius':8,'Brachychiton populneus':15,'Brachychiton Rupestris':15,'Breonadia salicina':8,'Bucida buceras':8,'Bulnesia arborea':9,'Bursera simaruba':10,'Callistemon citrinus':3.5,'Callistemon viminalis':4,'Carica papaya':3,'Cassia fistula':12,'Cassia glauca':7,'Cassia javanica':15,'Casuarina equisetifolia':8,'Celtis reticulata':8,'Ceratonia siliqua':10,'Cerbera odollam':8,'Cercidium floridum':4,'Chamaerops humilis':3,'Chilopsis linearis':9,'Chitalpa tashkentensis':5,'Chorisia speciosa':11.5,'Cinnamomum camphora':15,'Citharexylum quadrangulare':12,'Citrus paradisi':8,'Citrus aurantiifolia':3,'Citrus aurantium':5,'Citrus limon':5,'Citrus reticulata':5,'Citrus sinensis':8,'Coccoloba uvifera':5,'Cochlospermum religiosum':6,'Combretum aculeatum':2.5,'Commiphora myrrha':4,'Conocarpus erectus':12,'Conocarpus lancifolius':12,'Cordia myxa':10,'Cordia sebestena':10,'Cordia sinensis Lam':6,'Crescentia cujete':9,'Cupressus arizonica':4,'Cupressus sempervirens':5,'Cycas revoluta':2.5,'Dalbergia sissoo':9,'Delonix elata':10,'Delonix regia':15,'Derris indica':10,'Dobera glabra':10,'Dolichandrone serrulata':15,'Dracaena draco':8,'Dracaena ombet':4,'Eriobotrya japonica':10,'Erythrina indica':12,'Eucalyptus camaldulensis':10,'Eucalyptus globulus':10,'Eucalyptus gomphocephala':12,'Faidherbia albida':14,'Ficus altissima':16,'Ficus benghalensis':18,'Ficus benjamina':15,'Ficus carica':12,'Ficus ingens':12,'Ficus microcarpa var. nitida':20,'Ficus nitida':20,'Ficus pseudosycomorus':9,'Ficus religiosa':18,'Ficus rubiginosa':15,'Ficus salicifolia':10,'Ficus sycomorus':15,'Ficus vasta':20,'Ficus virens':15,'Grevillea robusta':20,'Hibiscus tiliaceus':10,'Hyphaene thebaica':10,'Jacaranda mimosifolia':10,'Jatropha multifida':3,'Kigelia africana':15,'Lagerstroemia floribunda':10,'Lagerstroemia indica':6,'Lagerstroemia loudonii':10,'Lagerstromia speciosa':20,'Lagunaria patersonii':9,'Latania loddigesii':4.5,'Leucaena leucocephala':10,'Leucaena retusa':5,'Limonia acidissima':8,'Maerua crassifolia':6,'Mangifera indica':30,'Melia azedarach':12,'Milletia brandisiana':16.5,'Millettia pinnata':18,'Millingtonia hortensis':15,'Mimusops laurifolia':18,'Moringa oleifera':8,'Moringa peregrina':8,'Morus alba':15,'Morus nigra':15,'Nuxia congesta':8,'Olea europaea':8,'Olneya tesota':9,'Pandanus utilis':6,'Parkinsonia aculeata':10,'Parkinsonia florida':6,'Peltophorum inerme':8,'Peltophorum pterocarpum':10,'Phoenix caespitosa':4,'Phoenix canariensis':7,'Phoenix dactylifera':10,'Phoenix roebelenii':3,'Phyllanthus embelica':18,'Phytolacca dioica':15,'Pinus halepensis':12,'Pistacia lentiscus':6.5,'Pistacia terebinthus':8,'Pithecellobium dulce':12,'Pithecellobium flexicaule':4.5,'Platycladus orientalis':9,'Plumeria obtusa':6,'Plumeria rubra f. acutifolia':6,'Podocarpus macrophyllus':4,'Polyalthia longifolia':4.5,'Pongamia pinnata':28,'Populus euphratica':10,'Prosopis alba':10.5,'Prosopis chilensis':10.5,'Prosopis cineraria':12,'Prosopis juliflora':9,'Prosopis koelziana':12,'Psidium guajava':6,'Pterocarpus indicus':30,'Punica granatum':8,'Rhus lancea':5,'Roystonea regia':9,'Sabal palmetto':6,'Salix acmophylla':12,'Salix mucronata':10,'Schinus molle':15,'Schinus terebinthifolius':10,'Schizolobium parahyba':20,'Searsia natalensis':9,'Searsia pendulina':9,'Searsia tripartita':6,'Senegalia laeta':10,'Senna alata':2,'Sideroxylon mascatense':8.5,'Sophora secundiflora':6.5,'Spathodea campanulata':15,'Sterculia foetida':25,'Streblus asper':10,'Strelitzia nicolai':4,'Swietenia macrophylla':25,'Syzygium cumini':8,'Tabebuia argentea':13.5,'Tabebuia chrysantha':11.5,'Tabebuia rosea':15,'Tamarindus indica':15,'Tamarix aphylla':12,'Tamarix arabica':5,'Tamarix gallica':7,'Tamarix nilotica':7,'Tarchonanthus camphoratus':6,'Tecomella undulata':10,'Terminalia arjuna':20,'Terminalia bentzoe':9,'Terminalia catappa':15,'Terminalia ivorensis':8,'Terminalia mantaly':8,'Thespesia populnea':10,'Thuja orientalis':18,'Tipuana tipu':14,'Vachellia farnesiana':8,'Vachellia gerrardii':10,'Vachellia gerrardii var. iraquensis':10,'Vachellia gerrardii var. najdensis':10,'Vachellia nilotica':9,'Vachellia nilotica var. nilotica':9,'Vachellia seyal':14,'Vachellia tortilis':14,'Vachellia xanthophloea':10,'Washingtonia filifera':5,'Washingtonia robusta':5,'Yucca elephantipes':6,'Ziziphus jujuba':8,'Ziziphus spina-christi':10,'Polyalthia longifolium':4,'Vachellia etbaica':10,'Senna surattensis':7};
@@ -1047,6 +1254,17 @@ function populateKpiTables(exData) {
   var reportDateEl = document.getElementById('reportDate'); if (reportDateEl) reportDateEl.textContent = reportMonth + ' 2026';
   document.querySelectorAll('.ftr-l').forEach(function(el) { el.textContent = 'TMO | Canopy Cover Review | ' + reportMonth + ' 2026'; });
 
+  var isWadiView = (CURRENT_TYPE === 'wadi');
+  var wadiZoneWrap = document.getElementById('s6WadiZoneTables');
+  if (wadiZoneWrap) wadiZoneWrap.style.display = isWadiView ? '' : 'none';
+  var slide6El = document.getElementById('slide6');
+  if (slide6El) slide6El.classList.toggle('s6-wadi-view', isWadiView);
+  var s6ProjTitleMainEl = document.getElementById('s6ProjTitleMain');
+  if (s6ProjTitleMainEl) s6ProjTitleMainEl.textContent = isWadiView ? 'Total Project Information Current' : 'Project Information Current';
+  // Slide 8b (Mature Canopy Breakdown, Top/Slope/Bed) only exists for wadis -- whole slide hidden otherwise.
+  var slide8bEl = document.getElementById('slide8b');
+  if (slide8bEl) slide8bEl.style.display = isWadiView ? '' : 'none';
+
   var catLabel = (CURRENT_TYPE === 'largepark') ? 'Park' : (CURRENT_TYPE === 'wadi') ? 'Wadi' : 'Main Road';
   var s6cat = document.getElementById('s6KpiCat2'); if (s6cat) s6cat.textContent = catLabel;
   var s8cat = document.getElementById('s8KpiCat'); if (s8cat) s8cat.textContent = catLabel;
@@ -1066,6 +1284,9 @@ function populateKpiTables(exData) {
   document.getElementById('s8PotCanopy').textContent = exData ? fmt(exData.addCanopy) + ' m²' : '–';
   document.getElementById('s8PotKpi').textContent = exData ? exData.futureKpi + ' %' : '–';
   document.getElementById('s8PctProj').textContent = exData ? exData.maturePct + ' %' : '–';
+  // Wadi-only for now (per user request) -- Road/Large Park always show the placeholder, never a stale
+  // leftover value from whichever wadi was selected before switching type.
+  document.getElementById('s8TransTrees').textContent = (isWadiView && exData) ? fmt(exData.treesToPlant) : '–';
 }
 
 // ═══════════════════════════════════════════════════
@@ -1099,6 +1320,8 @@ function selectWadi(index) {
 
   var exData = getWadiExcelData(name);
   populateKpiTables(exData);
+  populateWadiZoneTables(getWadiZoneData(name));
+  populateSlide8bZoneTables(getWadiZoneData(name));
 
   loadSlide4Species(safeName, exData);
   var bName = document.getElementById('s8BoundaryName'); if(bName) bName.textContent = 'Project Boundary';
@@ -1169,6 +1392,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var excelReady = loadExcelData();
   loadLargeParkExcelData();
+  loadWadiZoneExcelData();
 
   fetch('Projects_boundry.json?v=2')
     .then(function(r) { return r.json(); })
@@ -1358,7 +1582,7 @@ async function generatePDF() {
 
   var jsPDF = window.jspdf.jsPDF;
   var pdf = new jsPDF({orientation:'landscape',unit:'px',format:[1280,720]});
-  var slides = document.querySelectorAll('.slide');
+  var slides = Array.prototype.filter.call(document.querySelectorAll('.slide'), function(s) { return getComputedStyle(s).display !== 'none'; });
   for (var i = 0; i < slides.length; i++) {
     lt.textContent = 'Rendering slide ' + (i+1) + ' of ' + slides.length + '...';
     await new Promise(function(r) { setTimeout(r, 300); });
@@ -1425,6 +1649,30 @@ async function generatePDF() {
     setTimeout(function(){ document.body.removeChild(a); }, 1000);
   }
 }
+// Wadi-only: Top/Slope/Bed zone boundary lines (wadi_zone_boundaries/<safeName>.geojson),
+// drawn on slide 6 & 8's zoom maps alongside the main green project boundary and toggled by
+// the same "Boundary" button (pushed into the same S6_BOUNDARY_LAYERS/S8_BOUNDARY_LAYERS array).
+// Each zone gets its own distinct color, matching the legend swatches exactly.
+var ZONE_BOUNDARY_COLORS = {top: '#4CAF50', slope: '#9C27B0', bed: '#00BCD4'};
+function zoneBoundaryLegendHTML() {
+  if (CURRENT_TYPE !== 'wadi') return '';
+  return '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.top + '"></div>Top Boundary</div>'
+       + '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.slope + '"></div>Slope Boundary</div>'
+       + '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.bed + '"></div>Bed Boundary</div>';
+}
+function loadWadiZoneBoundaries(safeName, map, boundaryLayerArray) {
+  if (CURRENT_TYPE !== 'wadi') return;
+  fetch('wadi_zone_boundaries/' + safeName + '.geojson?v=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var lyr = L.geoJSON(data, {
+        style: function(f) { return {color: ZONE_BOUNDARY_COLORS[f.properties.zone] || '#333', weight: 3, fillOpacity: 0}; }
+      });
+      if (BOUNDARY_VISIBLE) lyr.addTo(map);
+      boundaryLayerArray.push(lyr);
+    }).catch(function(e) { console.log('No wadi zone boundaries:', safeName); });
+}
+
 // ═══════════════════════════════════════════════════
 // Slide 6: Current Canopy Maps
 // ═══════════════════════════════════════════════════
@@ -1457,6 +1705,7 @@ function initSlide6Maps(proj) {
     if (BOUNDARY_VISIBLE) bl.addTo(MAP6_ZOOM);
     S6_BOUNDARY_LAYERS.push(bl);
   });
+  loadWadiZoneBoundaries(getAttr(proj, 'NAME_ENGLI').replace(/\s+/g, '_'), MAP6_ZOOM, S6_BOUNDARY_LAYERS);
 
   // Load data layers (Plantable, Canopy Current, Tree Species)
   var safeName6 = getAttr(proj, 'NAME_ENGLI').replace(/\s+/g, '_');
@@ -1511,6 +1760,7 @@ function loadSlide6Layers(safeName, map) {
   // whatever was previously selected must not be left showing on screen.
   var baseLegHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
   baseLegHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
+  baseLegHTML += zoneBoundaryLegendHTML();
   baseLegHTML += (CURRENT_TYPE !== 'wadi') ? '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>' : '';
   baseLegHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>' + ((CURRENT_TYPE !== 'largepark' && CURRENT_TYPE !== 'wadi') ? '<div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>' : '') + '<br>';
   baseLegHTML += '</div><div class="s6-legend" style="margin-top:-6px;width:100%"><span style="font-weight:700;font-size:9px">Tree Species:</span></div>';
@@ -1555,6 +1805,7 @@ function loadSlide6Layers(safeName, map) {
       var top3 = Object.keys(sCounts).sort(function(a,b){return sCounts[b]-sCounts[a];}).slice(0,3);
       var legHTML = '<span style="font-weight:700;font-size:9px">Legend:</span>';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>' + 'Project Boundary</div>';
+      legHTML += zoneBoundaryLegendHTML();
       legHTML += (CURRENT_TYPE !== 'wadi') ? '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>' : '';
       legHTML += '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:#38A800"></div>Canopy Current</div>' + ((CURRENT_TYPE !== 'largepark' && CURRENT_TYPE !== 'wadi') ? '<div class="s6-legend-item"><div class="ctx-view"></div>Context View</div>' : '') + '<br>';
       legHTML += '</div><div class="s6-legend" style="margin-top:-6px;width:100%"><span style="font-weight:700;font-size:9px">Tree Species:</span>'; top3.forEach(function(sp) { var spName = (sp==='Unknown'||sp==='No Name'||sp==='N/A') ? 'Unknown Species' : sp; legHTML += '<div class="s6-legend-item"><div class="s6-legend-dot" style="background:'+getSpeciesColor(sp)+'"></div>'+spName+'</div>'; });
@@ -1609,6 +1860,7 @@ function initSlide8Maps(proj) {
     if (BOUNDARY_VISIBLE) bl.addTo(MAP8_ZOOM);
     S8_BOUNDARY_LAYERS.push(bl);
   });
+  loadWadiZoneBoundaries(getAttr(proj, 'NAME_ENGLI').replace(/\s+/g, '_'), MAP8_ZOOM, S8_BOUNDARY_LAYERS);
 
   // Load data layers (Plantable, Canopy Mature, Additional Trees)
   var safeName8 = getAttr(proj, 'NAME_ENGLI').replace(/\s+/g, '_');
@@ -1657,6 +1909,12 @@ function loadSlide8Layers(safeName, map) {
   // as slide 6, but shown as one single color instead of per-species colors.
   var s8TreesItemEl = document.getElementById('s8TreesItem');
   if (s8TreesItemEl) s8TreesItemEl.style.display = (CURRENT_TYPE === 'wadi' || CURRENT_TYPE === 'largepark') ? '' : 'none';
+
+  // Top/Slope/Bed zone boundary legend items -- wadi only.
+  ['s8ZoneTopItem', 's8ZoneSlopeItem', 's8ZoneBedItem'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = (CURRENT_TYPE === 'wadi') ? '' : 'none';
+  });
 
   // Plantable Area isn't shown for wadis -- hide that legend item only there
   // (roads and large parks keep it).

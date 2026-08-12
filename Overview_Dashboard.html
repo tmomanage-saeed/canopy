@@ -74,11 +74,12 @@
   button.refresh svg { width: 14px; height: 14px; }
 
   /* Stat tiles */
-  .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 40px; }
+  .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 40px; align-items: stretch; }
   @media (max-width: 900px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
   .stat-tile {
     background: var(--surface-1); border: 1px solid var(--border); border-top: 3px solid var(--tile-accent, var(--gridline));
-    border-radius: 10px 10px 14px 14px; padding: 18px 20px; box-shadow: var(--card-shadow);
+    border-radius: 10px 10px 14px 14px; padding: 14px 12px; box-shadow: var(--card-shadow);
+    display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: flex-start; gap: 6px;
   }
   .stat-tile:nth-child(1) { --tile-accent: var(--brand-green); }
   .stat-tile:nth-child(2) { --tile-accent: var(--cat-road); }
@@ -86,19 +87,37 @@
   .stat-tile:nth-child(4) { --tile-accent: var(--cat-park); }
   .stat-tile:nth-child(5) { --tile-accent: var(--cat-violet); }
   .stat-tile:nth-child(6) { --tile-accent: var(--cat-violet); }
-  .stat-tile .label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat-tile .label {
+    font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
+    white-space: normal; line-height: 1.35; display: flex; align-items: center; justify-content: center; min-height: 2.7em;
+  }
   .stat-tile .value { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--value-green); }
   .stat-tile .value small { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
 
-  /* Insights: donuts + ranked bar chart */
+  /* Total Projects tile: split into 2 equally-labeled parts (overall total | Review & Completed subset) */
+  .stat-split { display: flex; align-items: flex-start; justify-content: center; gap: 12px; width: 100%; }
+  .stat-split-divider { width: 1px; align-self: stretch; background: var(--border); }
+  .stat-split-part { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+  .stat-split-value2 { font-size: 22px; }
+  .stat-split-label {
+    font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
+    line-height: 1.3; display: flex; align-items: center; justify-content: center; min-height: 2.6em;
+  }
+
+  /* Insights: 2 donut cards side by side (Current Trees | Total Potential Trees) */
   .insight-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 32px; }
   @media (max-width: 900px) { .insight-row { grid-template-columns: 1fr; } }
   .insight-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--card-shadow); }
-  .insight-card.insight-wide { grid-column: 1 / -1; }
+  .insight-card.insight-solo { width: 100%; padding: 28px 32px; }
   .insight-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .insight-solo .insight-title { font-size: 13px; text-align: center; }
   .insight-subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400; text-transform: none; letter-spacing: normal; margin-bottom: 18px; }
   .insight-hero-num { font-size: 36px; font-weight: 800; color: var(--brand-green); line-height: 1; margin: 6px 0 3px; letter-spacing: -0.01em; }
+  .insight-solo .insight-hero-num { font-size: 46px; text-align: center; }
   .insight-hero-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 18px; }
+  .insight-solo .insight-hero-sub { text-align: center; }
+  .insight-solo .donut-wrap { justify-content: center; }
+  .insight-solo .legend-row { font-size: 14px; }
   .donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
   .donut-legend { display: flex; flex-direction: column; gap: 11px; flex: 1; min-width: 150px; }
   .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
@@ -107,20 +126,6 @@
   .legend-val { font-weight: 600; font-variant-numeric: tabular-nums; }
   .legend-val small { color: var(--text-muted); font-weight: 500; margin-left: 3px; }
   .empty-note { font-size: 12.5px; color: var(--text-muted); }
-
-  /* Vertical bar charts (grouped KPI-by-category + stacked current/potential trees) */
-  .vbar-chart-wrap { margin-top: 6px; }
-  .vbar-chart { position: relative; }
-  .vbar-chart .gridline { position: absolute; left: 0; right: 0; border-top: 1px solid var(--gridline); }
-  .vbar-chart .gridline-label { position: absolute; left: 0; font-size: 10px; color: var(--text-muted); transform: translateY(50%); }
-  .vbar-groups-row { display: flex; align-items: flex-end; justify-content: space-around; padding: 0 12px 0 38px; }
-  .vbar-group { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 0; }
-  .vbar-barwrap { position: relative; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
-  .vbar-value { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--text-primary); white-space: nowrap; }
-  .vbar-cluster { display: flex; align-items: flex-end; gap: 4px; }
-  .vbar { width: 18px; border-radius: 3px 3px 0 0; transition: height .5s ease; }
-  .stack-bar { width: 48px; display: flex; flex-direction: column; border-radius: 4px 4px 0 0; overflow: hidden; }
-  .vbar-group-label { font-size: 11.5px; color: var(--text-secondary); font-weight: 600; margin-top: 4px; text-align: center; }
 
   /* Controls */
   .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; position: sticky; top: 0; z-index: 5; background: var(--page-plane); padding: 10px 0; }
@@ -261,7 +266,7 @@
     <div class="legend-note">
       <span><i style="background:var(--seq-300)"></i> Current Canopy</span>
       <span><i style="background:var(--seq-450)"></i> Mature Canopy</span>
-      <span><i style="background:var(--seq-600); opacity:.35"></i> Future Canopy (100% reference)</span>
+      <span><i style="background:var(--seq-600); opacity:.35"></i> Future Canopy</span>
     </div>
 
     <div id="sections"></div>
@@ -384,26 +389,30 @@ function buildStats() {
   const agg = aggregate(all);
   const completion = avgCompletion(all);
   const tiles = [
-    { label: "Total Projects", value: fmt(agg.count) },
-    { label: "Current Trees", value: fmt(agg.currentTrees) },
-    { label: "What We Can Add", value: fmt(agg.totalTrees - agg.currentTrees) },
-    { label: "Potential Trees", value: fmt(agg.totalTrees) },
-    // The one number the reviewer flagged as most important: how far along
-    // each project is toward its OWN planned target, not just raw canopy %
-    // (raw current KPI can look alarmingly small even for a healthy project
-    // if its planned target itself is a small percentage).
-    { label: "Target Achieved %", value: completion === null ? "—" : Math.round(completion) + "%" },
-    { label: "Avg. Future KPI", value: pct(agg.avgFutureKPI) },
+    // Fixed manual figures for now (not Excel-derived) -- 51 total projects,
+    // 18 of which are in Review & Completed status. Update here if/when the
+    // source sheet gets a status column to compute this automatically.
+    { label: "Total Projects", value: "51", split: { value: "18", label: "Review & Completed" } },
+    { label: "Current Trees from 18 projects", value: fmt(agg.currentTrees) },
+    { label: "Total Potential Trees", value: fmt(agg.totalTrees - agg.currentTrees) },
+    { label: "Total Trees", value: fmt(agg.totalTrees) },
+    { label: "Current Canopy Cover contribution", value: completion === null ? "—" : Math.round(completion) + "%" },
+    { label: "Future Mature Canopy Cover contribution", value: pct(agg.avgFutureKPI) },
   ];
-  document.getElementById("statRow").innerHTML = tiles.map(t =>
-    `<div class="stat-tile"><div class="label">${t.label}</div><div class="value">${t.value}</div></div>`
+  document.getElementById("statRow").innerHTML = tiles.map(t => t.split
+    ? `<div class="stat-tile"><div class="stat-split">
+         <div class="stat-split-part"><div class="stat-split-label">${t.label}</div><div class="value">${t.value}</div></div>
+         <div class="stat-split-divider"></div>
+         <div class="stat-split-part"><div class="stat-split-label">${t.split.label}</div><div class="value stat-split-value2">${t.split.value}</div></div>
+       </div></div>`
+    : `<div class="stat-tile"><div class="label">${t.label}</div><div class="value">${t.value}</div></div>`
   ).join("");
 }
 
 // Simple dependency-free donut: a ring built from stacked <circle> stroke-dasharrays,
 // rotated -90deg so the first segment starts at 12 o'clock. A 2px stroke-dasharray gap
 // is left between segments as a surface break (matches the rest of the page's mark spec).
-function donutSVG(segments, size) {
+function donutSVG(segments, size, centerHTML) {
   size = size || 168;
   var r = size / 2 - 15, cx = size / 2, cy = size / 2, circ = 2 * Math.PI * r;
   var total = segments.reduce(function(a, s) { return a + s.value; }, 0) || 1;
@@ -417,7 +426,16 @@ function donutSVG(segments, size) {
     offset += len;
     return html;
   }).join('');
-  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" style="transform:rotate(-90deg);flex:none">' + arcs + '</svg>';
+  // The whole <svg> is CSS-rotated -90deg (see below) so the first arc starts at 12
+  // o'clock; the center label sits in a foreignObject rotated +90deg the OTHER way
+  // (in SVG space, applied before the CSS transform) so the two cancel out and the
+  // embedded HTML reads upright.
+  var centerText = centerHTML
+    ? '<foreignObject x="0" y="0" width="' + size + '" height="' + size + '" transform="rotate(90 ' + cx + ' ' + cy + ')">' +
+        '<div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">' + centerHTML + '</div>' +
+      '</foreignObject>'
+    : '';
+  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" style="transform:rotate(-90deg);flex:none">' + arcs + centerText + '</svg>';
 }
 
 function legendListHTML(segments) {
@@ -429,78 +447,36 @@ function legendListHTML(segments) {
   }).join('') + '</div>';
 }
 
-// A vertical grouped/stacked bar chart, built from plain divs (no SVG needed --
-// each bar's pixel height is computed directly against chartH). Gridlines are
-// absolutely positioned inside a fixed-height relative box; the groups row is
-// pulled up over it with a negative margin so category labels can still sit
-// in normal flow underneath, outside the gridline box.
-function vbarChartHTML(chartH, gridlineVals, gridlineFmt, groupsHTML) {
-  var gridlines = gridlineVals.map(function(v) {
-    var y = v.max > 0 ? v.val / v.max * chartH : 0;
-    return '<div class="gridline" style="bottom:' + y + 'px"></div><div class="gridline-label" style="bottom:' + y + 'px">' + gridlineFmt(v.val) + '</div>';
-  }).join('');
-  return '<div class="vbar-chart-wrap"><div class="vbar-chart" style="height:' + chartH + 'px">' + gridlines + '</div>' +
-    '<div class="vbar-groups-row" style="margin-top:-' + chartH + 'px">' + groupsHTML + '</div></div>';
+// Trees-by-category donut -- computed purely from the same Excel-derived DATA
+// used everywhere else on the page. Loops over DATA's own category keys
+// (skipping Neighbourhood, which has no numeric figures yet) so a future
+// category picks up automatically. Total is rendered INSIDE the ring itself
+// (via donutSVG's centerHTML) rather than as a separate hero number above it.
+function donutCardHTML(title, subtitle, segs, size) {
+  var total = segs.reduce(function(a, s) { return a + s.value; }, 0);
+  var centerHTML = '<div style="font-size:30px;font-weight:800;color:var(--brand-green);line-height:1.1">' + fmt(total) + '</div>';
+  return '<div class="insight-card insight-solo">' +
+      '<div class="insight-title">' + title + '</div>' +
+      '<div class="insight-hero-sub">' + subtitle + '</div>' +
+      (segs.length ? '<div class="donut-wrap">' + donutSVG(segs, size || 220, centerHTML) + legendListHTML(segs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
+    '</div>';
 }
 
-// Trees-by-category donut, average-KPI-by-category grouped bars, and a
-// current-vs-potential stacked bar chart -- all computed purely from the same
-// Excel-derived DATA used everywhere else on the page. Loops over DATA's own
-// category keys (skipping Neighbourhood, which has no numeric figures yet) so
-// a future category picks up automatically.
 function buildInsights() {
   var catKeys = Object.keys(DATA).filter(function(k) { return k !== "Neighbourhood" && DATA[k].length; });
-  var CHART_H = 170;
 
-  var catSegs = catKeys.map(function(k) {
+  var currentSegs = catKeys.map(function(k) {
     return { label: k + "s", value: aggregate(DATA[k]).currentTrees, color: CAT_COLOR[k] || "var(--cat-violet)" };
   }).filter(function(s) { return s.value > 0; });
 
-  // Average Current/Mature/Future KPI% per category -- a real, always-informative
-  // comparison (unlike a target-achievement split, which just collapses to ~100%
-  // "below target" everywhere since canopy takes years to reach its planned KPI).
-  var kpiRows = catKeys.map(function(k) {
+  var potentialSegs = catKeys.map(function(k) {
     var a = aggregate(DATA[k]);
-    return { key: k, current: a.avgCurrentKPI, mature: a.avgMatureKPI, future: a.avgFutureKPI };
-  });
-  var kpiMax = 0;
-  kpiRows.forEach(function(r) { kpiMax = Math.max(kpiMax, r.current, r.mature, r.future); });
-  var kpiScaleMax = Math.max(10, Math.ceil(kpiMax / 10) * 10);
-  var kpiGridlines = [0, 0.25, 0.5, 0.75, 1].map(function(f) { return { val: kpiScaleMax * f, max: kpiScaleMax }; });
-  var kpiGroups = kpiRows.map(function(r) {
-    var cH = r.current / kpiScaleMax * CHART_H, mH = r.mature / kpiScaleMax * CHART_H, fH = r.future / kpiScaleMax * CHART_H;
-    return '<div class="vbar-group"><div class="vbar-barwrap" style="height:' + CHART_H + 'px"><div class="vbar-cluster">' +
-      '<div class="vbar" style="height:' + cH + 'px;background:var(--seq-300)" title="Current KPI: ' + r.current.toFixed(1) + '%"></div>' +
-      '<div class="vbar" style="height:' + mH + 'px;background:var(--seq-450)" title="Mature KPI: ' + r.mature.toFixed(1) + '%"></div>' +
-      '<div class="vbar" style="height:' + fH + 'px;background:var(--seq-600)" title="Future potential: ' + r.future.toFixed(1) + '%"></div>' +
-      '</div></div><div class="vbar-group-label">' + r.key + 's</div></div>';
-  }).join('');
-
-  var catTotal = catSegs.reduce(function(a, s) { return a + s.value; }, 0);
-  var CAT_REACH_LABEL = { Road: 'road', Wadi: 'wadi', 'Large Park': 'large park' };
-  var reachParts = catKeys.map(function(k) {
-    var n = DATA[k].length;
-    return n + ' ' + (CAT_REACH_LABEL[k] || k.toLowerCase()) + (n === 1 ? '' : 's');
-  });
-  var reachSentence = reachParts.length > 1
-    ? 'Spanning ' + reachParts.slice(0, -1).join(', ') + ' & ' + reachParts[reachParts.length - 1] + ' citywide'
-    : (reachParts.length ? 'Spanning ' + reachParts[0] + ' citywide' : '');
+    return { label: k + "s", value: a.totalTrees - a.currentTrees, color: CAT_COLOR[k] || "var(--cat-violet)" };
+  }).filter(function(s) { return s.value > 0; });
 
   document.getElementById("insightRow").innerHTML =
-    '<div class="insight-card">' +
-      '<div class="insight-title">🌳 Trees Growing Across Riyadh</div>' +
-      '<div class="insight-hero-num">' + fmt(catTotal) + '</div>' +
-      '<div class="insight-hero-sub">' + reachSentence + '</div>' +
-      (catSegs.length ? '<div class="donut-wrap">' + donutSVG(catSegs) + legendListHTML(catSegs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
-    '</div>' +
-    '<div class="insight-card"><div class="insight-title">Average Canopy KPI by Category</div>' +
-      vbarChartHTML(CHART_H, kpiGridlines, function(v) { return Math.round(v) + '%'; }, kpiGroups) +
-      '<div class="legend-note" style="margin:10px 0 0">' +
-        '<span><i style="background:var(--seq-300)"></i> Current Canopy</span>' +
-        '<span><i style="background:var(--seq-450)"></i> Mature Canopy</span>' +
-        '<span><i style="background:var(--seq-600)"></i> Future Canopy</span>' +
-      '</div>' +
-    '</div>';
+    donutCardHTML("Current Trees in 18 Projects", "Citywide tree count by project category", currentSegs) +
+    donutCardHTML("Total Potential Trees", "Citywide potential tree count by project category", potentialSegs);
 }
 
 function buildTabs() {
@@ -538,7 +514,7 @@ function card(item) {
   const refMax = Number(item.futureKPI) || Math.max(Number(item.matureKPI) || 0, 1);
   return `<div class="card">
     <div class="name">${item.name}</div>
-    <div class="meta">${item.area ? "Project area: " + fmt(item.area) + " m² · " : ""}<b>${fmt(item.currentTrees)}</b> of ${fmt(item.totalTrees)} potential trees</div>
+    <div class="meta">${item.area ? "Project area: " + fmt(item.area) + " m²<br>" : ""}<b>${fmt(item.currentTrees)}</b> current of ${fmt(item.totalTrees)} potential trees</div>
     <div class="bars">
       ${barRow("Current Canopy", item.currentKPI, "current", refMax)}
       ${barRow("Mature Canopy", item.matureKPI, "mature", refMax)}
@@ -567,7 +543,7 @@ function sectionHTML(catKey) {
       <h2>${CAT_ICON[catKey]} ${catKey}s</h2>
       <span class="count">${items.length} project${items.length === 1 ? "" : "s"}</span>
       <span class="cat-summary">
-        <span class="cat-summary-line">${fmt(agg.currentTrees)} of ${fmt(agg.totalTrees)} potential trees planted${plantedPct !== null ? ` (${plantedPct.toFixed(1)}%)` : ""}</span>
+        <span class="cat-summary-line">${fmt(agg.currentTrees)} current of ${fmt(agg.totalTrees)} potential trees planted${plantedPct !== null ? ` (${plantedPct.toFixed(1)}%)` : ""}</span>
         <span class="cat-summary-line cat-summary-dim">Canopy cover today: ${pct(agg.avgCurrentKPI)} of project area</span>
       </span>
     </div>
