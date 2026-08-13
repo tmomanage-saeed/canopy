@@ -13,12 +13,18 @@ no CORS restriction, so the browser just requests /api/kpi.xlsx from itself.
 
 Run with:  python serve_dashboard.py
 Then open: http://localhost:8080/Overview_Dashboard.html
+
+Optional: pass a port number to run on something other than 8080, e.g.
+  python serve_dashboard.py 8090
+so a second instance (e.g. for one-off testing) never has to fight over --
+or kill -- whatever's already listening on 8080.
 """
 import http.server
 import socketserver
+import sys
 import urllib.request
 
-PORT = 8080
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
 DROPBOX_URL = "https://www.dropbox.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1"
 
 

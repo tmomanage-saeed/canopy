@@ -417,23 +417,23 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
           <div class="s6-breakdown-label">Breakdown</div>
           <div class="s6-proj-title">Top of Wadi Information</div>
           <table class="s6-proj-table" style="table-layout:fixed">
-            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
-              <tr><td id="s6CanopyProjTop">–m²</td><td id="s6PctProjTop">– %</td><td id="s6AreaProjTop">–m²</td><td id="s6AreaPlantTop">–m²</td></tr>
+              <tr><td id="s6TotalTreesTop">–</td><td id="s6PctProjTop">– %</td><td id="s6AreaProjTop">–m²</td><td id="s6AreaPlantTop">–m²</td></tr>
             </tbody>
           </table>
           <div class="s6-proj-title">Slope of Wadi Information</div>
           <table class="s6-proj-table" style="table-layout:fixed">
-            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
-              <tr><td id="s6CanopyProjSlope">–m²</td><td id="s6PctProjSlope">– %</td><td id="s6AreaProjSlope">–m²</td><td id="s6AreaPlantSlope">–m²</td></tr>
+              <tr><td id="s6TotalTreesSlope">–</td><td id="s6PctProjSlope">– %</td><td id="s6AreaProjSlope">–m²</td><td id="s6AreaPlantSlope">–m²</td></tr>
             </tbody>
           </table>
           <div class="s6-proj-title">Bed of Wadi Information</div>
           <table class="s6-proj-table" style="table-layout:fixed">
-            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover Area (m²)</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Project<br>Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
-              <tr><td id="s6CanopyProjBed">–m²</td><td id="s6PctProjBed">– %</td><td id="s6AreaProjBed">–m²</td><td id="s6AreaPlantBed">–m²</td></tr>
+              <tr><td id="s6TotalTreesBed">–</td><td id="s6PctProjBed">– %</td><td id="s6AreaProjBed">–m²</td><td id="s6AreaPlantBed">–m²</td></tr>
             </tbody>
           </table>
         </div>
@@ -513,7 +513,6 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
         <div class="s6-legend" id="s8Legend" style="margin-top:8px">
           <span style="font-weight:700;font-size:9px">Legend:</span>
           <div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div><span id="s8BoundaryName">Road Boundary</span></div>
-          <div class="s6-legend-item" id="s8ZoneTopItem" style="display:none"><div class="s6-legend-rect" style="background:transparent;border:2px solid #4CAF50"></div>Top Boundary</div>
           <div class="s6-legend-item" id="s8ZoneSlopeItem" style="display:none"><div class="s6-legend-rect" style="background:transparent;border:2px solid #9C27B0"></div>Slope Boundary</div>
           <div class="s6-legend-item" id="s8ZoneBedItem" style="display:none"><div class="s6-legend-rect" style="background:transparent;border:2px solid #00BCD4"></div>Bed Boundary</div>
           <div class="s6-legend-item" id="s8PlantableItem"><div class="s6-legend-rect" style="background:transparent;border:2px solid #FF0000"></div>Plantable Area</div>
@@ -551,8 +550,8 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
             <tbody><tr><td id="s8AreaPlantTop">–m²</td><td id="s8CanopyProjTop">–m²</td><td id="s8AreaAvailTop">–m²</td></tr></tbody>
           </table>
           <table class="s8b-table">
-            <thead><tr><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
-            <tbody><tr><td id="s8PctProjTop">– %</td><td id="s8TransTreesTop">–</td></tr></tbody>
+            <thead><tr><th>Total Trees</th><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
+            <tbody><tr><td id="s8TotalTreesTop">–</td><td id="s8PctProjTop">– %</td><td id="s8TransTreesTop">–</td></tr></tbody>
           </table>
           <table class="s8b-table">
             <thead><tr><th>Potential Additional<br>Trees</th><th>Potential Additional<br>Canopy Cover (m²)</th><th>Potential Total<br>Canopy Cover (%)</th></tr></thead>
@@ -566,8 +565,8 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
             <tbody><tr><td id="s8AreaPlantSlope">–m²</td><td id="s8CanopyProjSlope">–m²</td><td id="s8AreaAvailSlope">–m²</td></tr></tbody>
           </table>
           <table class="s8b-table">
-            <thead><tr><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
-            <tbody><tr><td id="s8PctProjSlope">– %</td><td id="s8TransTreesSlope">–</td></tr></tbody>
+            <thead><tr><th>Total Trees</th><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
+            <tbody><tr><td id="s8TotalTreesSlope">–</td><td id="s8PctProjSlope">– %</td><td id="s8TransTreesSlope">–</td></tr></tbody>
           </table>
           <table class="s8b-table">
             <thead><tr><th>Potential Additional<br>Trees</th><th>Potential Additional<br>Canopy Cover (m²)</th><th>Potential Total<br>Canopy Cover (%)</th></tr></thead>
@@ -581,8 +580,8 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
             <tbody><tr><td id="s8AreaPlantBed">–m²</td><td id="s8CanopyProjBed">–m²</td><td id="s8AreaAvailBed">–m²</td></tr></tbody>
           </table>
           <table class="s8b-table">
-            <thead><tr><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
-            <tbody><tr><td id="s8PctProjBed">– %</td><td id="s8TransTreesBed">–</td></tr></tbody>
+            <thead><tr><th>Total Trees</th><th>Mature Canopy<br>Cover (%)</th><th>Trees To Be<br>Transplanted</th></tr></thead>
+            <tbody><tr><td id="s8TotalTreesBed">–</td><td id="s8PctProjBed">– %</td><td id="s8TransTreesBed">–</td></tr></tbody>
           </table>
           <table class="s8b-table">
             <thead><tr><th>Potential Additional<br>Trees</th><th>Potential Additional<br>Canopy Cover (m²)</th><th>Potential Total<br>Canopy Cover (%)</th></tr></thead>
@@ -760,10 +759,21 @@ function getLargeParkExcelData(parkName) {
 // Columns (0-indexed): 3 project area, 4 plantable area, 6 current canopy cover(m2), 7 current canopy cover(%),
 // 8 mature canopy (current trees, m2), 9 remaining plantable area, 10 potential additional trees, 12 potential
 // additional canopy(m2), 13 trees to be transplanted, 16 mature canopy cover(%), 17 possible/future canopy cover(%).
+// Project Name (col B) naming is inconsistent per zone/row in this sheet (e.g. "Wadi_Ghuduwanah_Slop" vs
+// "Wadi_Ghuduwana" vs "Wadi_UmmQasr") -- matched by loose substring instead of an exact name, same fix as
+// export_wadi3_zone_data.py's match_wadi() (this sheet comes from the same source batch). Zone itself comes
+// from column C (Area Type: TOP/SLOPE/WADI_BED), not parsed out of the name.
 var WADI_ZONE_DATA = {};
 
+function matchWadiCanonicalName(raw) {
+  var n = String(raw || '').toLowerCase().replace(/[_\s]/g, '');
+  if (n.indexOf('ghuduwan') !== -1 || n.indexOf('gudwan') !== -1) return 'Wadi Gudwanah';
+  if (n.indexOf('ummqasr') !== -1 || n.indexOf('ummqassar') !== -1) return 'Wadi Umm Qassar';
+  return null;
+}
+
 function loadWadiZoneExcelData() {
-  return fetch(encodeURI('wadies_work/2 wadis, gwdwana and ume gasser.xlsx') + '?v=' + Date.now())
+  return fetch(encodeURI('wadies_work/TreeCanopy_Wadi_Area_Summary.xlsx') + '?v=' + Date.now())
     .then(function(r) { return r.arrayBuffer(); })
     .then(function(buf) {
       var wb = XLSX.read(buf, {type: 'array'});
@@ -773,10 +783,12 @@ function loadWadiZoneExcelData() {
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         if (!row || !row[1] || !row[2]) continue;
-        var zone = String(row[2]).trim().toLowerCase(); // TOP / SLOPE / BED
-        var baseName = String(row[1]).replace(/\s*(top|slope|bed)\s*$/i, '').trim();
+        var zone = String(row[2]).trim().toUpperCase().replace('WADI_', '').toLowerCase(); // TOP/SLOPE/WADI_BED -> top/slope/bed
+        var baseName = matchWadiCanonicalName(row[1]);
+        if (!baseName) { console.log('Wadi zone workbook: unmatched project name', row[1]); continue; }
         var entry = {
           project: row[3], plantable: row[4], curCanopy: row[6], curPct: round2(row[7]),
+          totalTreeCount: row[11],
           matCanopy: row[8], available: row[9], additional: row[10], addCanopy: row[12],
           treesToPlant: row[13], maturePct: round2(row[16]), futureKpi: round2(row[17])
         };
@@ -799,10 +811,10 @@ function getWadiZoneData(wadiName) {
 function populateWadiZoneTables(zones) {
   ['Top', 'Slope', 'Bed'].forEach(function(suffix) {
     var z = zones && zones[suffix.toLowerCase()];
-    document.getElementById('s6CanopyProj' + suffix).textContent = z ? fmt(z.curCanopy) + ' m²' : '–m²';
     document.getElementById('s6PctProj' + suffix).textContent = (z && typeof z.curPct === 'number') ? z.curPct + ' %' : '– %';
     document.getElementById('s6AreaProj' + suffix).textContent = z ? fmt(z.project) + ' m²' : '–m²';
     document.getElementById('s6AreaPlant' + suffix).textContent = z ? fmt(z.plantable) + ' m²' : '–m²';
+    document.getElementById('s6TotalTrees' + suffix).textContent = z ? fmt(z.totalTreeCount) : '–';
   });
 
   var have = zones && (zones.top || zones.slope || zones.bed);
@@ -839,6 +851,7 @@ function populateSlide8bZoneTables(zones) {
     document.getElementById('s8AreaPlant' + suffix).textContent = z ? fmt(z.plantable) + ' m²' : '–m²';
     document.getElementById('s8CanopyProj' + suffix).textContent = z ? fmt(z.matCanopy) + ' m²' : '–m²';
     document.getElementById('s8AreaAvail' + suffix).textContent = z ? fmt(z.available) + ' m²' : '–m²';
+    document.getElementById('s8TotalTrees' + suffix).textContent = z ? fmt(z.totalTreeCount) : '–';
     document.getElementById('s8PctProj' + suffix).textContent = (z && typeof z.maturePct === 'number') ? z.maturePct + ' %' : '– %';
     document.getElementById('s8TransTrees' + suffix).textContent = z ? fmt(z.treesToPlant) : '–';
     document.getElementById('s8PotTrees' + suffix).textContent = z ? fmt(z.additional) : '–';
@@ -1656,8 +1669,10 @@ async function generatePDF() {
 var ZONE_BOUNDARY_COLORS = {top: '#4CAF50', slope: '#9C27B0', bed: '#00BCD4'};
 function zoneBoundaryLegendHTML() {
   if (CURRENT_TYPE !== 'wadi') return '';
-  return '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.top + '"></div>Top Boundary</div>'
-       + '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.slope + '"></div>Slope Boundary</div>'
+  // Top boundary line still renders on the map (same green as Project Boundary, per
+  // explicit request) but has no separate legend entry -- it'd be a redundant duplicate
+  // of the Project Boundary swatch since they're the same color.
+  return '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.slope + '"></div>Slope Boundary</div>'
        + '<div class="s6-legend-item"><div class="s6-legend-rect" style="background:transparent;border:2px solid ' + ZONE_BOUNDARY_COLORS.bed + '"></div>Bed Boundary</div>';
 }
 function loadWadiZoneBoundaries(safeName, map, boundaryLayerArray) {
@@ -1910,8 +1925,10 @@ function loadSlide8Layers(safeName, map) {
   var s8TreesItemEl = document.getElementById('s8TreesItem');
   if (s8TreesItemEl) s8TreesItemEl.style.display = (CURRENT_TYPE === 'wadi' || CURRENT_TYPE === 'largepark') ? '' : 'none';
 
-  // Top/Slope/Bed zone boundary legend items -- wadi only.
-  ['s8ZoneTopItem', 's8ZoneSlopeItem', 's8ZoneBedItem'].forEach(function(id) {
+  // Slope/Bed zone boundary legend items -- wadi only. (Top has no legend item -- its
+  // boundary line is the same green as Project Boundary, so a separate entry would
+  // just duplicate that swatch; the line itself still renders on the map.)
+  ['s8ZoneSlopeItem', 's8ZoneBedItem'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = (CURRENT_TYPE === 'wadi') ? '' : 'none';
   });
