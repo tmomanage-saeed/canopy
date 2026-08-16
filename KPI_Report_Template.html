@@ -789,7 +789,11 @@ function loadWadiZoneExcelData() {
         var entry = {
           project: row[3], plantable: row[4], curCanopy: row[6], curPct: round2(row[7]),
           totalTreeCount: row[11],
-          matCanopy: row[8], available: row[9], additional: row[10], addCanopy: row[12],
+          // matCanopy = col P (idx15) "Mature canopy after planting (m2)", NOT col I (idx8) "Mature canopy
+          // current trees (m2)" -- verified col Q "Mature canopy cover (%)" (idx16) = P / project * 100
+          // exactly (e.g. Top: 39460.85/241349.37*100 = 16.35%, matching Q's 16.350...), while I/project gives
+          // 10.19%, which does NOT match Q. Using I here silently made the area disagree with its own %.
+          matCanopy: row[15], available: row[9], additional: row[10], addCanopy: row[12],
           treesToPlant: row[13], maturePct: round2(row[16]), futureKpi: round2(row[17])
         };
         if (!data[baseName]) data[baseName] = {};

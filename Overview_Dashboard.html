@@ -220,7 +220,7 @@
 
   <header class="top">
     <div>
-      <h1>Projects Canopy Cover Overview</h1>
+      <h1>Canopy Cover Reviewed Overview <span style="font-size:0.42em; font-weight:500; color:var(--text-muted); letter-spacing:normal; white-space:nowrap;">(Under Development by GIS team)</span></h1>
       <p class="sub" id="dataStamp"></p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
@@ -392,12 +392,12 @@ function buildStats() {
     // Fixed manual figures for now (not Excel-derived) -- 51 total projects,
     // 18 of which are in Review & Completed status. Update here if/when the
     // source sheet gets a status column to compute this automatically.
-    { label: "Total Projects", value: "51", split: { value: "18", label: "Review & Completed" } },
-    { label: "Current Trees from 18 projects", value: fmt(agg.currentTrees) },
-    { label: "Total Potential Trees", value: fmt(agg.totalTrees - agg.currentTrees) },
-    { label: "Total Trees", value: fmt(agg.totalTrees) },
-    { label: "Current Canopy Cover contribution", value: completion === null ? "—" : Math.round(completion) + "%" },
-    { label: "Future Mature Canopy Cover contribution", value: pct(agg.avgFutureKPI) },
+    { label: "Total Projects", value: "51", split: { value: "18", label: "Reviewed & Completed" } },
+    { label: "Current Trees from Reviewed Projects", value: fmt(agg.currentTrees) },
+    { label: "Total Potential Trees From Reviewed Projects", value: fmt(agg.totalTrees - agg.currentTrees) },
+    { label: "Total Trees From Reviewed Projects", value: fmt(agg.totalTrees) },
+    { label: "Current Canopy Cover Contribution From Reviewed Projects", value: completion === null ? "—" : Math.round(completion) + "%" },
+    { label: "Future Mature Canopy Cover Contribution From Reviewed Projects", value: pct(agg.avgFutureKPI) },
   ];
   document.getElementById("statRow").innerHTML = tiles.map(t => t.split
     ? `<div class="stat-tile"><div class="stat-split">
@@ -475,8 +475,8 @@ function buildInsights() {
   }).filter(function(s) { return s.value > 0; });
 
   document.getElementById("insightRow").innerHTML =
-    donutCardHTML("Current Trees in 18 Projects", "Citywide tree count by project category", currentSegs) +
-    donutCardHTML("Total Potential Trees", "Citywide potential tree count by project category", potentialSegs);
+    donutCardHTML("Current Trees in Reviewed Projects", "Citywide tree count by project category", currentSegs) +
+    donutCardHTML("Total Potential Trees From Reviewed Projects", "Citywide potential tree count by project category", potentialSegs);
 }
 
 function buildTabs() {
@@ -514,7 +514,7 @@ function card(item) {
   const refMax = Number(item.futureKPI) || Math.max(Number(item.matureKPI) || 0, 1);
   return `<div class="card">
     <div class="name">${item.name}</div>
-    <div class="meta">${item.area ? "Project area: " + fmt(item.area) + " m²<br>" : ""}<b>${fmt(item.currentTrees)}</b> current of ${fmt(item.totalTrees)} potential trees</div>
+    <div class="meta">${item.area ? "Project area: " + fmt(item.area) + " m²<br>" : ""}<b>${fmt(item.currentTrees)}</b> current<br><b>${fmt(item.totalTrees)}</b> potential trees</div>
     <div class="bars">
       ${barRow("Current Canopy", item.currentKPI, "current", refMax)}
       ${barRow("Mature Canopy", item.matureKPI, "mature", refMax)}
@@ -543,7 +543,8 @@ function sectionHTML(catKey) {
       <h2>${CAT_ICON[catKey]} ${catKey}s</h2>
       <span class="count">${items.length} project${items.length === 1 ? "" : "s"}</span>
       <span class="cat-summary">
-        <span class="cat-summary-line">${fmt(agg.currentTrees)} current of ${fmt(agg.totalTrees)} potential trees planted${plantedPct !== null ? ` (${plantedPct.toFixed(1)}%)` : ""}</span>
+        <span class="cat-summary-line">${fmt(agg.currentTrees)} current</span>
+        <span class="cat-summary-line">${fmt(agg.totalTrees)} potential trees planted${plantedPct !== null ? ` (${plantedPct.toFixed(1)}%)` : ""}</span>
         <span class="cat-summary-line cat-summary-dim">Canopy cover today: ${pct(agg.avgCurrentKPI)} of project area</span>
       </span>
     </div>
