@@ -417,23 +417,23 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
           <div class="s6-breakdown-label">Breakdown</div>
           <div class="s6-proj-title">Top of Wadi Information</div>
           <table class="s6-proj-table" style="table-layout:fixed">
-            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
-              <tr><td id="s6TotalTreesTop">–</td><td id="s6PctProjTop">– %</td><td id="s6AreaProjTop">–m²</td><td id="s6AreaPlantTop">–m²</td></tr>
+              <tr><td id="s6CurrentTreesTop">–</td><td id="s6PctProjTop">– %</td><td id="s6AreaProjTop">–m²</td><td id="s6AreaPlantTop">–m²</td></tr>
             </tbody>
           </table>
           <div class="s6-proj-title">Slope of Wadi Information</div>
           <table class="s6-proj-table" style="table-layout:fixed">
-            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
-              <tr><td id="s6TotalTreesSlope">–</td><td id="s6PctProjSlope">– %</td><td id="s6AreaProjSlope">–m²</td><td id="s6AreaPlantSlope">–m²</td></tr>
+              <tr><td id="s6CurrentTreesSlope">–</td><td id="s6PctProjSlope">– %</td><td id="s6AreaProjSlope">–m²</td><td id="s6AreaPlantSlope">–m²</td></tr>
             </tbody>
           </table>
           <div class="s6-proj-title">Bed of Wadi Information</div>
           <table class="s6-proj-table" style="table-layout:fixed">
-            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Total Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
+            <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
-              <tr><td id="s6TotalTreesBed">–</td><td id="s6PctProjBed">– %</td><td id="s6AreaProjBed">–m²</td><td id="s6AreaPlantBed">–m²</td></tr>
+              <tr><td id="s6CurrentTreesBed">–</td><td id="s6PctProjBed">– %</td><td id="s6AreaProjBed">–m²</td><td id="s6AreaPlantBed">–m²</td></tr>
             </tbody>
           </table>
         </div>
@@ -788,7 +788,9 @@ function loadWadiZoneExcelData() {
         if (!baseName) { console.log('Wadi zone workbook: unmatched project name', row[1]); continue; }
         var entry = {
           project: row[3], plantable: row[4], curCanopy: row[6], curPct: round2(row[7]),
-          totalTreeCount: row[11],
+          // currentTreeCount (col F, idx5 "Current trees") is used on slide 6 (the Current Canopy section);
+          // totalTreeCount (col L, idx11 "Total trees", current+potential combined) stays as-is for slide 8b.
+          currentTreeCount: row[5], totalTreeCount: row[11],
           // matCanopy = col P (idx15) "Mature canopy after planting (m2)", NOT col I (idx8) "Mature canopy
           // current trees (m2)" -- verified col Q "Mature canopy cover (%)" (idx16) = P / project * 100
           // exactly (e.g. Top: 39460.85/241349.37*100 = 16.35%, matching Q's 16.350...), while I/project gives
@@ -818,7 +820,7 @@ function populateWadiZoneTables(zones) {
     document.getElementById('s6PctProj' + suffix).textContent = (z && typeof z.curPct === 'number') ? z.curPct + ' %' : '– %';
     document.getElementById('s6AreaProj' + suffix).textContent = z ? fmt(z.project) + ' m²' : '–m²';
     document.getElementById('s6AreaPlant' + suffix).textContent = z ? fmt(z.plantable) + ' m²' : '–m²';
-    document.getElementById('s6TotalTrees' + suffix).textContent = z ? fmt(z.totalTreeCount) : '–';
+    document.getElementById('s6CurrentTrees' + suffix).textContent = z ? fmt(z.currentTreeCount) : '–';
   });
 
   var have = zones && (zones.top || zones.slope || zones.bed);
