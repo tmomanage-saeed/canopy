@@ -119,6 +119,8 @@
   .insight-solo .donut-wrap { justify-content: center; }
   .insight-solo .legend-row { font-size: 14px; }
   .donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .donut-ring-wrap { position: relative; flex: none; }
+  .donut-center-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; width: 100%; }
   .donut-legend { display: flex; flex-direction: column; gap: 11px; flex: 1; min-width: 150px; }
   .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
@@ -412,7 +414,7 @@ function buildStats() {
 // Simple dependency-free donut: a ring built from stacked <circle> stroke-dasharrays,
 // rotated -90deg so the first segment starts at 12 o'clock. A 2px stroke-dasharray gap
 // is left between segments as a surface break (matches the rest of the page's mark spec).
-function donutSVG(segments, size, centerHTML) {
+function donutSVG(segments, size) {
   size = size || 168;
   var r = size / 2 - 15, cx = size / 2, cy = size / 2, circ = 2 * Math.PI * r;
   var total = segments.reduce(function(a, s) { return a + s.value; }, 0) || 1;
@@ -426,16 +428,7 @@ function donutSVG(segments, size, centerHTML) {
     offset += len;
     return html;
   }).join('');
-  // The whole <svg> is CSS-rotated -90deg (see below) so the first arc starts at 12
-  // o'clock; the center label sits in a foreignObject rotated +90deg the OTHER way
-  // (in SVG space, applied before the CSS transform) so the two cancel out and the
-  // embedded HTML reads upright.
-  var centerText = centerHTML
-    ? '<foreignObject x="0" y="0" width="' + size + '" height="' + size + '" transform="rotate(90 ' + cx + ' ' + cy + ')">' +
-        '<div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">' + centerHTML + '</div>' +
-      '</foreignObject>'
-    : '';
-  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" style="transform:rotate(-90deg);flex:none">' + arcs + centerText + '</svg>';
+  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" style="transform:rotate(-90deg);flex:none">' + arcs + '</svg>';
 }
 
 function legendListHTML(segments) {
@@ -451,14 +444,21 @@ function legendListHTML(segments) {
 // used everywhere else on the page. Loops over DATA's own category keys
 // (skipping Neighbourhood, which has no numeric figures yet) so a future
 // category picks up automatically. Total is rendered INSIDE the ring itself
-// (via donutSVG's centerHTML) rather than as a separate hero number above it.
+// (a plain absolutely-positioned div OVER the ring, not an SVG foreignObject --
+// html2canvas, used for the PDF export, doesn't reliably reverse the nested
+// SVG-space + CSS rotation the foreignObject approach needed, so the center
+// number rendered sideways in the exported PDF even though it looked fine
+// live in a real browser. A normal HTML overlay avoids that entirely.)
 function donutCardHTML(title, subtitle, segs, size) {
   var total = segs.reduce(function(a, s) { return a + s.value; }, 0);
   var centerHTML = '<div style="font-size:30px;font-weight:800;color:var(--brand-green);line-height:1.1">' + fmt(total) + '</div>';
+  var ring = segs.length
+    ? '<div class="donut-ring-wrap">' + donutSVG(segs, size || 220) + '<div class="donut-center-label">' + centerHTML + '</div></div>'
+    : '';
   return '<div class="insight-card insight-solo">' +
       '<div class="insight-title">' + title + '</div>' +
       '<div class="insight-hero-sub">' + subtitle + '</div>' +
-      (segs.length ? '<div class="donut-wrap">' + donutSVG(segs, size || 220, centerHTML) + legendListHTML(segs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
+      (segs.length ? '<div class="donut-wrap">' + ring + legendListHTML(segs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
     '</div>';
 }
 
