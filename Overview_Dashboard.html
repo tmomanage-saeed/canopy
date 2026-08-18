@@ -89,7 +89,7 @@
   .stat-tile:nth-child(6) { --tile-accent: var(--cat-violet); }
   .stat-tile .label {
     font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
-    white-space: normal; line-height: 1.35; display: flex; align-items: center; justify-content: center; min-height: 2.7em;
+    white-space: normal; line-height: 1.35; display: flex; align-items: center; justify-content: center; min-height: 4.1em;
   }
   .stat-tile .value { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--value-green); }
   .stat-tile .value small { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
@@ -101,7 +101,7 @@
   .stat-split-value2 { font-size: 22px; }
   .stat-split-label {
     font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
-    line-height: 1.3; display: flex; align-items: center; justify-content: center; min-height: 2.6em;
+    line-height: 1.3; display: flex; align-items: center; justify-content: center; min-height: 4.1em;
   }
 
   /* Insights: 2 donut cards side by side (Current Trees | Total Potential Trees) */
@@ -121,12 +121,16 @@
   .donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
   .donut-ring-wrap { position: relative; flex: none; }
   .donut-center-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; width: 100%; }
-  .donut-legend { display: flex; flex-direction: column; gap: 11px; flex: 1; min-width: 150px; }
-  .legend-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
-  .legend-label { flex: 1; color: var(--text-secondary); }
-  .legend-val { font-weight: 600; font-variant-numeric: tabular-nums; }
-  .legend-val small { color: var(--text-muted); font-weight: 500; margin-left: 3px; }
+  /* A single shared grid across ALL rows (not one grid per row) -- .legend-row
+     is display:contents so its dot/label/value become direct grid children here,
+     which is what makes the value column the same width/left-edge on every row
+     regardless of how many digits that row's own number has. */
+  .donut-legend { display: grid; grid-template-columns: 10px 1fr auto; row-gap: 11px; column-gap: 8px; flex: 1; min-width: 150px; align-items: center; }
+  .legend-row { display: contents; font-size: 12.5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .legend-label { color: var(--text-secondary); }
+  .legend-val { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; display: inline-flex; align-items: baseline; justify-content: flex-start; gap: 3px; }
+  .legend-val small { color: var(--text-muted); font-weight: 500; }
   .empty-note { font-size: 12.5px; color: var(--text-muted); }
 
   /* Controls */
@@ -156,7 +160,6 @@
   .cat-header .count { font-size: 13px; color: rgba(255,255,255,.8); font-weight: 500; }
   .cat-summary { font-size: 12px; color: #fff; margin-left: auto; text-align: right; }
   .cat-summary-line { display: block; }
-  .cat-summary-dim { opacity: .8; font-size: 11px; margin-top: 1px; }
 
   .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 
@@ -171,7 +174,7 @@
 
   .bars { display: flex; flex-direction: column; gap: 9px; }
   .bar-row { display: grid; grid-template-columns: 92px 1fr 44px; align-items: center; gap: 8px; }
-  .bar-row .bar-label { font-size: 11px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-row .bar-label { font-size: 10px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bar-track { position: relative; height: 6px; background: var(--gridline); border-radius: 4px; overflow: visible; }
   .bar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 4px; transition: width .5s ease; }
   .bar-fill.current { background: var(--seq-300); }
@@ -201,9 +204,6 @@
     font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 9px; cursor: pointer;
   }
 
-  .legend-note { display: flex; gap: 18px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-muted); margin: -6px 0 24px; }
-  .legend-note span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend-note i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
 
   .hidden { display: none !important; }
 
@@ -222,7 +222,7 @@
 
   <header class="top">
     <div>
-      <h1>Canopy Cover Reviewed Overview <span style="font-size:0.42em; font-weight:500; color:var(--text-muted); letter-spacing:normal; white-space:nowrap;">(Under Development by GIS team)</span></h1>
+      <h1>Canopy Cover Review Overview <span style="font-size:0.42em; font-weight:500; color:var(--text-muted); letter-spacing:normal; white-space:nowrap;">(Under Development by GIS team)</span></h1>
       <p class="sub" id="dataStamp"></p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
@@ -265,12 +265,6 @@
       </div>
     </div>
 
-    <div class="legend-note">
-      <span><i style="background:var(--seq-300)"></i> Current Canopy</span>
-      <span><i style="background:var(--seq-450)"></i> Mature Canopy</span>
-      <span><i style="background:var(--seq-600); opacity:.35"></i> Future Canopy</span>
-    </div>
-
     <div id="sections"></div>
 
   </div>
@@ -285,6 +279,10 @@
 // host (GitHub Pages included) with no server-side proxy needed.
 const SOURCE_URL = "https://dl.dropboxusercontent.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1";
 const CATEGORY_LABELS = ["Road", "Wadi", "Large Park", "Neighbourhood"];
+// Riyadh metropolitan area, used as the denominator for the "city-wide contribution"
+// stat tiles -- how much of the WHOLE CITY's area the reviewed projects' canopy covers,
+// not just how each project is doing against its own individual target.
+const RIYADH_AREA_M2 = 5961.5 * 1e6;
 const CAT_COLOR = { "Road": "var(--cat-road)", "Wadi": "var(--cat-wadi)", "Large Park": "var(--cat-park)" };
 const CAT_ICON  = { "Road": "🛣️", "Wadi": "🏞️", "Large Park": "🌳" };
 
@@ -375,21 +373,24 @@ function aggregate(items) {
   };
 }
 
-// Simple (unweighted) average of current/planned per project -- each project
-// gets an equal vote, so a handful of huge, low-density reserve parks (Tuwaiq
-// Reserve etc, 100x the area of a typical project) can't dominate the number
-// the way an area-weighted average would.
-function avgCompletion(items) {
-  var ratios = items.filter(function(p) { return Number(p.plannedKPI) > 0; })
-    .map(function(p) { return Number(p.currentKPI) / Number(p.plannedKPI) * 100; });
-  if (!ratios.length) return null;
-  return ratios.reduce(function(a, b) { return a + b; }, 0) / ratios.length;
+// Absolute canopy area contributed by these projects (project's own area * its KPI%,
+// summed across all reviewed projects), as a % of the WHOLE CITY's area (RIYADH_AREA_M2)
+// -- i.e. how much of Riyadh itself is covered, not how each project is doing against
+// its own individual target (that per-project-average version is what this replaced).
+function cityWideContribution(items, kpiField) {
+  var totalCanopyArea = items.reduce(function(sum, p) {
+    var area = Number(p.area) || 0;
+    var kpi = Number(p[kpiField]) || 0;
+    return sum + (area * kpi / 100);
+  }, 0);
+  return totalCanopyArea / RIYADH_AREA_M2 * 100;
 }
 
 function buildStats() {
   const all = [...DATA.Road, ...DATA.Wadi, ...DATA["Large Park"]];
   const agg = aggregate(all);
-  const completion = avgCompletion(all);
+  const currentCityPct = cityWideContribution(all, "currentKPI");
+  const futureCityPct = cityWideContribution(all, "futureKPI");
   const tiles = [
     // Fixed manual figures for now (not Excel-derived) -- 51 total projects,
     // 18 of which are in Review & Completed status. Update here if/when the
@@ -398,8 +399,8 @@ function buildStats() {
     { label: "Current Trees from Reviewed Projects", value: fmt(agg.currentTrees) },
     { label: "Total Potential Trees From Reviewed Projects", value: fmt(agg.totalTrees - agg.currentTrees) },
     { label: "Total Trees From Reviewed Projects", value: fmt(agg.totalTrees) },
-    { label: "Current Canopy Cover Contribution From Reviewed Projects", value: completion === null ? "—" : Math.round(completion) + "%" },
-    { label: "Future Mature Canopy Cover Contribution From Reviewed Projects", value: pct(agg.avgFutureKPI) },
+    { label: "Current Canopy Cover Contribution From Reviewed Projects", value: currentCityPct.toFixed(2) + "%" },
+    { label: "Future Mature Canopy Cover Contribution From Reviewed Projects", value: futureCityPct.toFixed(2) + "%" },
   ];
   document.getElementById("statRow").innerHTML = tiles.map(t => t.split
     ? `<div class="stat-tile"><div class="stat-split">
@@ -514,11 +515,11 @@ function card(item) {
   const refMax = Number(item.futureKPI) || Math.max(Number(item.matureKPI) || 0, 1);
   return `<div class="card">
     <div class="name">${item.name}</div>
-    <div class="meta">${item.area ? "Project area: " + fmt(item.area) + " m²<br>" : ""}<b>${fmt(item.currentTrees)}</b> current<br><b>${fmt(item.totalTrees)}</b> potential trees</div>
+    <div class="meta">${item.area ? "<b>" + fmt(item.area) + " m²</b> Project area<br>" : ""}<b>${fmt(item.currentTrees)}</b> current trees<br><b>${fmt(item.totalTrees)}</b> potential trees</div>
     <div class="bars">
       ${barRow("Current Canopy", item.currentKPI, "current", refMax)}
       ${barRow("Mature Canopy", item.matureKPI, "mature", refMax)}
-      ${barRow("Future Canopy", item.futureKPI, "future", refMax)}
+      ${barRow("Potential Canopy", item.futureKPI, "future", refMax)}
     </div>
     <div class="footnote"><span>Planned target</span><span class="footnote-val">${pct(item.plannedKPI)}</span></div>
   </div>`;
@@ -531,21 +532,14 @@ function sectionHTML(catKey) {
   const filtered = q ? items.filter(i => i.name.toLowerCase().includes(q)) : items;
   if (!filtered.length) return "";
   const agg = aggregate(items);
-  const plantedPct = agg.totalTrees > 0 ? (agg.currentTrees / agg.totalTrees * 100) : null;
-  // Trees-planted % and canopy-cover % look contradictory side by side (e.g.
-  // "49% of trees planted" next to "2% canopy cover") unless it's clear WHY:
-  // a newly planted tree counts fully toward the tree total immediately, but
-  // contributes almost no canopy area until it matures over the following
-  // years -- so canopy % naturally lags tree-count % by a lot early on.
   return `<section class="category">
     <div class="cat-header">
       <span class="cat-badge" style="background:${CAT_COLOR[catKey]}"></span>
       <h2>${CAT_ICON[catKey]} ${catKey}s</h2>
       <span class="count">${items.length} project${items.length === 1 ? "" : "s"}</span>
       <span class="cat-summary">
-        <span class="cat-summary-line">${fmt(agg.currentTrees)} current</span>
-        <span class="cat-summary-line">${fmt(agg.totalTrees)} potential trees planted${plantedPct !== null ? ` (${plantedPct.toFixed(1)}%)` : ""}</span>
-        <span class="cat-summary-line cat-summary-dim">Canopy cover today: ${pct(agg.avgCurrentKPI)} of project area</span>
+        <span class="cat-summary-line">${fmt(agg.currentTrees)} current trees</span>
+        <span class="cat-summary-line">${fmt(agg.totalTrees)} potential trees</span>
       </span>
     </div>
     <div class="card-grid">${filtered.map(card).join("")}</div>
