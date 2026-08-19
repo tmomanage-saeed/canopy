@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KPI Dashboard - Green Riyadh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mada:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<style>
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; height:100%; }
+body {
+  background:#F6F6ED;
+  font-family:'Mada','Poppins','Segoe UI',system-ui,sans-serif;
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+/* Scale-to-fit like a presentation slide: never taller or wider than the
+   viewport, so the whole dashboard is always one screen, no scrolling --
+   width is capped by whichever of vw/vh is the tighter constraint. */
+.stage-outer {
+  container-type: inline-size;
+  width: min(100vw, calc(100vh * 2.057613));
+}
+.stage {
+  position:relative;
+  width:100%;
+  aspect-ratio: 100 / 48.6000;
+  background:#F6F6ED;
+  overflow:hidden;
+}
+.cathead {
+  position:absolute;
+  background:#1E753B;
+  color:#fff;
+  border-radius:0.388cqw;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-weight:700;
+  font-size: 0.9375cqw;
+  line-height:1.15;
+  padding: 0 0.4cqw;
+}
+.pagetitle {
+  position:absolute;
+  color:#1E753B;
+  font-weight:800;
+  font-size: 2.0833cqw;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+}
+.kpibox {
+  position:absolute;
+  border-radius: 0.699cqw;
+  border: 1.3px solid;
+}
+.badge {
+  position:absolute;
+  left:1.9%; top:6.7%;
+  width:13.5%; height:28.2%;
+  border-radius:0.353cqw;
+  color:#fff;
+  font-weight:700;
+  font-size:0.625cqw;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.kpititle {
+  position:absolute;
+  left:18.7%; right:3%; top:6%;
+  color:#171717;
+  font-weight:600;
+  font-size:0.8333cqw;
+  line-height:1.18;
+}
+.bar {
+  position:absolute;
+  border-radius:999px;
+  overflow:hidden;
+}
+.bar .pill { position:absolute; }
+.bar .tick {
+  position:absolute; top:8%; bottom:8%; width:1.5px;
+  background:rgba(255,255,255,0.85);
+}
+.bar-label {
+  position:absolute; top:0; bottom:0;
+  display:flex; align-items:center;
+  font-weight:700;
+  font-size:0.5208cqw;
+  padding:0 0.32cqw;
+  white-space:nowrap;
+}
+.legendbox {
+  position:absolute;
+  background:#FFFFFF;
+  border:1px solid #cfe3c6;
+  border-radius:0.495cqw;
+  color:#171717;
+}
+.lg-swatch { position:absolute; border-radius:0.3cqw; }
+.lg-swatch.outline { border:1.5px solid; }
+.lg-text {
+  position:absolute; display:flex; align-items:center;
+  font-size:0.8333cqw; font-weight:600; line-height:1.2;
+}
+.lg-note-title {
+  position:absolute; display:flex; align-items:center;
+  font-size:0.8333cqw; font-weight:800;
+}
+.lg-small {
+  position:absolute; display:flex; align-items:center; justify-content:center;
+  font-size:0.625cqw; font-weight:600; white-space:nowrap;
+}
+.lg-arrow {
+  position:absolute; display:flex; align-items:flex-start; justify-content:center;
+  font-size:0.95cqw; font-weight:900; color:#171717;
+}
+.lg-bar { position:absolute; border-radius:999px; overflow:hidden; }
+.lg-pill { position:absolute; left:0; top:0; bottom:0; border-radius:999px 0 0 999px; }
+.lg-tick { position:absolute; top:8%; bottom:8%; width:1.5px; background:rgba(255,255,255,0.85); }
+.lg-bar.dashed { background:#BFBFBF; border:1.5px dashed #8DAC74; }
+
+</style>
+</head>
+<body>
+<div class="stage-outer">
+  <div class="stage" id="stage">
+    <div class="pagetitle" style="left:2.130%;top:1.157%;width:95.640%;height:6.748%;">Overview KPI&#x27;s</div>
+    <div class="cathead" style="left:2.130%;top:8.322%;width:13.120%;height:4.711%;">1. Green Cover</div><div class="cathead" style="left:15.870%;top:8.206%;width:13.120%;height:4.711%;">2. Tree Condition (O&amp;M)</div><div class="cathead" style="left:29.630%;top:8.206%;width:13.120%;height:4.711%;">3. Environmental</div><div class="cathead" style="left:43.350%;top:8.206%;width:13.120%;height:4.711%;">3. Biodiversity</div><div class="cathead" style="left:57.000%;top:8.206%;width:13.120%;height:4.711%;">5. Sustainable use of resources</div><div class="cathead" style="left:70.720%;top:8.206%;width:13.120%;height:4.711%;">6. Develop local content &amp; capabilities</div><div class="cathead" style="left:84.440%;top:8.206%;width:13.120%;height:4.711%;">7. Promote &amp; enable a healthy lifestyle</div>
+    <div class="kpibox" style="left:2.132%;top:13.812%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">1.1</div><div class="kpititle"># Trees to be planted</div><div class="bar" data-kpi="1.1" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:20.490%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><div class="tick" style="left:53.587%;"></div><span class="bar-label" data-align="center" data-pos="10.452" style="left:0.415%;width:20.075%;justify-content:center;color:#16321b;" data-role="val">1.31M</span><span class="bar-label" data-align="right" data-pos="51.876" style="left:19.492%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">3.2M</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">7.5M</span></div></div><div class="kpibox" style="left:2.132%;top:23.122%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">1.2</div><div class="kpititle"># Shrubs and Ground Cover to be planted</div><div class="bar" data-kpi="1.2" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:16.187%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><div class="tick" style="left:38.050%;"></div><span class="bar-label" data-align="center" data-pos="7.329" style="left:0.415%;width:13.828%;justify-content:center;color:#16321b;" data-role="val">13.5M</span><span class="bar-label" data-align="right" data-pos="36.339" style="left:25.828%;width:10.511%;justify-content:flex-end;color:#FFFFFF;" data-role="val">39M</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">119M</span></div></div><div class="kpibox" style="left:2.132%;top:32.432%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">1.3</div><div class="kpititle">% Vegetation Cover</div><div class="bar" data-kpi="1.3" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:28.772%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><div class="tick" style="left:47.485%;"></div><span class="bar-label" data-align="center" data-pos="14.249" style="left:0.415%;width:27.669%;justify-content:center;color:#16321b;" data-role="val">2.5% </span><span class="bar-label" data-align="right" data-pos="45.774" style="left:28.084%;width:17.690%;justify-content:flex-end;color:#FFFFFF;" data-role="val">6.1%</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">9.1%</span></div></div><div class="kpibox" style="left:2.132%;top:51.062%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">1.5</div><div class="kpititle">m² Green space per capita</div><div class="bar" data-kpi="1.5" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:28.772%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><div class="tick" style="left:69.636%;"></div><span class="bar-label" data-align="center" data-pos="14.249" style="left:0.415%;width:27.669%;justify-content:center;color:#16321b;" data-role="val">7 m²</span><span class="bar-label" data-align="right" data-pos="67.925" style="left:51.876%;width:16.049%;justify-content:flex-end;color:#FFFFFF;" data-role="val">18 m2</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">28 m2</span></div></div><div class="kpibox" style="left:2.132%;top:41.713%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">1.4</div><div class="kpititle">% Canopy Cover</div><div class="bar" data-kpi="1.4" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:51.876%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><div class="tick" style="left:76.200%;"></div><span class="bar-label" data-align="center" data-pos="26.145" style="left:0.415%;width:51.461%;justify-content:center;color:#16321b;" data-role="val">1.5%</span><span class="bar-label" data-align="right" data-pos="74.488" style="left:58.439%;width:16.049%;justify-content:flex-end;color:#FFFFFF;" data-role="val">4.2%</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">7.5%</span></div></div><div class="kpibox" style="left:2.132%;top:69.682%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">1.7</div><div class="kpititle">m³ Canopy volume </div><div class="bar" data-kpi="1.7" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:27.187%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="center" data-pos="13.844" style="left:0.500%;width:26.687%;justify-content:center;color:#16321b;" data-role="val">560M m³</span><span class="bar-label" data-align="right" data-pos="99.000" style="left:64.000%;width:35.000%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:2.132%;top:88.303%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">1.9</div><div class="kpititle">% Green roofs</div><div class="bar" data-kpi="1.9" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.440" style="left:1.440%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:2.132%;top:78.992%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">1.8</div><div class="kpititle">% / # land parcels compliant with Green Code (gov &amp; non-gov)</div><div class="bar" data-kpi="1.8" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.440" style="left:1.440%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:2.132%;top:60.408%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">1.6</div><div class="kpititle">Annual Public Investments in Greening per Capita</div><div class="bar" data-kpi="1.6" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:16.187%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="center" data-pos="8.301" style="left:0.415%;width:15.773%;justify-content:center;color:#16321b;" data-role="val">39.7M</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">372M SAR</span></div></div><div class="kpibox" style="left:29.637%;top:32.432%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">3.3</div><div class="kpititle">Max Cooling Factor of Forest</div><div class="bar" data-kpi="3.3" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.905" style="left:1.905%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="98.010" style="left:58.960%;width:39.050%;justify-content:flex-end;color:#16321b;" data-role="val">Urban Target: 1.7</span></div></div><div class="kpibox" style="left:29.637%;top:41.742%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">3.4</div><div class="kpititle">% Increase in thermal comfort index</div><div class="bar" data-kpi="3.4" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.905" style="left:1.905%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="98.010" style="left:65.626%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">58%</span></div></div><div class="kpibox" style="left:29.637%;top:51.052%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">3.5</div><div class="kpititle">Reduction in temperature:</div><div class="bar" data-kpi="3.5" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.676%;top:73.643%;width:96.769%;height:21.060%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="center" data-pos="50.000" style="left:32.000%;width:36.000%;justify-content:center;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:29.576%;top:13.812%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">3.1</div><div class="kpititle">particulate matter to 10 µg/m3</div><div class="bar" data-kpi="3.1" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:15.426%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="center" data-pos="7.963" style="left:0.500%;width:14.926%;justify-content:center;color:#16321b;" data-role="val">59.6</span><span class="bar-label" data-align="right" data-pos="99.000" style="left:64.000%;width:35.000%;justify-content:flex-end;color:#FFFFFF;" data-role="val">10 µg/m3</span></div></div><div class="kpibox" style="left:29.576%;top:78.909%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#355022;"><div class="badge" style="background:#355022;">3.8</div><div class="kpititle">GR design adoption of SUDs Management Principles</div><div class="bar" data-kpi="3.8" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #355022;"><span class="bar-label" data-align="left" data-pos="2.962" style="left:2.962%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">100%</span></div></div><div class="kpibox" style="left:43.321%;top:13.824%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">4.1</div><div class="kpititle"># Plant Species</div><div class="bar" data-kpi="4.1" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:75.116%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="left" data-pos="1.440" style="left:1.440%;width:51.767%;justify-content:flex-start;color:#16321b;" data-role="val">457</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:81.101%;width:16.444%;justify-content:flex-end;color:#FFFFFF;" data-role="val">610</span></div></div><div class="kpibox" style="left:43.321%;top:23.122%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">4.2</div><div class="kpititle"># Native plant species</div><div class="bar" data-kpi="4.2" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:63.953%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="left" data-pos="1.235" style="left:1.235%;width:42.332%;justify-content:flex-start;color:#16321b;" data-role="val">122</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:72.692%;width:24.853%;justify-content:flex-end;color:#FFFFFF;" data-role="val">190</span></div></div><div class="kpibox" style="left:43.321%;top:32.432%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">4.3</div><div class="kpititle"># Fauna &amp; Pollinators</div><div class="bar" data-kpi="4.3" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.014" style="left:2.014%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:15.907%;top:41.714%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">2.4</div><div class="kpititle">Tree Health</div><div class="bar" data-kpi="2.4" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:15.907%;top:13.773%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">2.1</div><div class="kpititle">Total Tree Inventory For Existing Trees</div><div class="bar" data-kpi="2.1" data-dark="0" data-pillfill="#1D753B" data-track="#8DAC74" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#8DAC74;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:99.764%;background:#1D753B;border-radius:999px 999px 999px 999px;"></div><span class="bar-label" data-align="right" data-pos="97.925" style="left:65.541%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">100% (1.9m)</span></div></div><div class="kpibox" style="left:15.907%;top:23.083%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">2.2</div><div class="kpititle">% Total tree inventory(Physical Inspections)</div><div class="bar" data-kpi="2.2" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:21.975%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="center" data-pos="15.059" style="left:0.000%;width:30.118%;justify-content:center;color:#16321b;" data-role="val">8% (87K)</span><span class="bar-label" data-align="right" data-pos="97.925" style="left:65.541%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">100% (1.1m)</span></div></div><div class="kpibox" style="left:15.907%;top:32.393%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">2.3</div><div class="kpititle">% Exceptional and protected trees</div><div class="bar" data-kpi="2.3" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:21.824%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="center" data-pos="10.818" style="left:0.000%;width:21.636%;justify-content:center;color:#16321b;" data-role="val">5% (202)</span><span class="bar-label" data-align="right" data-pos="97.720" style="left:65.336%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">100% (4000)</span></div></div><div class="kpibox" style="left:56.960%;top:41.785%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">5.4</div><div class="kpititle">Ton green compost reused</div><div class="bar" data-kpi="5.4" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:74.448%;width:96.745%;height:21.124%;background:#BFBFBF;border:none;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="98.087" style="left:65.703%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">100%</span></div></div><div class="kpibox" style="left:56.960%;top:51.095%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">5.5</div><div class="kpititle">%/# Trees in ground water</div><div class="bar" data-kpi="5.5" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:74.409%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:56.960%;top:60.349%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">5.6</div><div class="kpititle"># Reduction per capita  spending on cooling</div><div class="bar" data-kpi="5.6" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:74.409%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:57.017%;top:13.888%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">5.1</div><div class="kpititle">% Treated water reused(TSE)</div><div class="bar" data-kpi="5.1" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:15.386%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="center" data-pos="7.943" style="left:0.500%;width:14.886%;justify-content:center;color:#16321b;" data-role="val">15%</span><span class="bar-label" data-align="right" data-pos="99.000" style="left:64.000%;width:35.000%;justify-content:flex-end;color:#FFFFFF;" data-role="val">100%</span></div></div><div class="kpibox" style="left:57.059%;top:23.201%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">5.2</div><div class="kpititle">% Developed area covered by TSE network</div><div class="bar" data-kpi="5.2" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:70.669%;top:13.812%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">6.1</div><div class="kpititle">% Trees produced in local nurseries</div><div class="bar" data-kpi="6.1" data-dark="0" data-pillfill="#CBD6C6" data-track="#CBD7C6" style="left:1.628%;top:74.448%;width:96.745%;height:21.124%;background:#CBD7C6;border:none;"><span class="bar-label" data-align="center" data-pos="50.384" style="left:37.528%;width:25.712%;justify-content:center;color:#16321b;" data-role="val">100%</span></div></div><div class="kpibox" style="left:70.669%;top:23.122%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">6.2</div><div class="kpititle"># Certified experts in all Green Riyadh departments</div><div class="bar" data-kpi="6.2" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.444%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:42.050%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="left" data-pos="1.572" style="left:1.572%;width:24.480%;justify-content:flex-start;color:#16321b;" data-role="val">53</span><span class="bar-label" data-align="right" data-pos="97.925" style="left:65.541%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">130?</span></div></div><div class="kpibox" style="left:70.669%;top:32.432%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">6.3</div><div class="kpititle"># Saudi experts in Green Riyadh departments</div><div class="bar" data-kpi="6.3" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.444%;top:74.755%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><span class="bar-label" data-align="right" data-pos="97.925" style="left:65.541%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">46</span></div></div><div class="kpibox" style="left:70.669%;top:41.742%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">6.4</div><div class="kpititle"># of Tree’s Produced by Nurseries under GR program</div><div class="bar" data-kpi="6.4" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.444%;top:74.571%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:33.612%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><span class="bar-label" data-align="left" data-pos="1.572" style="left:1.572%;width:24.890%;justify-content:flex-start;color:#16321b;" data-role="val">509K</span><span class="bar-label" data-align="right" data-pos="97.925" style="left:65.541%;width:32.384%;justify-content:flex-end;color:#FFFFFF;" data-role="val">1.6m</span></div></div><div class="kpibox" style="left:70.669%;top:50.914%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">6.5</div><div class="kpititle">% Nurseries certified</div><div class="bar" data-kpi="6.5" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.498%;top:75.314%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:70.669%;top:60.219%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">6.6</div><div class="kpititle">% Certified landscape O&amp;M companies</div><div class="bar" data-kpi="6.6" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.498%;top:74.730%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:84.434%;top:14.011%;width:13.124%;height:8.628%;background:#E3F2DF;border-color:#355022;"><div class="badge" style="background:#355022;">7.1</div><div class="kpititle">% Of people within 500m distance from parks</div><div class="bar" data-kpi="7.1" data-dark="1" data-pillfill="#CBD6C6" data-track="#1E743B" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#1E743B;border:none;"><div class="pill" style="position:absolute;left:0;top:0;bottom:0;width:68.822%;background:#CBD6C6;border-radius:999px 0 0 999px;"></div><div class="tick" style="left:87.641%;"></div><span class="bar-label" data-align="center" data-pos="34.661" style="left:0.500%;width:68.322%;justify-content:center;color:#16321b;" data-role="val">64%</span><span class="bar-label" data-align="right" data-pos="87.641" style="left:68.822%;width:18.819%;justify-content:flex-end;color:#FFFFFF;" data-role="val">80%</span><span class="bar-label" data-align="right" data-pos="100.000" style="left:87.641%;width:12.359%;justify-content:flex-end;color:#FFFFFF;" data-role="val">86%</span></div></div><div class="kpibox" style="left:84.434%;top:23.321%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">7.2</div><div class="kpititle">% Of trees in accessible  areas</div><div class="bar" data-kpi="7.2" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.146" style="left:2.146%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:84.434%;top:32.631%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">7.3</div><div class="kpititle">% Pedestrian network shaded</div><div class="bar" data-kpi="7.3" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.440" style="left:1.440%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.545" style="left:65.161%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:29.637%;top:23.241%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">3.2</div><div class="kpititle">Green Code Compliance</div><div class="bar" data-kpi="3.2" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.905" style="left:1.905%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="center" data-pos="91.766" style="left:78.910%;width:25.712%;justify-content:center;color:#16321b;" data-role="val">100%</span></div></div><div class="kpibox" style="left:57.059%;top:32.320%;width:13.124%;height:8.628%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">5.3</div><div class="kpititle"># of irrigation water</div><div class="bar" data-kpi="5.3" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.628%;top:73.642%;width:96.745%;height:21.124%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="2.109" style="left:2.109%;width:25.712%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="97.640" style="left:65.256%;width:32.384%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:29.600%;top:60.405%;width:13.120%;height:8.623%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">3.6</div><div class="kpititle"># ton reduction of pollutants</div><div class="bar" data-kpi="3.6" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.677%;top:73.691%;width:96.799%;height:21.074%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.000" style="left:1.000%;width:30.000%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="90.000" style="left:60.000%;width:30.000%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div><div class="kpibox" style="left:29.600%;top:69.688%;width:13.120%;height:8.623%;background:#FFFFFF;border-color:#8DAC74;"><div class="badge" style="background:#8DAC74;">3.7</div><div class="kpititle">% Increase in humidity:</div><div class="bar" data-kpi="3.7" data-dark="0" data-pillfill="#CBD6C6" data-track="#BFBFBF" style="left:1.677%;top:73.691%;width:96.799%;height:21.074%;background:#BFBFBF;border:1.5px dashed #8DAC74;"><span class="bar-label" data-align="left" data-pos="1.000" style="left:1.000%;width:30.000%;justify-content:flex-start;color:#16321b;" data-role="val">IN DEV</span><span class="bar-label" data-align="right" data-pos="90.000" style="left:60.000%;width:30.000%;justify-content:flex-end;color:#16321b;" data-role="val">IN DEV</span></div></div>
+    
+<div class="legendbox" style="left:57.000%;top:83.044%;width:40.350%;height:13.854%;">
+  <div class="lg-swatch" style="left:2.380%;top:48.540%;width:6.370%;height:12.780%;background:#355022;"></div>
+  <div class="lg-swatch" style="left:2.380%;top:73.180%;width:6.370%;height:12.780%;background:#8DAC74;"></div>
+  <div class="lg-text" style="left:8.900%;top:38.010%;width:19.280%;height:26.650%;">Old KPI's</div>
+  <div class="lg-text" style="left:8.900%;top:64.660%;width:19.280%;height:26.650%;">New KPI's</div>
+
+  <div class="lg-note-title" style="left:25.780%;top:21.390%;width:38.120%;height:26.230%;">Note:</div>
+  <div class="lg-swatch outline" style="left:28.080%;top:49.370%;width:6.370%;height:12.780%;background:#E3F2DF;border-color:#8DAC74;"></div>
+  <div class="lg-swatch outline" style="left:28.080%;top:73.930%;width:6.370%;height:12.780%;background:#FFFFFF;border-color:#8DAC74;"></div>
+  <div class="lg-text" style="left:35.340%;top:42.520%;width:26.960%;height:25.300%;">20 KPI's monitored</div>
+  <div class="lg-text" style="left:35.340%;top:67.820%;width:26.960%;height:25.300%;">20 KPI's under dev.</div>
+
+  <div class="lg-small" style="left:64.710%;top:11.280%;width:9.470%;height:11.280%;">Actual</div>
+  <div class="lg-small" style="left:75.040%;top:11.280%;width:14.470%;height:11.280%;">2030 Target</div>
+  <div class="lg-small" style="left:89.490%;top:11.280%;width:8.280%;height:11.280%;">Target</div>
+  <div class="lg-arrow" style="left:68.440%;top:24.310%;width:2.000%;height:17.130%;">&#8595;</div>
+  <div class="lg-arrow" style="left:81.310%;top:24.310%;width:2.000%;height:17.130%;">&#8595;</div>
+  <div class="lg-arrow" style="left:92.680%;top:24.310%;width:2.000%;height:17.130%;">&#8595;</div>
+  <div class="lg-bar" style="left:65.090%;top:43.690%;width:33.260%;height:12.280%;background:#1E743B;">
+    <div class="lg-pill" style="width:46.72%;background:#CBD6C6;"></div>
+    <div class="lg-tick" style="left:51.86%;"></div>
+  </div>
+  <div class="lg-small" style="left:66.370%;top:62.240%;width:25.280%;height:11.280%;">In Development:</div>
+  <div class="lg-bar dashed" style="left:65.090%;top:76.860%;width:33.260%;height:12.280%;"></div>
+</div>
+
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   KPI_DATA — one entry per KPI box (id matches the badge number,
+   e.g. "1.1"). Populated below from the current PowerPoint values.
+
+   min/mid/max = the three points on each bar:
+     min = Actual value (left pill)
+     mid = 2030 Target  (tick mark)   -- optional, null if not shown
+     max = Target        (right edge)
+
+   pillPct / tickPct are the CURRENT rendered percentages (kept in
+   sync with the PPT for a pixel-accurate default). Once real
+   numeric values exist for a KPI (minVal/midVal/maxVal), the bar
+   is drawn from those numbers instead:
+     pillPct = minVal / maxVal * 100
+     tickPct = midVal / maxVal * 100
+   ============================================================ */
+const KPI_DATA = [
+  {
+    "id": "1.1",
+    "minLabel": "1.3M",
+    "midLabel": "3.2M",
+    "maxLabel": "7.5M",
+    "minVal": 1300000.0,
+    "midVal": 3200000.0,
+    "maxVal": 7500000.0,
+    "pillPct": 20.489987080103358,
+    "tickPct": 53.58714470284238
+  },
+  {
+    "id": "1.2",
+    "minLabel": "13.5M",
+    "midLabel": "39M",
+    "maxLabel": "119M",
+    "minVal": 13500000.0,
+    "midVal": 39000000.0,
+    "maxVal": 119000000.0,
+    "pillPct": 16.1874677002584,
+    "tickPct": 38.05038759689922
+  },
+  {
+    "id": "1.3",
+    "minLabel": "2.5%",
+    "midLabel": "6.1%",
+    "maxLabel": "9.1%",
+    "minVal": 2.5,
+    "midVal": 6.1,
+    "maxVal": 9.1,
+    "pillPct": 28.77228682170543,
+    "tickPct": 47.48514211886304
+  },
+  {
+    "id": "1.5",
+    "minLabel": "7m²",
+    "midLabel": "18m²",
+    "maxLabel": "28m²",
+    "minVal": 7.0,
+    "midVal": 18.0,
+    "maxVal": 28.0,
+    "pillPct": 28.772157622739016,
+    "tickPct": 69.63630490956074
+  },
+  {
+    "id": "1.4",
+    "minLabel": "1.5%",
+    "midLabel": "4.2%",
+    "maxLabel": "7.5%",
+    "minVal": 1.5,
+    "midVal": 4.2,
+    "maxVal": 7.5,
+    "pillPct": 51.87564599483204,
+    "tickPct": 76.19961240310077
+  },
+  {
+    "id": "1.7",
+    "minLabel": "560m²",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": 560.0,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": 27.18733850129199,
+    "tickPct": null
+  },
+  {
+    "id": "1.9",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "1.8",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "1.6",
+    "minLabel": "39.7M",
+    "midLabel": null,
+    "maxLabel": "372M SAR",
+    "minVal": 39700000.0,
+    "midVal": null,
+    "maxVal": 372000000.0,
+    "pillPct": 16.1874677002584,
+    "tickPct": null
+  },
+  {
+    "id": "3.3",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "Urban Target: 1.7",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 1.7,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "3.4",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "58%",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 57.99999999999999,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "3.5",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": null,
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "3.1",
+    "minLabel": "59.6",
+    "midLabel": null,
+    "maxLabel": "10 µg/m3",
+    "minVal": 59.6,
+    "midVal": null,
+    "maxVal": 10.0,
+    "pillPct": 15.426098191214471,
+    "tickPct": null
+  },
+  {
+    "id": "3.8",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "100%",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 100,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "4.1",
+    "minLabel": "457",
+    "midLabel": null,
+    "maxLabel": "610",
+    "minVal": 457.0,
+    "midVal": null,
+    "maxVal": 610.0,
+    "pillPct": 75.11627906976743,
+    "tickPct": null
+  },
+  {
+    "id": "4.2",
+    "minLabel": "122",
+    "midLabel": null,
+    "maxLabel": "190",
+    "minVal": 122.0,
+    "midVal": null,
+    "maxVal": 190.0,
+    "pillPct": 63.95348837209301,
+    "tickPct": null
+  },
+  {
+    "id": "4.3",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "2.4",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "2.1",
+    "minLabel": null,
+    "midLabel": null,
+    "maxLabel": "100% (1.9m)",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 100.0,
+    "pillPct": 99.76363049095607,
+    "tickPct": null
+  },
+  {
+    "id": "2.2",
+    "minLabel": "8% (87K)",
+    "midLabel": null,
+    "maxLabel": "100% (1.1m)",
+    "minVal": 8.0,
+    "midVal": null,
+    "maxVal": 100.0,
+    "pillPct": 21.975064599483204,
+    "tickPct": null
+  },
+  {
+    "id": "2.3",
+    "minLabel": "5% (202)",
+    "midLabel": null,
+    "maxLabel": "100% (4000)",
+    "minVal": 5.0,
+    "midVal": null,
+    "maxVal": 100.0,
+    "pillPct": 21.82435400516796,
+    "tickPct": null
+  },
+  {
+    "id": "5.4",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "100%",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 100,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "5.5",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "5.6",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "5.1",
+    "minLabel": "15%",
+    "midLabel": null,
+    "maxLabel": "100%",
+    "minVal": 15.0,
+    "midVal": null,
+    "maxVal": 100,
+    "pillPct": 15.38643410852713,
+    "tickPct": null
+  },
+  {
+    "id": "5.2",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "6.1",
+    "minLabel": "100%",
+    "midLabel": null,
+    "maxLabel": "100%",
+    "minVal": 100,
+    "midVal": null,
+    "maxVal": 100,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "6.2",
+    "minLabel": "53",
+    "midLabel": null,
+    "maxLabel": "130?",
+    "minVal": 53.0,
+    "midVal": null,
+    "maxVal": 130.0,
+    "pillPct": 42.05019379844961,
+    "tickPct": null
+  },
+  {
+    "id": "6.3",
+    "minLabel": null,
+    "midLabel": null,
+    "maxLabel": "46",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 46.0,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "6.4",
+    "minLabel": "509K",
+    "midLabel": null,
+    "maxLabel": "1.6m",
+    "minVal": 509000.0,
+    "midVal": null,
+    "maxVal": 1600000.0,
+    "pillPct": 33.612015503875966,
+    "tickPct": null
+  },
+  {
+    "id": "6.5",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "6.6",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "7.1",
+    "minLabel": "64%",
+    "midLabel": "80%",
+    "maxLabel": "86%",
+    "minVal": 64.0,
+    "midVal": 80.0,
+    "maxVal": 86.0,
+    "pillPct": 68.8217700258398,
+    "tickPct": 87.64121447028424
+  },
+  {
+    "id": "7.2",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "7.3",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "3.2",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "100%",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": 100,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "5.3",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "3.6",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  },
+  {
+    "id": "3.7",
+    "minLabel": "IN DEV",
+    "midLabel": null,
+    "maxLabel": "IN DEV",
+    "minVal": null,
+    "midVal": null,
+    "maxVal": null,
+    "pillPct": null,
+    "tickPct": null
+  }
+];
+/* Everything about a bar's LAYOUT stays exactly where the PPT put it --
+   label positions, label colours, and the 2030-Target tick mark are all
+   fixed at build time and never move. The ONE thing that's actually live
+   is the pill's WIDTH (the green fill), recomputed from Actual/Target --
+   that's the whole "dynamic" part: a moving fill level against a fixed
+   scale, like a thermometer. Earlier attempts at also moving the tick
+   and re-deciding label colour from the live fill caused two visible
+   bugs: the tick sliding away from its label, and a label's colour
+   flipping to white when a small live Actual shrank the fill out from
+   under it -- both fixed by simply never touching those after build. */
+function renderBar(entry) {
+  const bar = document.querySelector('.bar[data-kpi="' + CSS.escape(entry.id) + '"]');
+  if (!bar) return;
+  const pillFill = bar.dataset.pillfill;
+  const hasNumeric = entry.minVal != null && entry.maxVal != null && entry.maxVal > 0;
+
+  const rows = [entry.minLabel, entry.midLabel, entry.maxLabel].filter(v => v != null && v !== '');
+  const labels = bar.querySelectorAll('.bar-label');
+  labels.forEach((el, i) => { if (rows[i] != null) el.textContent = rows[i]; });
+
+  if (!hasNumeric) return; // keep the static pill baked in at build time too
+
+  const clamp = v => Math.max(0, Math.min(100, v));
+  // some KPIs are "reduce to target" ceilings (e.g. PM10) where Actual can
+  // legitimately exceed Target -- clamp so the fill never breaks visually
+  const pillPct = clamp(entry.minVal / entry.maxVal * 100);
+
+  let pill = bar.querySelector('.pill');
+  if (!pill) { pill = document.createElement('div'); pill.className = 'pill'; bar.insertBefore(pill, bar.firstChild); }
+  const r = pillPct < 98 ? '0' : '999px';
+  Object.assign(pill.style, { position:'absolute', left:'0', top:'0', bottom:'0', display: pillPct > 0 ? 'block' : 'none',
+    width: pillPct + '%', background: pillFill, borderRadius: `999px ${r} ${r} 999px` });
+}
+
+/* Call this once your Excel data is loaded, e.g.:
+     setKPI('1.1', { minVal: 1310000, midVal: 3200000, maxVal: 7500000,
+                    minLabel:'1.31M', midLabel:'3.2M', maxLabel:'7.5M' });
+   Any field you omit keeps its previous value. */
+function setKPI(id, patch) {
+  const entry = KPI_DATA.find(k => k.id === id);
+  if (!entry) return;
+  Object.assign(entry, patch);
+  renderBar(entry);
+}
+window.setKPI = setKPI;
+window.KPI_DATA = KPI_DATA;
+
+// render the build-time snapshot immediately so the page is correct even
+// if the live workbook below can't be reached (e.g. opened as a plain file)
+KPI_DATA.forEach(renderBar);
+
+/* ============================================================
+   Live link to the Excel workbook. Same parsing rules as the Python
+   build script:
+     - numeric cell formatted as "%"  -> value*100, e.g. "2.5%"
+     - other numeric cell             -> plain number, e.g. "457"
+     - text cell ("1.3M", "IN DEV"…)  -> used as-is, number extracted
+                                          from its leading digits for
+                                          the proportional bar math
+   Row layout: column A = KPI id (e.g. 1.1), B = heading (unused here,
+   titles stay as authored in the PPT), C = Actual, D = 2030 Target,
+   E = Target.
+
+   Primary source is the shared Dropbox file -- anyone with edit access
+   to that file can update it, hit save, and everyone's dashboard shows
+   the new numbers on next refresh (no local server needed for this one,
+   since Dropbox's direct-content domain sends proper CORS headers).
+   Falls back to a local KPI_Data.xlsx copy next to this HTML file if
+   Dropbox can't be reached (e.g. offline) -- that one DOES need a local
+   server (`Start_Dashboard.bat`), since a bare file:// page can't fetch
+   another local file. Falls back again to the frozen build-time
+   snapshot (KPI_DATA above) if both fail. */
+const DROPBOX_XLSX_URL = 'https://dl.dropboxusercontent.com/scl/fi/z839wcd5qr4lqacwlecvd/KPI_Data.xlsx?rlkey=hu370pjctk6pr1ge0pkrfzmon&st=334c3gmz&dl=1';
+const EXCEL_FILE = 'KPI_Data.xlsx';
+
+function parseExcelCell(cell) {
+  if (cell == null || cell.v === undefined || cell.v === '') return { label: null, val: null };
+  const v = cell.v;
+  if (typeof v === 'number') {
+    const isPct = !!(cell.z && cell.z.indexOf('%') !== -1);
+    if (isPct) {
+      const pct = v * 100;
+      const label = Math.abs(pct - Math.round(pct)) < 0.05 ? Math.round(pct) + '%' : pct.toFixed(1) + '%';
+      return { label, val: pct };
+    }
+    const label = Number.isInteger(v) ? String(v) : String(v);
+    return { label, val: v };
+  }
+  const s = String(v).trim();
+  return { label: s, val: numFromLabel(s) };
+}
+
+// magnitude-aware number extraction, mirrors num_from_label() in the Python
+// build script: '509K' -> 509000, '1.6m' -> 1600000, but '7m²'/'560m³' -> 7/560
+function numFromLabel(s) {
+  if (!s) return null;
+  const m = s.match(/-?\d[\d,]*\.?\d*/);
+  if (!m) return null;
+  let num = parseFloat(m[0].replace(/,/g, ''));
+  const rest = s.slice(m.index + m[0].length);
+  const mm = rest.match(/^\s*([A-Za-z])/);
+  if (mm) {
+    const ch = mm[1].toLowerCase();
+    const after = rest[mm[0].length] || '';
+    if (after !== '²' && after !== '³') {
+      if (ch === 'k') num *= 1e3;
+      else if (ch === 'm') num *= 1e6;
+    }
+  }
+  return num;
+}
+
+function applyWorkbook(buf, sourceLabel) {
+  const wb = XLSX.read(buf, { type: 'array', cellStyles: true });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const range = XLSX.utils.decode_range(sheet['!ref']);
+  let updated = 0;
+  for (let r = range.s.r + 1; r <= range.e.r; r++) {
+    const idCell = sheet[XLSX.utils.encode_cell({ r, c: 0 })];
+    if (!idCell || idCell.v == null || String(idCell.v).indexOf('.') === -1) continue; // skip category rows
+    const id = String(idCell.v);
+    const c = parseExcelCell(sheet[XLSX.utils.encode_cell({ r, c: 2 })]);
+    const d = parseExcelCell(sheet[XLSX.utils.encode_cell({ r, c: 3 })]);
+    const e = parseExcelCell(sheet[XLSX.utils.encode_cell({ r, c: 4 })]);
+    setKPI(id, {
+      minLabel: c.label, midLabel: d.label, maxLabel: e.label,
+      minVal: c.val, midVal: d.val, maxVal: e.val,
+    });
+    updated++;
+  }
+  console.log('[KPI] loaded ' + updated + ' rows live from ' + sourceLabel);
+}
+
+function loadFromExcel() {
+  if (typeof XLSX === 'undefined') return;
+  fetch(DROPBOX_XLSX_URL)
+    .then(r => { if (!r.ok) throw new Error('dropbox fetch failed: ' + r.status); return r.arrayBuffer(); })
+    .then(buf => applyWorkbook(buf, 'Dropbox'))
+    .catch(err => {
+      console.warn('[KPI] Dropbox load failed, trying local copy:', err.message);
+      fetch(EXCEL_FILE)
+        .then(r => { if (!r.ok) throw new Error('no workbook at ' + EXCEL_FILE); return r.arrayBuffer(); })
+        .then(buf => applyWorkbook(buf, EXCEL_FILE))
+        .catch(err2 => console.warn('[KPI] local Excel load skipped too, showing frozen snapshot:', err2.message));
+    });
+}
+
+loadFromExcel();
+</script>
+</body>
+</html>
