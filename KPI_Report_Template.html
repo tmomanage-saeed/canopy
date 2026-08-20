@@ -1439,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadLargeParkExcelData();
   loadWadiZoneExcelData();
 
-  fetch('Projects_boundry.json?v=2')
+  fetch('Projects_boundry.json?v=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var features = data.features || [];
@@ -1479,7 +1479,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 500);
     })
     .catch(function(err) {
-      console.error('Error loading Projects_boundry.json?v=2:', err);
+      console.error('Error loading Projects_boundry.json:', err);
       document.getElementById('dd').innerHTML = '<option value="">Error loading data</option>';
     });
 
