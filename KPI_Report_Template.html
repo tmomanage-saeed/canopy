@@ -415,21 +415,21 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
         <!-- Wadi-only: Top/Slope/Bed breakdown tables, same shape as Project Information Current. Hidden for Road/Large Park via populateKpiTables(). -->
         <div id="s6WadiZoneTables" style="display:none">
           <div class="s6-breakdown-label">Breakdown</div>
-          <div class="s6-proj-title">Top of Wadi Information</div>
+          <div class="s6-proj-title">Wadi Top</div>
           <table class="s6-proj-table" style="table-layout:fixed">
             <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
               <tr><td id="s6CurrentTreesTop">–</td><td id="s6PctProjTop">– %</td><td id="s6AreaProjTop">–m²</td><td id="s6AreaPlantTop">–m²</td></tr>
             </tbody>
           </table>
-          <div class="s6-proj-title">Slope of Wadi Information</div>
+          <div class="s6-proj-title">Wadi Slope</div>
           <table class="s6-proj-table" style="table-layout:fixed">
             <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
               <tr><td id="s6CurrentTreesSlope">–</td><td id="s6PctProjSlope">– %</td><td id="s6AreaProjSlope">–m²</td><td id="s6AreaPlantSlope">–m²</td></tr>
             </tbody>
           </table>
-          <div class="s6-proj-title">Bed of Wadi Information</div>
+          <div class="s6-proj-title">Wadi Bed</div>
           <table class="s6-proj-table" style="table-layout:fixed">
             <thead><tr><th style="background:#F2F2F2;border:1px solid #999">Current Trees</th><th style="background:#F2F2F2;border:1px solid #999">Current Canopy<br>Cover (%)</th><th style="background:#F2F2F2;border:1px solid #999">Area</th><th style="background:#F2F2F2;border:1px solid #999">Total Plantable<br>Area</th></tr></thead>
             <tbody>
@@ -782,8 +782,7 @@ function loadWadiZoneExcelData() {
       var data = {};
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
-        if (!row || !row[1] || !row[2]) continue;
-        var zone = String(row[2]).trim().toUpperCase().replace('WADI_', '').toLowerCase(); // TOP/SLOPE/WADI_BED -> top/slope/bed
+        if (!row || !row[1]) continue;
         var baseName = matchWadiCanonicalName(row[1]);
         if (!baseName) { console.log('Wadi zone workbook: unmatched project name', row[1]); continue; }
         var entry = {
@@ -799,7 +798,17 @@ function loadWadiZoneExcelData() {
           treesToPlant: row[13], maturePct: round2(row[16]), futureKpi: round2(row[17])
         };
         if (!data[baseName]) data[baseName] = {};
-        data[baseName][zone] = entry;
+        if (row[2]) {
+          var zone = String(row[2]).trim().toUpperCase().replace('WADI_', '').toLowerCase(); // TOP/SLOPE/WADI_BED -> top/slope/bed
+          data[baseName][zone] = entry;
+        } else {
+          // Row with a blank Area Type is the sheet's own pre-computed Top+Slope+Bed
+          // total for this wadi (verified it matches summing the 3 zone rows above,
+          // e.g. Ghuduwana's total matCanopy 92124.61 = 39460.85+29057.13+23606.62).
+          // Used for whole-wadi figures like slide 10's Conclusion paragraph, which
+          // roads_data.xlsx's separate "Wadi" section no longer matches accurately.
+          data[baseName].total = entry;
+        }
       }
       WADI_ZONE_DATA = data;
     })
@@ -1345,8 +1354,25 @@ function selectWadi(index) {
   loadSlide4Species(safeName, exData);
   var bName = document.getElementById('s8BoundaryName'); if(bName) bName.textContent = 'Project Boundary';
 
-  // SLIDE 10: fixed wadi photo + KPI paragraph (from Excel)
-  document.getElementById('s10Para').innerHTML = buildKpiParagraph(exData, name);
+  // SLIDE 10: fixed wadi photo + KPI paragraph (from Excel). For wadis that have
+  // Top/Slope/Bed workbook data (currently Gudwanah + Umm Qassar), use that
+  // sheet's own whole-wadi total instead of roads_data.xlsx's "Wadi" section --
+  // the two disagreed significantly (e.g. Gudwanah's mature KPI: 5.88% from
+  // roads_data.xlsx vs the correct 16.0% from the zone workbook's total row).
+  // plannedKpi (the fixed 30% Green Riyadh target) still comes from roads_data.xlsx
+  // since it's a program-wide target, not something the zone workbook measures.
+  var zoneEntry = WADI_ZONE_DATA[matchWadiCanonicalName(name)];
+  var zoneTotal = zoneEntry && zoneEntry.total;
+  var conclusionData = zoneTotal ? {
+    curTrees: zoneTotal.currentTreeCount,
+    totalTrees: zoneTotal.totalTreeCount,
+    additional: zoneTotal.additional,
+    treesToPlant: zoneTotal.treesToPlant,
+    maturePct: zoneTotal.maturePct,
+    futureKpi: zoneTotal.futureKpi,
+    plannedKpi: exData ? exData.plannedKpi : 30
+  } : exData;
+  document.getElementById('s10Para').innerHTML = buildKpiParagraph(conclusionData, name);
   var s10img = document.getElementById('s10Photo');
   s10img.src = 'wadies_work/Introduction_2_wadi.jpg';
   s10img.style.display = '';
@@ -2079,8 +2105,22 @@ function s4MatRow(exData) {
   return '<tr style="font-weight:700;border-top:1px solid #22763C;color:#22763C"><td style="font-size:8.5px;padding:3px 3px;white-space:nowrap;overflow:visible">Calculated Mature Canopy Area</td><td></td><td></td><td></td><td style="font-size:8.5px;padding:3px 3px">' + (exData ? fmt(exData.matCanopy) + ' **' : '–') + '</td></tr>';
 }
 
+// Captured once, from slide4's untouched static markup, the first time
+// loadSlide4Species() ever runs -- NOT re-read from the live DOM on every call,
+// because after a project with overflow moves it onto a continuation slide,
+// slide4 itself no longer has a `.s4-source` to read back on the next project.
+var S4_SOURCE_HTML = null;
+
 function loadSlide4Species(safeName, exData) {
   document.querySelectorAll('.s4-continuation').forEach(function(el) { el.remove(); });
+
+  if (S4_SOURCE_HTML === null) {
+    S4_SOURCE_HTML = Array.prototype.map.call(document.querySelectorAll('#slide4 .s4-source'), function(el) { return el.outerHTML; }).join('');
+  }
+  // Data sources / notes always belong on whichever page ends up LAST (usually
+  // slide4 itself, but if species overflow onto continuation slides they move
+  // to the final one instead of staying behind on slide4).
+  var sourceHTML = S4_SOURCE_HTML;
 
   var table = document.querySelector('#slide4 .s4-table tbody');
   if (table) table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:10px;color:#999">No data available</td></tr>' + s4MatRow(exData);
@@ -2127,8 +2167,11 @@ function loadSlide4Species(safeName, exData) {
         if (!isFirstPage) {
           var titleEl = currentSlide.querySelector('.s4-title');
           if (titleEl) titleEl.textContent = 'Tree Species (continued)';
-          currentSlide.querySelectorAll('.s4-text, .s4-source').forEach(function(el) { el.remove(); });
+          currentSlide.querySelectorAll('.s4-text').forEach(function(el) { el.remove(); });
         }
+        // Stripped from every page here; re-added once, after the loop, to
+        // whichever page turns out to be the last one.
+        currentSlide.querySelectorAll('.s4-source').forEach(function(el) { el.remove(); });
 
         if (rows.length === 0) {
           tbodyEl.innerHTML = summaryHTML;
@@ -2161,6 +2204,11 @@ function loadSlide4Species(safeName, exData) {
         currentSlide.insertAdjacentElement('afterend', clone);
         currentSlide = clone;
         isFirstPage = false;
+      }
+
+      if (sourceHTML) {
+        var lastLeft = currentSlide.querySelector('.s4-left');
+        if (lastLeft) lastLeft.insertAdjacentHTML('beforeend', sourceHTML);
       }
     }).catch(function(e) { console.log('No species data:', safeName); });
 }
