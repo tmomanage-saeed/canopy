@@ -682,15 +682,21 @@ function loadExcelData() {
       var rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true});
       var roadData = {};
       var wadiData = {};
-      var section = 'road';
+      var section = null;
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         if (!row || !row[0]) continue;
         if (typeof row[1] !== 'number') {
-          // Section label row (e.g. "Roads" / "Wadi")
-          section = String(row[0]).toLowerCase().indexOf('wadi') !== -1 ? 'wadi' : 'road';
+          // Section label row (e.g. "Road" / "Wadi" / "Large Park") -- exact
+          // match, NOT "anything that isn't Wadi is Road": this sheet also has
+          // its own "Large Park" section (unused, largepark_work/KPI PARKS
+          // GR.xlsx is the real source for that), which used to silently leak
+          // into roadData under the old "not wadi = road" logic.
+          var label = String(row[0]).trim().toLowerCase();
+          section = label.indexOf('wadi') !== -1 ? 'wadi' : (label.indexOf('road') !== -1 ? 'road' : 'other');
           continue;
         }
+        if (section !== 'road' && section !== 'wadi') continue;
         var entry = {
           project: row[1], plantable: row[2], curTrees: row[3], curCanopy: row[4],
           matCanopy: row[5], available: row[6], additional: row[7], totalTrees: row[8],
@@ -704,6 +710,55 @@ function loadExcelData() {
       WADI_EXCEL_DATA = wadiData;
     })
     .catch(function(err) { console.error('Error loading roads_data.xlsx:', err); });
+}
+
+// Roads' numbers are now sourced live from the same shared Dropbox workbook
+// Overview_Dashboard.html already uses (confirmed 2026-08-23: every one of the
+// 15 roads' 14 fields matched roads_data.xlsx's "Road" section exactly, so this
+// is a straight swap, not a data change). Wadi/Large Park stay on their own
+// local files -- Wadi was explicitly kept local per the user, Large Park's
+// numbers in this same Dropbox sheet did NOT match largepark_work/KPI PARKS
+// GR.xlsx at all (checked the same day, every field differed substantially --
+// e.g. Bader's project area was 172,745 m² locally vs 5,120 m² in Dropbox), so
+// linking Large Park would have been a real data change, not a source swap.
+// dl.dropboxusercontent.com (not www.dropbox.com) is used directly, same as
+// Overview_Dashboard.html -- its CORS header allows any origin, no server-side
+// proxy needed, so this works identically on GitHub Pages (static hosting) and
+// via serve_dashboard.py.
+var DROPBOX_KPI_URL = "https://dl.dropboxusercontent.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1";
+
+function loadRoadDataFromDropbox() {
+  return fetch(DROPBOX_KPI_URL, {cache: 'no-store'})
+    .then(function(r) { return r.arrayBuffer(); })
+    .then(function(buf) {
+      var wb = XLSX.read(buf, {type: 'array'});
+      var ws = wb.Sheets['Tabelle1'] || wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true});
+      var roadData = {};
+      var section = null;
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row || !row[0]) continue;
+        if (typeof row[1] !== 'number') {
+          section = String(row[0]).trim().toLowerCase();
+          continue;
+        }
+        if (section !== 'road') continue;
+        var entry = {
+          project: row[1], plantable: row[2], curTrees: row[3], curCanopy: row[4],
+          matCanopy: row[5], available: row[6], additional: row[7], totalTrees: row[8],
+          addCanopy: row[9], plannedKpi: round2(row[10]), currentPct: round2(row[11]), maturePct: round2(row[12]),
+          futureKpi: round2(row[13]), treesToPlant: row[14]
+        };
+        roadData[String(row[0]).trim()] = entry;
+      }
+      if (Object.keys(roadData).length > 0) EXCEL_DATA = roadData;
+    })
+    .catch(function(err) {
+      // Falls back to whatever loadExcelData() already put in EXCEL_DATA from
+      // local roads_data.xlsx -- this function only OVERWRITES on success.
+      console.error('Error loading Road data from Dropbox, staying on local roads_data.xlsx:', err);
+    });
 }
 
 // Large Park data lives in its own workbook (largepark_work/KPI PARKS GR.xlsx),
@@ -1435,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize maps
   initMaps();
 
-  var excelReady = loadExcelData();
+  var excelReady = loadExcelData().then(loadRoadDataFromDropbox);
   loadLargeParkExcelData();
   loadWadiZoneExcelData();
 
