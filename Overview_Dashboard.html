@@ -313,8 +313,8 @@ async function loadData() {
     if (stampEl) {
       const modified = wb.Props && wb.Props.ModifiedDate;
       stampEl.textContent = modified
-        ? "Data last updated: " + modified.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" }) + " at " + modified.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        : "Data last updated: unknown";
+        ? "Data last update: " + modified.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" }) + " at " + modified.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "Data last update: unknown";
     }
     document.getElementById("loadingPanel").classList.add("hidden");
     document.getElementById("content").classList.remove("hidden");
@@ -396,9 +396,9 @@ function buildStats() {
     // 18 of which are in Review & Completed status. Update here if/when the
     // source sheet gets a status column to compute this automatically.
     { label: "Total Projects", value: "51", split: { value: "18", label: "Reviewed & Completed" } },
-    { label: "Current Trees from Reviewed Projects", value: fmt(agg.currentTrees) },
-    { label: "Total Potential Trees From Reviewed Projects", value: fmt(agg.totalTrees - agg.currentTrees) },
-    { label: "Total Trees From Reviewed Projects", value: fmt(agg.totalTrees) },
+    { label: "Current Trees From Reviewed Projects",value: fmt(agg.currentTrees) },
+    { label: "Total Potential Additional trees to be planted", value: fmt(agg.totalTrees - agg.currentTrees) },
+    { label: "Total Trees After Planting (Current + Additional)", value: fmt(agg.totalTrees) },
     { label: "Current Canopy Cover Contribution From Reviewed Projects", value: currentCityPct.toFixed(2) + "%" },
     { label: "Future Mature Canopy Cover Contribution From Reviewed Projects", value: futureCityPct.toFixed(2) + "%" },
   ];
@@ -476,8 +476,8 @@ function buildInsights() {
   }).filter(function(s) { return s.value > 0; });
 
   document.getElementById("insightRow").innerHTML =
-    donutCardHTML("Current Trees in Reviewed Projects", "Citywide tree count by project category", currentSegs) +
-    donutCardHTML("Total Potential Trees From Reviewed Projects", "Citywide potential tree count by project category", potentialSegs);
+    donutCardHTML("Current Trees From Reviewed Projects","Citywide tree count by project category", currentSegs) +
+    donutCardHTML("Total Potential Additional trees to be planted", "Citywide potential tree count by project category", potentialSegs);
 }
 
 function buildTabs() {
