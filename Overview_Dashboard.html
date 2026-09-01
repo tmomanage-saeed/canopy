@@ -397,8 +397,8 @@ function buildStats() {
     // source sheet gets a status column to compute this automatically.
     { label: "Total Projects", value: "51", split: { value: "18", label: "Reviewed & Completed" } },
     { label: "Current Trees From Reviewed Projects",value: fmt(agg.currentTrees) },
-    { label: "Total Potential Additional trees to be planted", value: fmt(agg.totalTrees - agg.currentTrees) },
-    { label: "Total Trees After Planting (Current + Additional)", value: fmt(agg.totalTrees) },
+    { label: "Total Potential Additional Trees", value: fmt(agg.totalTrees - agg.currentTrees) },
+    { label: "Total Potential Trees (Current + Potential Additional)", value: fmt(agg.totalTrees) },
     { label: "Current Canopy Cover Contribution From Reviewed Projects", value: currentCityPct.toFixed(2) + "%" },
     { label: "Future Mature Canopy Cover Contribution From Reviewed Projects", value: futureCityPct.toFixed(2) + "%" },
   ];
@@ -457,7 +457,7 @@ function donutCardHTML(title, subtitle, segs, size) {
     ? '<div class="donut-ring-wrap">' + donutSVG(segs, size || 220) + '<div class="donut-center-label">' + centerHTML + '</div></div>'
     : '';
   return '<div class="insight-card insight-solo">' +
-      '<div class="insight-title">' + title + '</div>' +
+      (title ? '<div class="insight-title">' + title + '</div>' : '') +
       '<div class="insight-hero-sub">' + subtitle + '</div>' +
       (segs.length ? '<div class="donut-wrap">' + ring + legendListHTML(segs) + '</div>' : '<div class="empty-note">No data yet.</div>') +
     '</div>';
@@ -476,8 +476,8 @@ function buildInsights() {
   }).filter(function(s) { return s.value > 0; });
 
   document.getElementById("insightRow").innerHTML =
-    donutCardHTML("Current Trees From Reviewed Projects","Citywide tree count by project category", currentSegs) +
-    donutCardHTML("Total Potential Additional trees to be planted", "Citywide potential tree count by project category", potentialSegs);
+    donutCardHTML("", "Current trees by project category", currentSegs) +
+    donutCardHTML("", "Potential additional trees by project category", potentialSegs);
 }
 
 function buildTabs() {
