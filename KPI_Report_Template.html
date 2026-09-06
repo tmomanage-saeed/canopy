@@ -125,6 +125,51 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
 .s4-table tbody tr:nth-child(even){background:#f5f5f5}
 .s4-table tfoot td{font-weight:700;padding:2px 3px;border-top:2px solid #22763C;color:#22763C}
 .s4-table tfoot td:nth-child(2),.s4-table tfoot td:nth-child(3),.s4-table tfoot td:nth-child(4){text-align:center}
+/* ═══ SLIDE 4b: Summary Overview ═══ */
+/* Colours/spacing mirror Overview_Dashboard.html, scaled down to fit the 1280x720 slide. */
+#slide4b{--s4b-road:#2a78d6;--s4b-wadi:#eb6834;--s4b-park:#1baf7a;--s4b-violet:#4a3aa7;--s4b-green:#22763C;--s4b-value:#1f8a44;--s4b-muted:#767a70;--s4b-border:rgba(11,11,11,.10)}
+.s4b-body{position:absolute;top:44px;left:0;right:0;bottom:36px;padding:12px 28px;display:flex;flex-direction:column;font-family:'Poppins',sans-serif}
+.s4b-title{font-family:'NeoSansArabic',sans-serif;font-size:24px;font-weight:700;color:#22763C;margin-bottom:12px}
+/* 6 tiles: count, current trees, and the three canopy percentages (current ->
+   mature of those same trees -> potential total incl. additional trees). */
+.s4b-stat-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.s4b-tile{background:#fff;border:1px solid var(--s4b-border);border-top:3px solid var(--s4b-accent,#e2e5e0);border-radius:8px 8px 10px 10px;padding:9px 7px;box-shadow:0 1px 2px rgba(11,11,11,.05);display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px}
+/* Accent colour is set per tile inline, from the figure it reports. */
+.s4b-tile .s4b-label{font-size:9px;color:#767a70;font-weight:600;text-transform:uppercase;letter-spacing:.03em;line-height:1.3;display:flex;align-items:center;justify-content:center;min-height:3.9em}
+.s4b-tile .s4b-value{font-size:21px;font-weight:700;color:#1f8a44}
+.s4b-insight-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0;margin-bottom:10px}
+.s4b-card{background:#fff;border:1px solid var(--s4b-border);border-radius:12px;padding:12px 16px;box-shadow:0 1px 2px rgba(11,11,11,.05);display:flex;flex-direction:column}
+.s4b-card-sub{font-size:11px;color:#45463f;text-align:center}
+.s4b-donut-wrap{display:flex;align-items:center;justify-content:center;gap:28px;flex:1}
+.s4b-ring-wrap{position:relative;flex:none;line-height:0}
+/* Legend to the RIGHT of the ring, same shape as Overview_Dashboard's: one
+   shared 3-column grid (dot | label | value) across all rows -- .s4b-legend-row
+   is display:contents so every row's value column lines up. */
+.s4b-legend{display:grid;grid-template-columns:11px 1fr auto;row-gap:13px;column-gap:9px;align-items:center}
+.s4b-legend-row{display:contents}
+.s4b-legend-dot{width:11px;height:11px;border-radius:3px}
+.s4b-legend-label{font-size:12.5px;color:#45463f}
+.s4b-legend-val{font-size:13px;font-weight:700;color:#22763C;white-space:nowrap;font-variant-numeric:tabular-nums}
+/* Total: same grid, closed off with a rule so it reads as the sum of the rows above. */
+.s4b-legend-total > *{border-top:1px solid var(--s4b-border);padding-top:11px}
+.s4b-legend-total .s4b-legend-label{font-weight:700;color:#22763C}
+.s4b-legend-total .s4b-legend-val{font-size:14px}
+/* ─── Canopy Cover KPI bar (full slide width, under the two donuts) ─── */
+.s4b-bar-card{background:#fff;border:1px solid var(--s4b-border);border-radius:12px;padding:10px 22px 8px;box-shadow:0 1px 2px rgba(11,11,11,.05);flex:none}
+.s4b-bar-title{font-size:11px;color:#45463f;text-align:center;margin-bottom:4px}
+/* Labels sit above their own value on the axis; lanes are 24px apart so a label
+   never spills onto the track and two lanes never overlap. */
+.s4b-bar-labels{position:relative}
+.s4b-bar-mark{position:absolute;transform:translateX(-50%);text-align:center;white-space:nowrap;line-height:1.1;height:22px}
+.s4b-bar-mark .k{font-size:8.5px;color:#767a70;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.s4b-bar-mark .v{font-size:11.5px;font-weight:700}
+.s4b-bar-track{position:relative;height:22px;border-radius:4px;background:#e2e5e0;overflow:hidden}
+.s4b-bar-below{position:relative;height:16px;margin-top:3px}
+.s4b-bar-target{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;color:#2a78d6;white-space:nowrap}
+.s4b-bar-fill{position:absolute;top:0;bottom:0;left:0}
+.s4b-bar-tick{position:absolute;top:0;bottom:0;width:2px;transform:translateX(-1px)}
+.s4b-bar-axis{position:relative;height:14px;margin-top:4px}
+.s4b-bar-axis span{position:absolute;transform:translateX(-50%);font-size:9px;color:#767a70}
 /* ═══ SLIDE 5: Current Canopy Divider ═══ */
 .s5-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center}
 .s5-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35)}
@@ -373,6 +418,28 @@ body{font-family:'Poppins',sans-serif;background:#e0e0e0;overflow-y:auto}
       <span class="ftr-r">Green Riyadh Program</span>
     </div>
   </div>
+  <!-- ═══════════ SLIDE 4b: Summary Overview (mirrors Overview_Dashboard.html stat tiles + 2 donuts) ═══════════ -->
+  <!-- City-wide summary, identical for Road / Wadi / Large Park reports: same Dropbox KPI.xlsx
+       source Overview_Dashboard.html uses, so the numbers always match that dashboard. -->
+  <div class="slide" id="slide4b">
+    <div class="s-hdr">
+      <img class="bar" src="PPT_TOP_BAR__2_.svg" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <img class="logo logo-l" src="Green_riyadh_white_logo.png" onerror="this.style.display='none'">
+      <img class="logo logo-r" src="GreenLink_logo_clean.png" onerror="this.style.display='none'">
+    </div>
+    <div class="s4b-body">
+      <div class="s4b-title" id="s4bTitle">Summary Overview</div>
+      <div class="s4b-stat-row" id="s4bStatRow"></div>
+      <div class="s4b-insight-row" id="s4bInsightRow"></div>
+      <div class="s4b-bar-card" id="s4bBarCard"></div>
+    </div>
+    <div class="s-ftr">
+      <img class="bar" src="bottom_green_pati.png" onerror="this.parentElement.style.background='linear-gradient(90deg,#2d8c30,#1b5e20)'">
+      <span class="ftr-l">TMO | Canopy Cover Review | June 2026</span>
+      <span class="ftr-r">Green Riyadh Program</span>
+    </div>
+  </div>
+
   <!-- ═══════════ SLIDE 5: Current Canopy Divider ═══════════ -->
   <div class="slide" id="slide5">
     <div class="s5-bg" id="s5Bg" style="background-image:url('fifth_page/default.jpg')">
@@ -725,7 +792,7 @@ function loadExcelData() {
 // Overview_Dashboard.html -- its CORS header allows any origin, no server-side
 // proxy needed, so this works identically on GitHub Pages (static hosting) and
 // via serve_dashboard.py.
-var DROPBOX_KPI_URL = "https://dl.dropboxusercontent.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1";
+var DROPBOX_KPI_URL = "https://dl.dropboxusercontent.com/scl/fi/3v6u2vw3n5lv1kqc0p0vj/KPI-Update_ar_05_26.xlsx?rlkey=5njynv7a8jwov1vtz3rev5lqj&dl=1";
 
 function loadRoadDataFromDropbox() {
   return fetch(DROPBOX_KPI_URL, {cache: 'no-store'})
@@ -1308,17 +1375,35 @@ function selectRoad(index) {
 // ── SLIDE 10: KPI summary paragraph (shared by roads and wadis) ──
 function buildKpiParagraph(exData, dName) {
   if (!exData) return '';
-  var status = exData.maturePct < exData.plannedKpi ? 'is slightly below' : 'exceeds';
+  // "slightly" only when it really is slight -- within a tenth of the target.
+  // The old binary wording called 3.81% "slightly below" a 15% target.
+  var gap = exData.plannedKpi - exData.maturePct;
+  var status = gap <= 0 ? 'exceeds'
+             : (gap <= exData.plannedKpi * 0.1 ? 'is slightly below' : 'is below');
   var para = '<ul style="list-style:disc;padding-left:20px;margin:0;line-height:2.2">';
   para += '<li><b>' + dName + '</b> is projected to achieve a KPI of <b>' + exData.maturePct + '%</b> once the existing <b>' + fmt(exData.curTrees) + '</b> trees reach maturity, which ' + status + ' the Green Riyadh target KPI of <b>' + exData.plannedKpi + '%</b>.</li>';
   para += '<li style="margin-top:6px">An estimated <b>' + fmt(exData.treesToPlant) + '</b> additional trees are required to achieve the <b>' + exData.plannedKpi + '%</b> canopy cover KPI.</li>';
-  para += '<li style="margin-top:6px">The assessment identified <b>' + fmt(exData.additional) + '</b> feasible planting opportunities. Full implementation would increase the tree population to approximately <b>' + fmt(exData.totalTrees) + '</b> trees and raise canopy cover to an estimated <b>' + exData.futureKpi + '%</b>, exceeding the Green Riyadh target by a substantial margin.</li>';
+  // The closing verdict has to follow the actual figure: on a project whose
+  // plantable land can never reach the target (King Fahad Road maxes out at
+  // 11.26% cover against a 15% target), the old fixed "exceeding the target by a
+  // substantial margin" contradicted this slide's own first bullet.
+  var futureGap = exData.futureKpi - exData.plannedKpi;
+  var futureVerdict = futureGap < 0
+      ? ', which would still fall short of the Green Riyadh target of <b>' + exData.plannedKpi + '%</b>.'
+      : (futureGap >= exData.plannedKpi * 0.2
+          ? ', exceeding the Green Riyadh target by a substantial margin.'
+          : ', meeting the Green Riyadh target of <b>' + exData.plannedKpi + '%</b>.');
+  para += '<li style="margin-top:6px">The assessment identified <b>' + fmt(exData.additional) + '</b> feasible planting opportunities. Full implementation would increase the tree population to approximately <b>' + fmt(exData.totalTrees) + '</b> trees and raise canopy cover to an estimated <b>' + exData.futureKpi + '%</b>' + futureVerdict + '</li>';
   para += '</ul>';
   return para;
 }
 
 // ── SLIDE 6 & 8: Populate KPI tables (from Excel, or placeholders if none) ──
 function populateKpiTables(exData) {
+  // Slide 4b's summary is the selected project's own figures -- same entry, so
+  // it can never drift from the slide 6/8 tables filled in below.
+  renderSummaryOverview(exData);
+
   // "Link Maps" button: only relevant for wadi/large park (roads always stay linked, untouched).
   var linkBtn = document.getElementById('linkMapsBtn');
   if (linkBtn) {
@@ -1486,9 +1571,234 @@ function selectLargePark(index) {
 // ═══════════════════════════════════════════════════
 // Load JSON + Populate Dropdown
 // ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// SLIDE 4b: Summary Overview (for the SELECTED project)
+// Driven by the exact same Excel entry populateKpiTables() feeds slides 6 and 8,
+// so every figure here is the selected project's own and matches those slides
+// (Road: shared Dropbox KPI.xlsx, Wadi: roads_data.xlsx "Wadi" section,
+// Large Park: largepark_work/KPI PARKS GR.xlsx). Re-rendered on every project
+// switch from populateKpiTables().
+// ═══════════════════════════════════════════════════
+// Same colours the GIS layers use in the map legends below, so a slice reads as
+// the layer it came from: #FFAA00 Tree Species (slide 6), #AAFF00 Additional
+// Potential Trees (slide 8), #1D753B Canopy Mature (slide 8).
+// Current trees take the lighter Canopy Current green (#38A800) so they sit one
+// step below the darker Canopy Mature green (#1D753B) used in the canopy donut.
+var S4B_TREE_COLORS   = ['#38A800', '#AAFF00'];   // current trees | potential additional trees
+var S4B_CANOPY_COLORS = ['#1D753B', '#AAFF00'];   // mature canopy (current trees) | additional canopy
+
+function s4bFmt(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
+}
+function s4bNum(n) { var v = Number(n); return isNaN(v) ? 0 : v; }
+// Percentages are printed EXACTLY as slides 6/8 print them -- the raw round2()'d
+// sheet value plus " %" (so 12 stays "12 %", not "12.00%"). Formatting them
+// differently here was the only way these tiles could look off from the tables.
+function s4bPct(n) { return (typeof n === 'number' && !isNaN(n)) ? n + ' %' : '–'; }
+
+function s4bDonutSVG(segments, size) {
+  var r = size / 2 - 13, cx = size / 2, cy = size / 2, circ = 2 * Math.PI * r;
+  var total = segments.reduce(function(a, s) { return a + s.value; }, 0) || 1;
+  var offset = 0;
+  var arcs = segments.map(function(s) {
+    var len = s.value / total * circ;
+    var gap = segments.length > 1 ? 2 : 0;
+    var dash = Math.max(0, len - gap) + ' ' + (circ - len + gap);
+    var html = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + s.color +
+      '" stroke-width="16" stroke-dasharray="' + dash + '" stroke-dashoffset="' + (-offset) + '"></circle>';
+    offset += len;
+    return html;
+  }).join('');
+  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size +
+    '" style="transform:rotate(-90deg);flex:none">' + arcs + '</svg>';
+}
+
+// The ring is left hollow -- nothing inside it. The card's own header carries
+// the total, and each slice's number sits outside next to its arc, so no figure
+// has to be shrunk to fit within the stroke.
+function s4bDonutCard(subtitle, segs, unit, totalLabel, totalValue) {
+  var sum = segs.reduce(function(a, s) { return a + s.value; }, 0) || 1;
+  var total = (totalValue === undefined || totalValue === null) ? sum : totalValue;
+  // Overview_Dashboard's layout: ring on the left, the figures in a legend list
+  // on its right, nothing written inside the ring. (Labels placed out around the
+  // ring on each slice's own angle were tried first and looked messy.) The
+  // legend is one shared grid so the value column starts at the same x on every
+  // row regardless of how many digits that row carries.
+  // The total is the last row of the SAME legend, under a rule -- it belongs with
+  // the figures it sums, not up beside the card's title.
+  var legend = '<div class="s4b-legend">' + segs.map(function(sg) {
+    return '<div class="s4b-legend-row">' +
+      '<span class="s4b-legend-dot" style="background:' + sg.color + '"></span>' +
+      '<span class="s4b-legend-label">' + sg.label + '</span>' +
+      '<span class="s4b-legend-val">' + s4bFmt(sg.value) + (unit || '') + '</span></div>';
+  }).join('') +
+    '<div class="s4b-legend-row s4b-legend-total">' +
+      '<span></span>' +
+      '<span class="s4b-legend-label">' + totalLabel + '</span>' +
+      '<span class="s4b-legend-val">' + s4bFmt(total) + (unit || '') + '</span></div>' +
+  '</div>';
+  var ring = '<div class="s4b-ring-wrap">' + s4bDonutSVG(segs, 150) + '</div>';
+  return '<div class="s4b-card">' +
+      '<div class="s4b-card-sub">' + subtitle + '</div>' +
+      '<div class="s4b-donut-wrap">' + ring + legend + '</div>' +
+    '</div>';
+}
+
+// One horizontal track running 0% -> a rounded ceiling above the project's own
+// highest figure, carrying all four canopy-cover percentages this slide reports:
+// dark green up to the mature cover of the CURRENT trees, light green on to the
+// potential total, grey for what is still uncovered, plus a tick for today's
+// cover and one for the Green Riyadh target.
+function renderCanopyKpiBar(e) {
+  var card = document.getElementById('s4bBarCard');
+  if (!card) return;
+  var cur = s4bNum(e.currentPct), tgt = s4bNum(e.plannedKpi),
+      mat = s4bNum(e.maturePct), pot = s4bNum(e.futureKpi);
+  var peak = Math.max(cur, tgt, mat, pot);
+  if (!peak) { card.innerHTML = ''; return; }
+  var max = Math.max(10, Math.ceil(peak / 10) * 10);   // 46.5 -> 50
+  var x = function(v) { return Math.min(100, v / max * 100); };
+
+  // The three cumulative stages, labelled above their own position on the axis.
+  var marks = [
+    {k: 'Current',   v: cur, color: S4B_TREE_COLORS[0]},   // same green as the donut's current trees
+    {k: 'Mature',    v: mat, color: '#1D753B'},
+    {k: 'Potential', v: pot, color: '#6f9e00'}
+  ].sort(function(a, b) { return a.v - b.v; });
+
+  // Lane packing driven by each label's OWN estimated width: a label rises to
+  // the next lane only when it would actually touch the last one placed in this
+  // one, and as many lanes open as the numbers need.
+  var trackPx = 1280 - 2 * 28 - 2 * 22;   // slide width - body padding - card padding
+  var laneRight = [];
+  var placed = marks.map(function(m) {
+    var px = x(m.v);
+    var half = Math.max(String(m.k).length * 5.6, (m.v + '%').length * 7.2) / trackPx * 100 / 2;
+    var lane = 0;
+    while (laneRight[lane] !== undefined && px - half < laneRight[lane] + 0.6) lane++;
+    laneRight[lane] = px + half;
+    // Keep the label inside the card at the two ends; the band itself is unmoved.
+    return {m: m, left: Math.max(half, Math.min(100 - half, px)), lane: lane};
+  });
+
+  // The target is a benchmark, not a stage, so it always takes the topmost lane
+  // on its own instead of being packed in among the three.
+  var lanes = laneRight.length;
+  var labels = placed.map(function(p) {
+    return '<div class="s4b-bar-mark" style="left:' + p.left + '%;top:' + ((lanes - 1 - p.lane) * 24) + 'px">' +
+      '<div class="k">' + p.m.k + '</div>' +
+      '<div class="v" style="color:' + p.m.color + '">' + p.m.v + '%</div></div>';
+  }).join('');
+
+  // The target rides INSIDE the track, bold, sitting just left of its own blue
+  // line -- it is a benchmark, so it reads on the bar itself rather than joining
+  // the stage labels above. White while it stands over a filled band, dark once
+  // the line has passed the potential cover onto the grey remainder.
+  var ticks = '', targetBelow = '';
+  if (tgt) {
+    var tx = x(tgt);
+    ticks = '<div class="s4b-bar-tick" style="left:' + tx + '%;background:#2a78d6;width:3px"></div>';
+    // Target label goes UNDER the track, centred on its own line, clamped so it
+    // stays inside the card at either end.
+    var tHalf = (('Target ' + tgt + '%').length * 6.2) / trackPx * 100 / 2;
+    targetBelow = '<div class="s4b-bar-below"><div class="s4b-bar-target" style="left:' +
+      Math.max(tHalf, Math.min(100 - tHalf, tx)) + '%">Target ' + tgt + '%</div></div>';
+  }
+
+  var axis = '';
+  for (var v = 0; v <= max; v += (max > 60 ? 20 : 10)) {
+    axis += '<span style="left:' + x(v) + '%">' + v + '%</span>';
+  }
+
+  card.innerHTML =
+    '<div class="s4b-bar-title">Canopy Cover KPI (%)</div>' +
+    '<div class="s4b-bar-labels" style="height:' + (lanes * 24 - 2) + 'px">' + labels + '</div>' +
+    // Three stacked fills, widest first: potential (light green) -> mature of the
+    // current trees (dark green) -> today's cover. They are cumulative, so each
+    // colour change is itself a boundary; only the target needs a line drawn.
+    '<div class="s4b-bar-track">' +
+      '<div class="s4b-bar-fill" style="width:' + x(pot) + '%;background:#AAFF00"></div>' +
+      '<div class="s4b-bar-fill" style="width:' + x(mat) + '%;background:#1D753B"></div>' +
+      '<div class="s4b-bar-fill" style="width:' + x(cur) + '%;background:' + S4B_TREE_COLORS[0] + '"></div>' +
+      ticks +
+    '</div>' +
+    targetBelow +
+    '<div class="s4b-bar-axis">' + axis + '</div>';
+}
+
+
+function renderSummaryOverview(exData) {
+  var statRow = document.getElementById('s4bStatRow');
+  if (!statRow) return;
+
+  // Same display name slide 1 shows for the selected project.
+  var nameEl = document.getElementById('roadName');
+  document.getElementById('s4bTitle').textContent =
+    'Summary Overview | ' + ((nameEl && nameEl.textContent) || '—');
+
+  var e = exData || {};
+  var curTrees = s4bNum(e.curTrees);
+  // Column H ("Potential Additional trees") -- the SAME field slide 8's
+  // "Potential Additional Trees" cell shows. Deliberately not computed as
+  // (Total trees - Current trees): on some projects the sheet's own two columns
+  // disagree slightly (Airport Road 10,853 vs 10,883), and slide 8 shows column H.
+  var addTrees = s4bNum(e.additional);
+  var matCanopy = s4bNum(e.matCanopy);   // mature canopy of the CURRENT trees (m²)
+  var addCanopy = s4bNum(e.addCanopy);   // canopy the potential additional trees add (m²)
+
+  // The same figures slides 6 and 8 report for this project.
+  // Each tile's top edge carries the colour of the very thing it reports, as used
+  // in the donuts and the KPI bar below -- blue for the target line, the current
+  // green for today's trees/cover, the dark mature green, the light additional
+  // green. The old accents were an arbitrary palette that matched nothing.
+  var tiles = [
+    {label: 'Target KPI',                          value: s4bPct(e.plannedKpi), color: '#2a78d6'},
+    {label: 'Current Trees',                       value: s4bFmt(curTrees),     color: S4B_TREE_COLORS[0]},
+    {label: 'Current Canopy Cover',                value: s4bPct(e.currentPct), color: S4B_TREE_COLORS[0]},
+    {label: 'Mature Canopy Cover (Current Trees)', value: s4bPct(e.maturePct),  color: '#1D753B'},
+    {label: 'Potential Additional Trees',          value: s4bFmt(addTrees),     color: S4B_TREE_COLORS[1]},
+    {label: 'Potential Total Canopy Cover',        value: s4bPct(e.futureKpi),  color: S4B_TREE_COLORS[1]}
+  ];
+  statRow.innerHTML = tiles.map(function(t) {
+    return '<div class="s4b-tile" style="--s4b-accent:' + t.color + '">' +
+      '<div class="s4b-label">' + t.label + '</div><div class="s4b-value">' + t.value + '</div></div>';
+  }).join('');
+
+  var treeSegs = [
+    {label: 'Current trees', value: curTrees, color: S4B_TREE_COLORS[0]},
+    {label: 'Potential additional trees', value: addTrees, color: S4B_TREE_COLORS[1]}
+  ];
+  // Canopy at maturity, split by where it comes from. Both figures are the same
+  // ones slide 8 prints (Mature Canopy Cover Area / Potential Additional Canopy
+  // Cover); their sum is the project's total canopy at maturity.
+  var canopySegs = [
+    {label: 'Mature canopy (current trees)', value: matCanopy, color: S4B_CANOPY_COLORS[0]},
+    {label: 'Additional canopy (new trees)', value: addCanopy, color: S4B_CANOPY_COLORS[1]}
+  ];
+
+  renderCanopyKpiBar(e);
+
+  document.getElementById('s4bInsightRow').innerHTML =
+    // Centre is current + additional (the two slices' own sum), so the ring can
+    // never contradict its own legend.
+    // Centre = the sheet's OWN "Total trees" column, the same figure slide 10's
+    // conclusion quotes. Note the sheet's columns can disagree by a handful of
+    // trees (Airport Road: current 19,360 + additional 10,853 = 30,213, but its
+    // Total trees column says 30,243) -- every number shown here is taken
+    // straight from the sheet rather than recomputed, so the report never
+    // contradicts the source it is generated from.
+    s4bDonutCard('Trees — current vs potential additional', treeSegs, '',
+      'Total trees', s4bNum(e.totalTrees)) +
+    s4bDonutCard('Canopy cover area at maturity (m²)', canopySegs, ' m²',
+      'Total canopy area');
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize maps
   initMaps();
+
 
   var excelReady = loadExcelData().then(loadRoadDataFromDropbox);
   loadLargeParkExcelData();

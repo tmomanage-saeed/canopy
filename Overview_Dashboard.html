@@ -277,7 +277,7 @@
 // via curl), unlike the www.dropbox.com share link, whose first redirect hop
 // has no CORS header and gets blocked by real browsers. Works on any static
 // host (GitHub Pages included) with no server-side proxy needed.
-const SOURCE_URL = "https://dl.dropboxusercontent.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1";
+const SOURCE_URL = "https://dl.dropboxusercontent.com/scl/fi/3v6u2vw3n5lv1kqc0p0vj/KPI-Update_ar_05_26.xlsx?rlkey=5njynv7a8jwov1vtz3rev5lqj&dl=1";
 const CATEGORY_LABELS = ["Road", "Wadi", "Large Park", "Neighbourhood"];
 // Riyadh metropolitan area, used as the denominator for the "city-wide contribution"
 // stat tiles -- how much of the WHOLE CITY's area the reviewed projects' canopy covers,
@@ -346,6 +346,11 @@ function parseRows(rows) {
     if (label === "Notes") break;
     if (CATEGORY_LABELS.includes(label)) { current = label; continue; }
     if (!current) continue;
+    // A real project row always carries a numeric project area in column B.
+    // The sheet also holds heading-style rows that are NOT category labels
+    // ("Tuwaiq Reserve Fencing", "Sand Dunes Park"); without this check they were
+    // pushed in as projects and rendered as empty "—" cards under Large Park.
+    if (typeof row[1] !== "number") continue;
     DATA[current].push({
       name: label,
       area: row[1],           // B - Project area (m2)

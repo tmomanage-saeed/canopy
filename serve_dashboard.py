@@ -37,7 +37,7 @@ import urllib.parse
 import urllib.request
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-DROPBOX_URL = "https://www.dropbox.com/scl/fi/mnic6vthj5h3fqbknjqx5/KPI.xlsx?rlkey=4uargirdbzemm5yg893osibqo&dl=1"
+DROPBOX_URL = "https://www.dropbox.com/scl/fi/3v6u2vw3n5lv1kqc0p0vj/KPI-Update_ar_05_26.xlsx?rlkey=5njynv7a8jwov1vtz3rev5lqj&dl=1"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Dashboards that live in other folders but should still open at
